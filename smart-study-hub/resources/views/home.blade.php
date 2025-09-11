@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
 
   <!-- Custom styles -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="{{ asset('css/styles.css') }}" />
 
 </head>
 
@@ -31,7 +31,7 @@
       <a class="navbar-brand d-flex align-items-center gap-2" href="#">
       <!-- Logo image inside the circle -->
       <div class="logo-circle d-flex align-items-center justify-content-center">
-        <img src="images/sshlogo.png" alt="Smart Study Hub Logo" class="logo-img">
+        <img src="{{ asset('images/sshlogo.png') }}" alt="Smart Study Hub Logo" class="logo-img">
       </div>
 
         <span class="fw-bold text-lg md:text-xl">Smart Study Hub</span>
@@ -57,9 +57,19 @@
               <li class="nav-item">
                 <a class="nav-link" href="#testimonials">Testimonials</a>
               </li>
+@guest
               <li class="nav-item">
-                <a class="btn btn-primary btn-sm rounded-pill" href="#login">Login / Register</a>
+                <a class="btn btn-primary btn-sm rounded-pill me-2" href="{{ route('login') }}">Login</a>
               </li>
+              <li class="nav-item">
+                <a class="btn btn-outline-primary btn-sm rounded-pill" href="{{ route('register') }}">Register</a>
+              </li>
+@endguest
+@auth
+              <li class="nav-item">
+                <a class="btn btn-primary btn-sm rounded-pill" href="{{ route('dashboard') }}">Dashboard</a>
+              </li>
+@endauth
             </ul>
           </div>
 
@@ -80,7 +90,7 @@
       <div class="row align-items-center py-5 min-vh-100">
         <div class="col-lg-7 text-white">
           <div class="mb-4 d-flex align-items-center gap-3">
-            <img src="logo.png" onerror="this.style.display='none'" alt="Logo" class="h-12 w-auto"/>
+            <img src="{{ asset('images/logo.png') }}" onerror="this.style.display='none'" alt="Logo" class="h-12 w-auto"/>
             <h1 class="display-5 fw-bold lh-tight mb-0">Learn. Evolve. Succeed.</h1>
           </div>
           <p class="lead mb-4 max-w-2xl">
@@ -155,7 +165,7 @@
 
         <!-- CARD 3 -->
         <div class="carousel-item">
-          <img src="images/inspiration.jpg" 
+          <img src="{{ asset('images/inspiration.jpg') }}"
                alt="Motivation" class="card-img-top object-cover"/>
           <div class="card-body">
             <h5 class="fw-bold">Daily Motivation</h5>
@@ -165,7 +175,7 @@
 
         <!-- CARD 4 -->
         <div class="carousel-item">
-          <img src="images/website.png" 
+          <img src="{{ asset('images/website.png') }}"
                alt="About Us" class="card-img-top object-cover"/>
           <div class="card-body">
             <h5 class="fw-bold">About Our Website</h5>
@@ -205,7 +215,7 @@
 
         <!-- CARD 8 -->
         <div class="carousel-item">
-          <img src="images/inspired.png" 
+          <img src="{{ asset('images/inspired.png') }}"
                alt="Inspiration" class="card-img-top object-cover"/>
           <div class="card-body">
             <h5 class="fw-bold">Stay Inspired</h5>
@@ -307,7 +317,7 @@
 
 
 .highlight-title {
-  background: url('images/yellow.png') no-repeat center;
+  background: url('{{ asset('images/yellow.png') }}') no-repeat center;
   background-size: 80% 500%;
   background-position: 40px center; /* move 10px to the left */
 
@@ -414,7 +424,7 @@
         <div class="col-md-4">
           <div class="card shadow-lg rounded-xl overflow-hidden">
             <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height:200px;">
-              <img src="images/learning.jpg" alt="[Image Placeholder]">
+              <img src="{{ asset('images/learning.jpg') }}" alt="[Image Placeholder]">
 
             </div>
             <div class="card-body text-center">
@@ -429,7 +439,7 @@
         <div class="col-md-4">
           <div class="card shadow-lg rounded-xl overflow-hidden">
             <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height:200px;">
-              <img src="images/science.jpg" alt="[Image Placeholder]">
+              <img src="{{ asset('images/science.jpg') }}" alt="[Image Placeholder]">
             </div>
             <div class="card-body text-center">
               <h5 class="card-title fw-bold">Science</h5>
@@ -441,7 +451,7 @@
         <div class="col-md-4">
             <div class="card shadow-lg rounded-xl overflow-hidden">
               <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height:200px;">
-                <img src="images/math.jpg" alt="[Image Placeholder]">
+                <img src="{{ asset('images/math.jpg') }}" alt="[Image Placeholder]">
               </div>
               <div class="card-body text-center">
                 <h5 class="card-title fw-bold">Mathematics</h5>
@@ -453,7 +463,7 @@
           <div class="col-md-4">
             <div class="card shadow-lg rounded-xl overflow-hidden">
               <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height:200px;">
-                <img src="images/english.png" alt="[Image Placeholder]">
+                <img src="{{ asset('images/english.png') }}" alt="[Image Placeholder]">
               </div>
               <div class="card-body text-center">
                 <h5 class="card-title fw-bold">English</h5>
@@ -465,7 +475,7 @@
           <div class="col-md-4">
             <div class="card shadow-lg rounded-xl overflow-hidden">
               <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height:200px;">
-                <img src="images/filipino.png" alt="[Image Placeholder]">              </div>
+                <img src="{{ asset('images/filipino.png') }}" alt="[Image Placeholder]">              </div>
               <div class="card-body text-center">
                 <h5 class="card-title fw-bold">Filipino</h5>
                 <p class="card-text">Celebrate language and culture while improving reading, writing, and speaking skills.</p>
@@ -477,7 +487,7 @@
         <div class="col-md-4">
           <div class="card shadow-lg rounded-xl overflow-hidden">
             <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height:200px;">
-              <img src="images/history.png" alt="[Image Placeholder]">  
+              <img src="{{ asset('images/history.png') }}" alt="[Image Placeholder]">
             </div>
             <div class="card-body text-center">
               <h5 class="card-title fw-bold">History</h5>

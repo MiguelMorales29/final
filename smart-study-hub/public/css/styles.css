@@ -491,7 +491,7 @@ section {
 
 
 .highlight-bg {
-  background-image: url('images/yellow.png');
+  background-image: url('../images/yellow.png');
   background-size: contain; /* or cover if you want it to fully stretch */
   background-repeat: no-repeat;
   background-position: center; /* adjust if needed */
