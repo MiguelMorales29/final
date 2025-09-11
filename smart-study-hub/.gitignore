@@ -22,3 +22,10 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/vendor/
+/node_modules/
+/public/storage/
+/public/images/*.png
+/public/images/*.jpg
+/public/images/*.jpeg
+.env
