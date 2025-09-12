@@ -13,7 +13,7 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
         @csrf
         @method('patch')
 
@@ -47,6 +47,66 @@
             @endif
         </div>
 
+        <!-- Profile Picture -->
+        <div>
+            <x-input-label for="profile_picture" :value="__('Profile Picture')" />
+            <div class="mt-2 flex items-center space-x-4">
+                <div class="flex-shrink-0">
+                    <img id="profile-picture-preview" 
+                         src="{{ $user->profile_picture ? asset('storage/' . $user->profile_picture) : asset('images/default-avatar.png') }}" 
+                         alt="Profile Picture" 
+                         class="h-20 w-20 rounded-full object-cover">
+                </div>
+                <div class="flex-1">
+                    <input id="profile_picture" 
+                           name="profile_picture" 
+                           type="file" 
+                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+                           accept="image/*"
+                           onchange="previewImage(this)">
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ __('Upload a profile picture (optional)') }}</p>
+                </div>
+            </div>
+            <x-input-error class="mt-2" :messages="$errors->get('profile_picture')" />
+        </div>
+
+        <!-- Birth Date -->
+        <div>
+            <x-input-label for="birth_date" :value="__('Birth Date')" />
+            <x-text-input id="birth_date" 
+                          name="birth_date" 
+                          type="date" 
+                          class="mt-1 block w-full" 
+                          :value="old('birth_date', $user->birth_date?->format('Y-m-d'))" />
+            <x-input-error class="mt-2" :messages="$errors->get('birth_date')" />
+        </div>
+
+        <!-- Gender -->
+        <div>
+            <x-input-label for="gender" :value="__('Gender')" />
+            <select id="gender" 
+                    name="gender" 
+                    class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                <option value="">{{ __('Select Gender') }}</option>
+                <option value="male" {{ old('gender', $user->gender) == 'male' ? 'selected' : '' }}>{{ __('Male') }}</option>
+                <option value="female" {{ old('gender', $user->gender) == 'female' ? 'selected' : '' }}>{{ __('Female') }}</option>
+                <option value="other" {{ old('gender', $user->gender) == 'other' ? 'selected' : '' }}>{{ __('Other') }}</option>
+                <option value="prefer_not_to_say" {{ old('gender', $user->gender) == 'prefer_not_to_say' ? 'selected' : '' }}>{{ __('Prefer not to say') }}</option>
+            </select>
+            <x-input-error class="mt-2" :messages="$errors->get('gender')" />
+        </div>
+
+        <!-- Bio -->
+        <div>
+            <x-input-label for="bio" :value="__('Bio')" />
+            <textarea id="bio" 
+                      name="bio" 
+                      rows="4" 
+                      class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                      placeholder="{{ __('Tell us about yourself...') }}">{{ old('bio', $user->bio) }}</textarea>
+            <x-input-error class="mt-2" :messages="$errors->get('bio')" />
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 
@@ -61,4 +121,16 @@
             @endif
         </div>
     </form>
+
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-picture-preview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 </section>
