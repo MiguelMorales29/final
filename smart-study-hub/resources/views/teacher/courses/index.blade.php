@@ -1,18 +1,21 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('My Courses') }}
-            </h2>
+<x-teacher-layout>
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">My Courses</h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">Manage your course content and materials</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
             <a href="{{ route('teacher.courses.create') }}" 
-               class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out">
-                + Create Course
+               class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-md transition duration-150 ease-in-out">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Create Course
             </a>
         </div>
-    </x-slot>
+    </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
                     {{ session('success') }}
@@ -87,9 +90,6 @@
                     </a>
                 </div>
             @endif
-        </div>
-    </div>
-
     <!-- Floating Create Button for Mobile -->
     <div class="fixed bottom-6 right-6 md:hidden">
         <a href="{{ route('teacher.courses.create') }}" 
@@ -99,4 +99,4 @@
             </svg>
         </a>
     </div>
-</x-app-layout>
+</x-teacher-layout>

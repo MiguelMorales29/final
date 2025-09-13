@@ -28,6 +28,7 @@ class User extends Authenticatable
         'bio',
         'profile_picture',
         'role',
+        'theme',
     ];
 
     /**

@@ -1,20 +1,19 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center">
-            <a href="{{ route('teacher.courses.index') }}" 
-               class="mr-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-            </a>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Create New Course') }}
-            </h2>
+<x-teacher-layout>
+    <!-- Page Header -->
+    <div class="flex items-center mb-8">
+        <a href="{{ route('teacher.courses.index') }}" 
+           class="mr-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </a>
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Create New Course</h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">Add a new course to your teaching portfolio</p>
         </div>
-    </x-slot>
+    </div>
 
-    <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
             <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8">
                 <form method="POST" action="{{ route('teacher.courses.store') }}" enctype="multipart/form-data" class="space-y-6">
                     @csrf
@@ -77,6 +76,5 @@
                     </div>
                 </form>
             </div>
-        </div>
     </div>
-</x-app-layout>
+</x-teacher-layout>
