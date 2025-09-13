@@ -1,4 +1,4 @@
-<!-- Teacher Top Navigation -->
+<!-- Student Top Navigation -->
 <header id="topbar" class="sticky top-0 z-50 transition-all duration-300 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
     <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
         <!-- Left side - Mobile menu button + Logo -->
@@ -12,7 +12,7 @@
 
             <!-- Logo (hidden on mobile when sidebar is open) -->
             <div class="flex items-center ml-2 lg:ml-0">
-                <a href="{{ route('teacher.dashboard') }}" class="flex items-center hover:opacity-80 transition-opacity duration-200">
+                <a href="{{ route('student.dashboard') }}" class="flex items-center hover:opacity-80 transition-opacity duration-200">
                     <img src="{{ asset('images/sshlogo.png') }}" alt="Smart Study Hub" class="h-8 w-8 rounded-full object-cover">
                     <span class="ml-2 text-xl font-bold text-gray-900 dark:text-white hidden sm:block">Smart Study Hub</span>
                 </a>
@@ -36,7 +36,7 @@
                     <img class="h-8 w-8 rounded-full" src="{{ Auth::user()->profile_picture ? asset('storage/' . Auth::user()->profile_picture) : asset('images/default-avatar.png') }}" alt="{{ Auth::user()->name }}">
                     <div class="hidden sm:block text-left">
                         <p class="text-sm font-medium text-gray-900 dark:text-white">{{ Auth::user()->name }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Teacher</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Student</p>
                     </div>
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>

@@ -21,7 +21,7 @@
     <div class="flex min-h-screen">
         <!-- Sidebar -->
         <aside class="hidden lg:block fixed left-0 top-0 h-screen w-64 bg-white dark:bg-gray-900 shadow-md z-40">
-            <x-teacher-sidebar />
+            <x-student-sidebar />
         </aside>
         
         <!-- Mobile Sidebar Overlay -->
@@ -45,13 +45,13 @@
              x-transition:leave-start="translate-x-0"
              x-transition:leave-end="-translate-x-full"
              class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 shadow-lg lg:hidden">
-            <x-teacher-sidebar />
+            <x-student-sidebar />
         </div>
         
         <!-- Main Content Area -->
         <main class="flex-1 p-6 bg-gray-50 dark:bg-gray-900 lg:ml-64">
             <!-- Top Navigation -->
-            <x-teacher-top-nav />
+            <x-student-top-nav />
             
             <!-- Page Content -->
             <div class="mt-6">

@@ -1,164 +1,466 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Student Dashboard') }}
-        </h2>
-    </x-slot>
+<x-student-layout>
+                {{-- Welcome Section --}}
+                <div class="mt-6 px-5">
+                    <h1 class="text-2xl font-bold">Good morning, {{ $user->name ?? 'Student' }}! 👋</h1>
+                    <p class="text-gray-600 dark:text-gray-300">Ready to continue your learning journey? You have {{ $pendingTasks }} pending tasks.</p>
+                </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Welcome Section -->
-            <div class="mb-8">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Welcome, Student</h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">Here you can browse available courses and view your enrollments.</p>
-            </div>
+                {{-- ===== Styles (optional, for nicer thin scrollbars) ===== --}}
+                <style>
+                  .thin-scrollbar::-webkit-scrollbar{width:8px;height:8px}
+                  .thin-scrollbar::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px}
+                  .thin-scrollbar::-webkit-scrollbar-track{background:transparent}
+                </style>
 
-            <!-- Dashboard Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Available Courses Card -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-8 w-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                {{-- ===== 3-Widget Row ===== --}}
+                <section class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+                  {{-- -------------------- Recent Activity -------------------- --}}
+                  @php
+                    $activityStream = [
+                      ['type'=>'graded','title'=>'Assignment Graded','text'=>'Your essay "Modern Literature Analysis" has been graded: A–','subject'=>'English','time'=>'2 hours ago','new'=>true],
+                      ['type'=>'material','title'=>'New Course Material','text'=>'Chapter 5: Advanced Calculus notes have been uploaded','subject'=>'Mathematics','time'=>'4 hours ago','new'=>true],
+                      ['type'=>'assignment','title'=>'New Assignment','text'=>'Lab Report #3 — Chemical Reactions due next Friday','subject'=>'Science','time'=>'6 hours ago'],
+                      ['type'=>'milestone','title'=>'Course Milestone','text'=>'You completed 75% of Programming Fundamentals','subject'=>'Programming Fundamentals','time'=>'1 day ago'],
+                      ['type'=>'deadline','title'=>'Deadline Reminder','text'=>'Essay Draft due tomorrow (English Literature)','subject'=>'English','time'=>'1 day ago'],
+                      ['type'=>'graded','title'=>'Quiz Graded','text'=>'Algebra Quiz 1 graded: B+','subject'=>'Mathematics','time'=>'2 days ago'],
+                      ['type'=>'material','title'=>'Slides Uploaded','text'=>'Chemistry Lab Week 6 slides uploaded','subject'=>'Science','time'=>'2 days ago'],
+                      ['type'=>'assignment','title'=>'Project Brief','text'=>'Capstone proposal posted','subject'=>'Programming Fundamentals','time'=>'3 days ago'],
+                    ];
+                    
+                    // Icon and color mapping per Figma spec
+                    $activityConfig = [
+                      'graded' => [
+                        'icon' => 'check-circle',
+                        'iconColor' => 'text-green-600',
+                        'dotColor' => 'bg-green-500',
+                        'ariaLabel' => 'Assignment graded'
+                      ],
+                      'material' => [
+                        'icon' => 'document-text',
+                        'iconColor' => 'text-blue-600',
+                        'dotColor' => 'bg-blue-500',
+                        'ariaLabel' => 'New course material'
+                      ],
+                      'assignment' => [
+                        'icon' => 'clipboard-document-list',
+                        'iconColor' => 'text-purple-600',
+                        'dotColor' => 'bg-purple-500',
+                        'ariaLabel' => 'New assignment'
+                      ],
+                      'milestone' => [
+                        'icon' => 'trophy',
+                        'iconColor' => 'text-amber-600',
+                        'dotColor' => 'bg-amber-500',
+                        'ariaLabel' => 'Course milestone'
+                      ],
+                      'deadline' => [
+                        'icon' => 'exclamation-circle',
+                        'iconColor' => 'text-red-600',
+                        'dotColor' => 'bg-red-500',
+                        'ariaLabel' => 'Deadline reminder'
+                      ]
+                    ];
+                    
+                    // Subject chip styling
+                    $subjectChips = [
+                      'English' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-900/40',
+                      'Mathematics' => 'bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:ring-indigo-900/40',
+                      'Science' => 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:ring-sky-900/40',
+                      'Programming Fundamentals' => 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-900/30 dark:text-violet-300 dark:ring-violet-900/40',
+                      'History' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:ring-amber-900/40'
+                    ];
+                  @endphp
+
+                  <div class="h-full rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition">
+                    {{-- Header --}}
+                    <div class="p-5 border-b border-gray-200 dark:border-gray-800">
+                      <h3 class="text-lg font-semibold">Recent Activity</h3>
+                      <p class="text-sm text-gray-500">Latest updates from your courses</p>
+                    </div>
+
+                    {{-- Scrollable Body with fade effect --}}
+                    <div class="relative flex-1 overflow-hidden">
+                      <div class="p-5 overflow-y-auto thin-scrollbar space-y-3" style="max-height:20rem;mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)">
+                        @foreach($activityStream as $i => $a)
+                          @php $config = $activityConfig[$a['type']]; @endphp
+                          <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition {{ $i===0 ? 'bg-gray-50 dark:bg-gray-800/40' : '' }}">
+                            <div class="flex items-start gap-3">
+                              {{-- Heroicon (16px) --}}
+                              <div class="mt-0.5">
+                                @if($config['icon'] === 'check-circle')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                  </svg>
+                                @elseif($config['icon'] === 'document-text')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                  </svg>
+                                @elseif($config['icon'] === 'clipboard-document-list')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                                  </svg>
+                                @elseif($config['icon'] === 'trophy')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                                  </svg>
+                                @elseif($config['icon'] === 'exclamation-circle')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                  </svg>
+                                @endif
+                              </div>
+
+                              <div class="flex-1">
+                                {{-- First line: bold title + optional "New" badge --}}
+                                <div class="flex items-center gap-2">
+                                  <span class="font-semibold text-gray-900 dark:text-white">{{ $a['title'] }}</span>
+                                  @if(!empty($a['new']))
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-blue-600 text-white">
+                                      New
+                                    </span>
+                                  @endif
+                                </div>
+                                
+                                {{-- Second line: supporting text (14px, muted gray) --}}
+                                <p class="text-sm text-gray-700 dark:text-gray-300 mt-1 leading-5">{{ $a['text'] }}</p>
+
+                                {{-- Meta row: subject chip + timestamp --}}
+                                <div class="mt-2 flex flex-wrap items-center gap-3 text-xs">
+                                  <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs ring-1 ring-inset {{ $subjectChips[$a['subject']] ?? 'bg-gray-50 text-gray-700 ring-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:ring-gray-900/40' }}">
+                                    {{ $a['subject'] }}
+                                  </span>
+                                  <span class="text-gray-500 dark:text-gray-400">{{ $a['time'] }}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        @endforeach
+                      </div>
+                    </div>
+
+                    {{-- Footer with inset divider --}}
+                    <div class="border-t border-gray-200 dark:border-gray-800 px-5 py-3">
+                      <a href="#" class="text-indigo-600 text-sm inline-flex items-center gap-1 hover:underline">
+                        View all activity
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                      </a>
+                    </div>
+                  </div>
+
+                  {{-- -------------------- Upcoming Tasks -------------------- --}}
+                  @php
+                    $upcomingTasks = [
+                      ['title'=>'Chemistry Lab Report #3','course'=>'Science','due'=>'Dec 15, 2024','priority'=>'high'],
+                      ['title'=>'Essay Draft','course'=>'English','due'=>'Dec 16, 2024','priority'=>'high'],
+                      ['title'=>'Read Chapter 12–14','course'=>'Mathematics','due'=>'Dec 18, 2024','priority'=>'medium'],
+                      ['title'=>'Problem Set 6','course'=>'Mathematics','due'=>'Dec 20, 2024','priority'=>'low'],
+                      ['title'=>'Vocabulary Quiz','course'=>'English','due'=>'Dec 21, 2024','priority'=>'low'],
+                      ['title'=>'Lab Prep Notes','course'=>'Science','due'=>'Dec 22, 2024','priority'=>'medium'],
+                      ['title'=>'Weekly Reflection','course'=>'English','due'=>'Dec 23, 2024','priority'=>'low'],
+                      ['title'=>'Practice Exam A','course'=>'Mathematics','due'=>'Dec 24, 2024','priority'=>'high'],
+                    ];
+                    $priorityStyle = [
+                      'high'   => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+                      'medium' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+                      'low'    => 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+                    ];
+                  @endphp
+
+                  <div class="h-full rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition">
+                    {{-- Header --}}
+                    <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                      <div>
+                        <h3 class="text-lg font-semibold">Upcoming Tasks</h3>
+                        <p class="text-sm text-gray-500">Your pending assignments</p>
+                      </div>
+                      <span class="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                        {{ count($upcomingTasks) }} pending
+                      </span>
+                    </div>
+
+                    {{-- Scrollable Body with fade effect --}}
+                    <div class="relative flex-1 overflow-hidden">
+                      <div class="p-5 overflow-y-auto thin-scrollbar space-y-3" style="max-height:20rem;mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)">
+                        @foreach($upcomingTasks as $t)
+                          @php
+                            $clockColor = [
+                              'high' => 'text-red-500',
+                              'medium' => 'text-yellow-500', 
+                              'low' => 'text-gray-500'
+                            ][$t['priority']] ?? 'text-gray-500';
+                          @endphp
+                          <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition">
+                            <div class="flex items-start justify-between gap-3">
+                              <div class="flex items-start gap-2">
+                                {{-- color-coded clock icon --}}
+                                <svg class="h-4 w-4 mt-0.5 {{ $clockColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3M12 22a10 10 0 110-20 10 10 0 010 20z"/>
+                                </svg>
+                                <div>
+                                  <div class="font-semibold">{{ $t['title'] }}</div>
+                                  <div class="text-[12px] text-gray-500">{{ $t['course'] }} • Due: {{ $t['due'] }}</div>
+                                </div>
+                              </div>
+                              <span class="text-[11px] px-2 py-0.5 rounded-full {{ $priorityStyle[$t['priority']] }}">{{ $t['priority'] }}</span>
+                            </div>
+                          </div>
+                        @endforeach
+                      </div>
+                    </div>
+
+                    {{-- Footer with inset divider --}}
+                    <div class="border-t border-gray-200 dark:border-gray-800 px-5 py-3">
+                      <a href="#" class="text-indigo-600 text-sm inline-flex items-center gap-1 hover:underline">
+                        View all tasks
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                      </a>
+                    </div>
+                  </div>
+
+                  {{-- -------------------- Calendar -------------------- --}}
+                  @php
+                    $today = now();
+                    $start = $today->copy()->startOfMonth();
+                    $daysInMonth = $start->daysInMonth;
+                    $startDow = $start->dayOfWeek; // 0=Sun
+                    // demo marks: day => type
+                    $calendarMarks = [
+                      8  => 'exam',
+                      13 => 'deadline',
+                      18 => 'exam',
+                      20 => 'assignment',
+                      26 => 'assignment',
+                    ];
+                    $markDot = ['exam'=>'bg-blue-500','assignment'=>'bg-orange-500','deadline'=>'bg-red-500'];
+                  @endphp
+
+                  <div class="h-full rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition flex flex-col">
+                    <div class="p-5 border-b border-gray-200 dark:border-gray-800">
+                      <h3 class="text-lg font-semibold">{{ $start->format('F Y') }}</h3>
+                      <p class="text-sm text-gray-500">Your schedule overview</p>
+                    </div>
+
+                    <div class="p-5 flex-1">
+                      <div class="grid grid-cols-7 text-center text-[11px] text-gray-500 mb-2">
+                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                      </div>
+
+                      <div class="grid grid-cols-7 gap-1 text-sm">
+                        {{-- leading blanks --}}
+                        @for($i=0;$i<$startDow;$i++)
+                          <div class="h-10"></div>
+                        @endfor
+
+                        {{-- days --}}
+                        @for($d=1;$d<=$daysInMonth;$d++)
+                          @php
+                            $isToday = ($today->day==$d && $today->month==$start->month && $today->year==$start->year);
+                            $mark = $calendarMarks[$d] ?? null;
+                          @endphp
+                          <div class="relative h-10 rounded border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800/60 transition">
+                            <span class="{{ $isToday ? 'inline-flex items-center justify-center h-7 w-7 rounded-full bg-indigo-600 text-white' : '' }}">
+                              {{ $d }}
+                            </span>
+                            @if($mark)
+                              <span class="absolute -bottom-1 h-1.5 w-1.5 rounded-full {{ $markDot[$mark] }}"></span>
+                            @endif
+                          </div>
+                        @endfor
+                      </div>
+
+                      {{-- Horizontal legend with "Upcoming" text --}}
+                      <div class="mt-6">
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Upcoming</div>
+                        <div class="flex items-center gap-6 text-sm text-gray-600">
+                          <span class="inline-flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-blue-500"></span> Exams
+                          </span>
+                          <span class="inline-flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-orange-500"></span> Assignments
+                          </span>
+                          <span class="inline-flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-red-500"></span> Deadlines
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {{-- My Courses using homepage images --}}
+                <section class="mt-10">
+                  <div class="flex items-center justify-between px-5">
+                    <h2 class="text-xl font-semibold">My Courses</h2>
+                    <a href="{{ url('/my-courses') }}" class="text-sm text-indigo-600 hover:text-blue-800 dark:hover:text-blue-300 hover:underline">View all courses →</a>
+                  </div>
+
+                  <div class="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+                    @forelse($allCourses as $c)
+                      @if(isset($c['locked']) && $c['locked'])
+                        {{-- Pending/Locked Course Card --}}
+                        <div class="group relative rounded-2xl overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 ease-out">
+                          <div class="relative">
+                            <img src="{{ $c['cover'] }}" alt="{{ $c['title'] }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+                            <div class="absolute inset-0 bg-black/60 group-hover:bg-black/50 transition-colors duration-300"></div>
+                            <div class="absolute inset-0 flex items-center justify-center z-10">
+                              <div class="text-center">
+                                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm mb-2">
+                                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                  </svg>
+                                </div>
+                                <p class="text-white font-medium text-sm">Pending</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="p-5 flex flex-col h-64">
+                            <div class="flex-1 min-h-0">
+                              <h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1">{{ $c['title'] }}</h3>
+                              <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                <span class="inline-flex items-center gap-1">
+                                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 10-6 0 3 3 0 006 0z"/></svg>
+                                  {{ $c['teacher'] }}
+                                </span>
+                                • {{ $c['weeks'] }} weeks
+                              </div>
+                              <div class="mt-3 relative group/desc">
+                                <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{{ Str::limit($c['desc'], 80) }}</p>
+                                @if(strlen($c['desc']) > 80)
+                                  <div class="absolute top-0 right-0 opacity-0 group-hover/desc:opacity-100 transition-opacity duration-200">
+                                    <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-gray-900 px-1 rounded">View More</span>
+                                  </div>
+                                @endif
+                              </div>
+                            </div>
+                            <div class="mt-4 flex-shrink-0">
+                              <div class="h-2 bg-gradient-to-r from-amber-400 to-orange-500 dark:from-amber-500 dark:to-orange-600 rounded"></div>
+                              <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Pending • Awaiting Approval</div>
+                              <button disabled class="mt-3 w-full bg-gradient-to-r from-amber-500 to-orange-600 dark:from-amber-600 dark:to-orange-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 opacity-75 cursor-not-allowed">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Pending Approval
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      @else
+                        {{-- Enrolled Course Card --}}
+                        <div class="group relative rounded-2xl overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 ease-out">
+                          <div class="relative">
+                            <img src="{{ $c['cover'] }}" alt="{{ $c['title'] }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+                            <div class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                Enrolled
+                              </span>
+                            </div>
+                          </div>
+                          <div class="p-5 flex flex-col h-64">
+                            <div class="flex-1 min-h-0">
+                              <h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">{{ $c['title'] }}</h3>
+                              <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                <span class="inline-flex items-center gap-1">
+                                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 10-6 0 3 3 0 006 0z"/></svg>
+                                  {{ $c['teacher'] }}
+                                </span>
+                                • {{ $c['weeks'] }} weeks
+                              </div>
+                              <div class="mt-3 relative group/desc">
+                                <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{{ Str::limit($c['desc'], 80) }}</p>
+                                @if(strlen($c['desc']) > 80)
+                                  <div class="absolute top-0 right-0 opacity-0 group-hover/desc:opacity-100 transition-opacity duration-200">
+                                    <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-gray-900 px-1 rounded">View More</span>
+                                  </div>
+                                @endif
+                              </div>
+                            </div>
+                            <div class="mt-4 flex-shrink-0">
+                              <div class="h-2 bg-gray-200 dark:bg-gray-800 rounded">
+                                <div class="h-2 bg-indigo-600 rounded" style="width: {{ $c['progress'] }}%"></div>
+                              </div>
+                              <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">{{ $c['progress'] }}% complete @if($c['next_due']) • Next due: {{ $c['next_due'] }} @endif</div>
+                              <a href="{{ url('/courses/'.$c['id']) }}" class="mt-3 inline-flex justify-center items-center w-full rounded-lg py-2 font-medium bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200">
+                                Continue Learning
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      @endif
+                    @empty
+                      <div class="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
+                        <svg class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                        <p class="text-lg font-medium mb-2">No courses yet</p>
+                        <p class="text-sm">Start your learning journey by enrolling in courses.</p>
+                        <a href="{{ url('/courses') }}" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50 transition-colors duration-200">
+                          Browse Courses
+                        </a>
+                      </div>
+                    @endforelse
+                  </div>
+                </section>
+
+                {{-- Stats Section --}}
+                <section class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Courses</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $approvedCoursesCount }}</p>
+                            </div>
+                            <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                                <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                 </svg>
                             </div>
-                            <div class="ml-4">
-                                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Available Courses</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Browse and enroll in new courses available to you.</p>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <a href="{{ route('student.courses.browse') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-block">
-                                Browse Courses
-                            </a>
                         </div>
                     </div>
-                </div>
 
-                <!-- My Enrollments Card -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-8 w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Avg. Progress</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $avgProgress }}%</p>
+                            </div>
+                            <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
+                                <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                 </svg>
                             </div>
-                            <div class="ml-4">
-                                <h3 class="text-lg font-medium text-gray-900 dark:text-white">My Enrollments</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">View your enrolled courses and track your progress.</p>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <a href="{{ route('student.courses') }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-block">
-                                View My Courses
-                            </a>
                         </div>
                     </div>
-                </div>
 
-                <!-- Profile Card -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-8 w-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Tasks</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $pendingTasks }}</p>
+                            </div>
+                            <div class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+                                <svg class="h-6 w-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
-                            <div class="ml-4">
-                                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Profile</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Manage your profile information and preferences.</p>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <a href="{{ route('profile.edit') }}" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded inline-block">
-                                Edit Profile
-                            </a>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Quick Actions Section -->
-            <div class="mt-8">
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <button class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-3 px-4 rounded">
-                        Search Courses
-                    </button>
-                    <button class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-3 px-4 rounded">
-                        View Assignments
-                    </button>
-                    <button class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-3 px-4 rounded">
-                        Check Grades
-                    </button>
-                    <button class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-3 px-4 rounded">
-                        Download Materials
-                    </button>
-                </div>
-            </div>
-
-            <!-- Recent Activity Section -->
-            <div class="mt-8">
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="space-y-4">
-                            <div class="flex items-center space-x-3">
-                                <div class="flex-shrink-0">
-                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm text-gray-900 dark:text-white">Successfully enrolled in "Mathematics 101"</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">1 day ago</p>
-                                </div>
+                    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">This Week</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">+12%</p>
                             </div>
-                            <div class="flex items-center space-x-3">
-                                <div class="flex-shrink-0">
-                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm text-gray-900 dark:text-white">Assignment "Quiz 1" submitted</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">2 days ago</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <div class="flex-shrink-0">
-                                    <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm text-gray-900 dark:text-white">New materials available in "Physics 201"</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">3 days ago</p>
-                                </div>
+                            <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                                <svg class="h-6 w-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                </svg>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Course Progress Section -->
-            <div class="mt-8">
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Course Progress</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Mathematics 101</h3>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 75%"></div>
-                        </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">75% Complete</p>
-                    </div>
-                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Physics 201</h3>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                            <div class="bg-green-600 h-2.5 rounded-full" style="width: 45%"></div>
-                        </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">45% Complete</p>
-                    </div>
-                </div>
+                </section>
             </div>
         </div>
     </div>
-</x-app-layout>
+</div>
+</x-student-layout>
