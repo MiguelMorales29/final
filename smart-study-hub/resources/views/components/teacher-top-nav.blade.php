@@ -4,7 +4,7 @@
         <!-- Left side - Mobile menu button + Logo -->
         <div class="flex items-center">
             <!-- Mobile menu button -->
-            <button @click="sidebarOpen = true" class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+            <button @click="sidebarOpen = true" class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
@@ -21,14 +21,8 @@
 
         <!-- Right side - Notifications + Profile -->
         <div class="flex items-center space-x-4">
-            <!-- Notifications -->
-            <button class="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6zM4 5h6V1H4v4zM15 1v6h6V1h-6z"></path>
-                </svg>
-                <!-- Notification badge -->
-                <span class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-            </button>
+            <!-- Notifications dropdown -->
+            <x-notification-dropdown-simple />
 
             <!-- Profile Dropdown -->
             <div class="relative" x-data="{ open: false }">

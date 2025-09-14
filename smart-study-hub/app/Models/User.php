@@ -29,6 +29,7 @@ class User extends Authenticatable
         'profile_picture',
         'role',
         'theme',
+        'student_number',
     ];
 
     /**
@@ -79,5 +80,43 @@ class User extends Authenticatable
         return $this->belongsToMany(Course::class, 'enrollments', 'student_id', 'course_id')
                     ->withPivot('enrolled_at')
                     ->withTimestamps();
+    }
+
+    /**
+     * Get the course applications for the user (student).
+     */
+    public function courseApplications(): HasMany
+    {
+        return $this->hasMany(CourseApplication::class, 'student_id');
+    }
+
+    /**
+     * Get the notifications for the user.
+     */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Get unread notifications for the user.
+     */
+    public function unreadNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->where('read', false);
+    }
+
+    /**
+     * Generate a unique 7-digit student number starting with 2.
+     */
+    public static function generateStudentNumber(): string
+    {
+        do {
+            // Generate 6 random digits after the starting 2
+            $randomDigits = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
+            $studentNumber = '2' . $randomDigits;
+        } while (self::where('student_number', $studentNumber)->exists());
+
+        return $studentNumber;
     }
 }

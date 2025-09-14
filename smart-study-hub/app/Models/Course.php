@@ -11,6 +11,8 @@ class Course extends Model
 {
     protected $fillable = [
         'title',
+        'section',
+        'student_capacity',
         'description',
         'teacher_id',
         'image',
@@ -40,5 +42,21 @@ class Course extends Model
         return $this->belongsToMany(User::class, 'enrollments', 'course_id', 'student_id')
                     ->withPivot('enrolled_at')
                     ->withTimestamps();
+    }
+
+    /**
+     * Get the applications for the course.
+     */
+    public function applications(): HasMany
+    {
+        return $this->hasMany(CourseApplication::class);
+    }
+
+    /**
+     * Get pending applications for the course.
+     */
+    public function pendingApplications(): HasMany
+    {
+        return $this->hasMany(CourseApplication::class)->where('status', 'pending');
     }
 }

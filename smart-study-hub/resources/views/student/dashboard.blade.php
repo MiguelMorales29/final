@@ -1,7 +1,7 @@
 <x-student-layout>
                 {{-- Welcome Section --}}
                 <div class="mt-6 px-5">
-                    <h1 class="text-2xl font-bold">Good morning, {{ $user->name ?? 'Student' }}! 👋</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Good morning, {{ $user->name ?? 'Student' }}! 👋</h1>
                     <p class="text-gray-600 dark:text-gray-300">Ready to continue your learning journey? You have {{ $pendingTasks }} pending tasks.</p>
                 </div>
 
@@ -10,72 +10,88 @@
                   .thin-scrollbar::-webkit-scrollbar{width:8px;height:8px}
                   .thin-scrollbar::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px}
                   .thin-scrollbar::-webkit-scrollbar-track{background:transparent}
+                  .dark .thin-scrollbar::-webkit-scrollbar-thumb{background:#4b5563}
                 </style>
 
                 {{-- ===== 3-Widget Row ===== --}}
                 <section class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
                   {{-- -------------------- Recent Activity -------------------- --}}
                   @php
-                    $activityStream = [
-                      ['type'=>'graded','title'=>'Assignment Graded','text'=>'Your essay "Modern Literature Analysis" has been graded: A–','subject'=>'English','time'=>'2 hours ago','new'=>true],
-                      ['type'=>'material','title'=>'New Course Material','text'=>'Chapter 5: Advanced Calculus notes have been uploaded','subject'=>'Mathematics','time'=>'4 hours ago','new'=>true],
-                      ['type'=>'assignment','title'=>'New Assignment','text'=>'Lab Report #3 — Chemical Reactions due next Friday','subject'=>'Science','time'=>'6 hours ago'],
-                      ['type'=>'milestone','title'=>'Course Milestone','text'=>'You completed 75% of Programming Fundamentals','subject'=>'Programming Fundamentals','time'=>'1 day ago'],
-                      ['type'=>'deadline','title'=>'Deadline Reminder','text'=>'Essay Draft due tomorrow (English Literature)','subject'=>'English','time'=>'1 day ago'],
-                      ['type'=>'graded','title'=>'Quiz Graded','text'=>'Algebra Quiz 1 graded: B+','subject'=>'Mathematics','time'=>'2 days ago'],
-                      ['type'=>'material','title'=>'Slides Uploaded','text'=>'Chemistry Lab Week 6 slides uploaded','subject'=>'Science','time'=>'2 days ago'],
-                      ['type'=>'assignment','title'=>'Project Brief','text'=>'Capstone proposal posted','subject'=>'Programming Fundamentals','time'=>'3 days ago'],
-                    ];
+                    // $activityStream is provided by the controller with both real notifications and demo activities
                     
                     // Icon and color mapping per Figma spec
                     $activityConfig = [
                       'graded' => [
                         'icon' => 'check-circle',
-                        'iconColor' => 'text-green-600',
+                        'iconColor' => 'text-green-600 dark:text-green-400',
                         'dotColor' => 'bg-green-500',
                         'ariaLabel' => 'Assignment graded'
                       ],
                       'material' => [
                         'icon' => 'document-text',
-                        'iconColor' => 'text-blue-600',
+                        'iconColor' => 'text-blue-600 dark:text-blue-400',
                         'dotColor' => 'bg-blue-500',
                         'ariaLabel' => 'New course material'
                       ],
                       'assignment' => [
                         'icon' => 'clipboard-document-list',
-                        'iconColor' => 'text-purple-600',
+                        'iconColor' => 'text-purple-600 dark:text-purple-400',
                         'dotColor' => 'bg-purple-500',
                         'ariaLabel' => 'New assignment'
                       ],
                       'milestone' => [
                         'icon' => 'trophy',
-                        'iconColor' => 'text-amber-600',
+                        'iconColor' => 'text-amber-600 dark:text-amber-400',
                         'dotColor' => 'bg-amber-500',
                         'ariaLabel' => 'Course milestone'
                       ],
                       'deadline' => [
                         'icon' => 'exclamation-circle',
-                        'iconColor' => 'text-red-600',
+                        'iconColor' => 'text-red-600 dark:text-red-400',
                         'dotColor' => 'bg-red-500',
                         'ariaLabel' => 'Deadline reminder'
+                      ],
+                      'course_approved' => [
+                        'icon' => 'check-circle',
+                        'iconColor' => 'text-green-600 dark:text-green-400',
+                        'dotColor' => 'bg-green-500',
+                        'ariaLabel' => 'Course application approved'
+                      ],
+                      'course_rejected' => [
+                        'icon' => 'exclamation-circle',
+                        'iconColor' => 'text-red-600 dark:text-red-400',
+                        'dotColor' => 'bg-red-500',
+                        'ariaLabel' => 'Course application rejected'
+                      ],
+                      'course_application' => [
+                        'icon' => 'document-text',
+                        'iconColor' => 'text-blue-600 dark:text-blue-400',
+                        'dotColor' => 'bg-blue-500',
+                        'ariaLabel' => 'Course application submitted'
+                      ],
+                      'course_dropped' => [
+                        'icon' => 'trash',
+                        'iconColor' => 'text-orange-600 dark:text-orange-400',
+                        'dotColor' => 'bg-orange-500',
+                        'ariaLabel' => 'Removed from course'
                       ]
                     ];
                     
                     // Subject chip styling
                     $subjectChips = [
-                      'English' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-900/40',
-                      'Mathematics' => 'bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:ring-indigo-900/40',
-                      'Science' => 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:ring-sky-900/40',
-                      'Programming Fundamentals' => 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-900/30 dark:text-violet-300 dark:ring-violet-900/40',
-                      'History' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:ring-amber-900/40'
+                      'English' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-200 dark:ring-emerald-900/50',
+                      'Mathematics' => 'bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-200 dark:ring-indigo-900/50',
+                      'Science' => 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/40 dark:text-sky-200 dark:ring-sky-900/50',
+                      'Programming Fundamentals' => 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-900/40 dark:text-violet-200 dark:ring-violet-900/50',
+                      'History' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:ring-amber-900/50'
                     ];
                   @endphp
 
                   <div class="h-full rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition">
                     {{-- Header --}}
                     <div class="p-5 border-b border-gray-200 dark:border-gray-800">
-                      <h3 class="text-lg font-semibold">Recent Activity</h3>
-                      <p class="text-sm text-gray-500">Latest updates from your courses</p>
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">Latest updates from your courses</p>
                     </div>
 
                     {{-- Scrollable Body with fade effect --}}
@@ -107,6 +123,10 @@
                                   <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
                                   </svg>
+                                @elseif($config['icon'] === 'trash')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                  </svg>
                                 @endif
                               </div>
 
@@ -115,7 +135,7 @@
                                 <div class="flex items-center gap-2">
                                   <span class="font-semibold text-gray-900 dark:text-white">{{ $a['title'] }}</span>
                                   @if(!empty($a['new']))
-                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-blue-600 text-white">
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-blue-600 dark:bg-blue-500 text-white">
                                       New
                                     </span>
                                   @endif
@@ -140,7 +160,7 @@
 
                     {{-- Footer with inset divider --}}
                     <div class="border-t border-gray-200 dark:border-gray-800 px-5 py-3">
-                      <a href="#" class="text-indigo-600 text-sm inline-flex items-center gap-1 hover:underline">
+                      <a href="#" class="text-indigo-600 dark:text-indigo-400 text-sm inline-flex items-center gap-1 hover:underline">
                         View all activity
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                       </a>
@@ -160,8 +180,8 @@
                       ['title'=>'Practice Exam A','course'=>'Mathematics','due'=>'Dec 24, 2024','priority'=>'high'],
                     ];
                     $priorityStyle = [
-                      'high'   => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-                      'medium' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+                      'high'   => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200',
+                      'medium' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-200',
                       'low'    => 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
                     ];
                   @endphp
@@ -170,8 +190,8 @@
                     {{-- Header --}}
                     <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                       <div>
-                        <h3 class="text-lg font-semibold">Upcoming Tasks</h3>
-                        <p class="text-sm text-gray-500">Your pending assignments</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Tasks</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Your pending assignments</p>
                       </div>
                       <span class="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
                         {{ count($upcomingTasks) }} pending
@@ -184,10 +204,10 @@
                         @foreach($upcomingTasks as $t)
                           @php
                             $clockColor = [
-                              'high' => 'text-red-500',
-                              'medium' => 'text-yellow-500', 
-                              'low' => 'text-gray-500'
-                            ][$t['priority']] ?? 'text-gray-500';
+                              'high' => 'text-red-500 dark:text-red-400',
+                              'medium' => 'text-yellow-500 dark:text-yellow-400', 
+                              'low' => 'text-gray-500 dark:text-gray-400'
+                            ][$t['priority']] ?? 'text-gray-500 dark:text-gray-400';
                           @endphp
                           <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition">
                             <div class="flex items-start justify-between gap-3">
@@ -197,8 +217,8 @@
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3M12 22a10 10 0 110-20 10 10 0 010 20z"/>
                                 </svg>
                                 <div>
-                                  <div class="font-semibold">{{ $t['title'] }}</div>
-                                  <div class="text-[12px] text-gray-500">{{ $t['course'] }} • Due: {{ $t['due'] }}</div>
+                                  <div class="font-semibold text-gray-900 dark:text-white">{{ $t['title'] }}</div>
+                                  <div class="text-[12px] text-gray-500 dark:text-gray-400">{{ $t['course'] }} • Due: {{ $t['due'] }}</div>
                                 </div>
                               </div>
                               <span class="text-[11px] px-2 py-0.5 rounded-full {{ $priorityStyle[$t['priority']] }}">{{ $t['priority'] }}</span>
@@ -210,7 +230,7 @@
 
                     {{-- Footer with inset divider --}}
                     <div class="border-t border-gray-200 dark:border-gray-800 px-5 py-3">
-                      <a href="#" class="text-indigo-600 text-sm inline-flex items-center gap-1 hover:underline">
+                      <a href="#" class="text-indigo-600 dark:text-indigo-400 text-sm inline-flex items-center gap-1 hover:underline">
                         View all tasks
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                       </a>
@@ -236,12 +256,12 @@
 
                   <div class="h-full rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition flex flex-col">
                     <div class="p-5 border-b border-gray-200 dark:border-gray-800">
-                      <h3 class="text-lg font-semibold">{{ $start->format('F Y') }}</h3>
-                      <p class="text-sm text-gray-500">Your schedule overview</p>
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $start->format('F Y') }}</h3>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">Your schedule overview</p>
                     </div>
 
                     <div class="p-5 flex-1">
-                      <div class="grid grid-cols-7 text-center text-[11px] text-gray-500 mb-2">
+                      <div class="grid grid-cols-7 text-center text-[11px] text-gray-500 dark:text-gray-400 mb-2">
                         <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                       </div>
 
@@ -258,7 +278,7 @@
                             $mark = $calendarMarks[$d] ?? null;
                           @endphp
                           <div class="relative h-10 rounded border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800/60 transition">
-                            <span class="{{ $isToday ? 'inline-flex items-center justify-center h-7 w-7 rounded-full bg-indigo-600 text-white' : '' }}">
+                            <span class="text-gray-900 dark:text-gray-100 {{ $isToday ? 'inline-flex items-center justify-center h-7 w-7 rounded-full bg-indigo-600 text-white' : '' }}">
                               {{ $d }}
                             </span>
                             @if($mark)
@@ -271,7 +291,7 @@
                       {{-- Horizontal legend with "Upcoming" text --}}
                       <div class="mt-6">
                         <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Upcoming</div>
-                        <div class="flex items-center gap-6 text-sm text-gray-600">
+                        <div class="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-300">
                           <span class="inline-flex items-center gap-2">
                             <span class="h-2 w-2 rounded-full bg-blue-500"></span> Exams
                           </span>
@@ -290,14 +310,17 @@
                 {{-- My Courses using homepage images --}}
                 <section class="mt-10">
                   <div class="flex items-center justify-between px-5">
-                    <h2 class="text-xl font-semibold">My Courses</h2>
-                    <a href="{{ url('/my-courses') }}" class="text-sm text-indigo-600 hover:text-blue-800 dark:hover:text-blue-300 hover:underline">View all courses →</a>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">My Courses</h2>
+                    <a href="{{ url('/my-courses') }}" class="text-sm text-indigo-600 hover:text-blue-800 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline">View all courses →</a>
                   </div>
 
-                  <div class="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
-                    @forelse($allCourses as $c)
+                  {{-- Container with overflow cut effect --}}
+                  <div class="mt-6 relative">
+                    {{-- Main grid with 3x3 layout --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+                      @forelse(array_slice($allCourses, 0, 9) as $index => $c)
                       @if(isset($c['locked']) && $c['locked'])
-                        {{-- Pending/Locked Course Card --}}
+                        {{-- Pending/Rejected/Locked Course Card --}}
                         <div class="group relative rounded-2xl overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 ease-out">
                           <div class="relative">
                             <img src="{{ $c['cover'] }}" alt="{{ $c['title'] }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
@@ -305,11 +328,35 @@
                             <div class="absolute inset-0 flex items-center justify-center z-10">
                               <div class="text-center">
                                 <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm mb-2">
-                                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                  </svg>
+                                  @if(isset($c['status']) && $c['status'] === 'pending')
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                  @elseif(isset($c['status']) && $c['status'] === 'rejected')
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                  @elseif(isset($c['status']) && $c['status'] === 'dropped')
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                  @else
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                  @endif
                                 </div>
-                                <p class="text-white font-medium text-sm">Pending</p>
+                                <p class="text-white font-medium text-sm">
+                                  @if(isset($c['status']) && $c['status'] === 'pending')
+                                    Pending
+                                  @elseif(isset($c['status']) && $c['status'] === 'rejected')
+                                    Rejected
+                                  @elseif(isset($c['status']) && $c['status'] === 'dropped')
+                                    Dropped
+                                  @else
+                                    Locked
+                                  @endif
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -333,14 +380,74 @@
                               </div>
                             </div>
                             <div class="mt-4 flex-shrink-0">
-                              <div class="h-2 bg-gradient-to-r from-amber-400 to-orange-500 dark:from-amber-500 dark:to-orange-600 rounded"></div>
-                              <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Pending • Awaiting Approval</div>
-                              <button disabled class="mt-3 w-full bg-gradient-to-r from-amber-500 to-orange-600 dark:from-amber-600 dark:to-orange-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 opacity-75 cursor-not-allowed">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Pending Approval
-                              </button>
+                              @if(isset($c['status']) && $c['status'] === 'pending')
+                                <div class="h-2 bg-gradient-to-r from-yellow-400 to-amber-500 dark:from-yellow-500 dark:to-amber-600 rounded"></div>
+                                <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Pending • Awaiting Approval</div>
+                                <button disabled class="mt-3 w-full bg-gradient-to-r from-yellow-500 to-amber-600 dark:from-yellow-600 dark:to-amber-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 opacity-75 cursor-not-allowed">
+                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                  </svg>
+                                  Pending Approval
+                                </button>
+                              @elseif(isset($c['status']) && $c['status'] === 'rejected')
+                                <div class="h-2 bg-gradient-to-r from-red-400 to-red-500 dark:from-red-500 dark:to-red-600 rounded"></div>
+                                <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Rejected • Application Denied</div>
+                                <div class="mt-3 flex gap-2">
+                                  <form method="POST" action="{{ route('courses.apply', $c['id']) }}" class="flex-1">
+                                    @csrf
+                                    <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 transition-all duration-200">
+                                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                      </svg>
+                                      Apply Again
+                                    </button>
+                                  </form>
+                                  @if(isset($c['application_id']))
+                                    <form method="POST" action="{{ route('applications.remove', $c['application_id']) }}" class="flex-1">
+                                      @csrf
+                                      @method('DELETE')
+                                      <button type="submit" class="w-full bg-gradient-to-r from-gray-500 to-gray-600 dark:from-gray-600 dark:to-gray-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-gray-600 hover:to-gray-700 dark:hover:from-gray-700 dark:hover:to-gray-800 transition-all duration-200" onclick="return confirm('Remove this course from your view? You can reapply after 24 hours.')">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                        Remove
+                                      </button>
+                                    </form>
+                                  @endif
+                                </div>
+                              @elseif(isset($c['status']) && $c['status'] === 'dropped')
+                                <div class="h-2 bg-gradient-to-r from-orange-400 to-orange-500 dark:from-orange-500 dark:to-orange-600 rounded"></div>
+                                <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Dropped • Removed by Teacher</div>
+                                <div class="mt-3 flex gap-2">
+                                  <button disabled class="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 opacity-75 cursor-not-allowed">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    Dropped
+                                  </button>
+                                  @if(isset($c['application_id']))
+                                    <form method="POST" action="{{ route('applications.remove', $c['application_id']) }}" class="flex-1">
+                                      @csrf
+                                      @method('DELETE')
+                                      <button type="submit" class="w-full bg-gradient-to-r from-gray-500 to-gray-600 dark:from-gray-600 dark:to-gray-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-gray-600 hover:to-gray-700 dark:hover:from-gray-700 dark:hover:to-gray-800 transition-all duration-200" onclick="return confirm('Remove this course from your view? You can reapply after 24 hours.')">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                        Remove
+                                      </button>
+                                    </form>
+                                  @endif
+                                </div>
+                              @else
+                                <div class="h-2 bg-gradient-to-r from-gray-400 to-gray-500 dark:from-gray-500 dark:to-gray-600 rounded"></div>
+                                <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Locked • Coming Soon</div>
+                                <button disabled class="mt-3 w-full bg-gradient-to-r from-gray-500 to-gray-600 dark:from-gray-600 dark:to-gray-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 opacity-75 cursor-not-allowed">
+                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                  </svg>
+                                  Coming Soon
+                                </button>
+                              @endif
                             </div>
                           </div>
                         </div>
@@ -350,7 +457,7 @@
                           <div class="relative">
                             <img src="{{ $c['cover'] }}" alt="{{ $c['title'] }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
                             <div class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200">
                                 Enrolled
                               </span>
                             </div>
@@ -386,18 +493,41 @@
                           </div>
                         </div>
                       @endif
-                    @empty
-                      <div class="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
-                        <svg class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                        </svg>
-                        <p class="text-lg font-medium mb-2">No courses yet</p>
-                        <p class="text-sm">Start your learning journey by enrolling in courses.</p>
-                        <a href="{{ url('/courses') }}" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50 transition-colors duration-200">
-                          Browse Courses
+                      @empty
+                        <div class="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
+                          <svg class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                          </svg>
+                          <p class="text-lg font-medium mb-2 text-gray-900 dark:text-white">No courses yet</p>
+                          <p class="text-sm text-gray-600 dark:text-gray-300">Start your learning journey by enrolling in courses.</p>
+                          <a href="{{ url('/courses') }}" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50 transition-colors duration-200">
+                            Browse Courses
+                          </a>
+                        </div>
+                      @endforelse
+                    </div>
+                    
+                    {{-- Cut overflow effect for third row --}}
+                    @if(count($allCourses) > 6)
+                      <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-gray-900 via-white/80 dark:via-gray-900/80 to-transparent pointer-events-none"></div>
+                    @endif
+                    
+                    {{-- View More button - always show if there are courses --}}
+                    @if(count($allCourses) > 0)
+                      <div class="mt-8 text-center">
+                        <a href="{{ url('/my-courses') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                          </svg>
+                          View All My Courses
+                          @if(count($allCourses) > 9)
+                            <span class="ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs font-semibold">
+                              +{{ count($allCourses) - 9 }}
+                            </span>
+                          @endif
                         </a>
                       </div>
-                    @endforelse
+                    @endif
                   </div>
                 </section>
 

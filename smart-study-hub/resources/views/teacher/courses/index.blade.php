@@ -52,7 +52,7 @@
                                 </p>
                                 
                                 <div class="flex gap-2 flex-wrap">
-                                    <a href="{{ route('teacher.course.students', $course->id) }}" 
+                                    <a href="{{ route('teacher.course.enrolled', $course) }}" 
                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-150 ease-in-out flex-1 text-center">
                                         Students ({{ $course->enrollments()->count() }})
                                     </a>

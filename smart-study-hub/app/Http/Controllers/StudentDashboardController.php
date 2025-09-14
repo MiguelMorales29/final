@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\CourseApplication;
+use App\Models\Notification;
 
 class StudentDashboardController extends Controller
 {
@@ -84,11 +86,93 @@ class StudentDashboardController extends Controller
             ],
         ];
         
-        // Combine enrolled and locked courses
-        $allCourses = array_merge($myCourses, $lockedCourses);
+        // Get application data
+        // Get applications that are NOT removed (cooldown_until is null)
+        $applications = $user->courseApplications()
+            ->with('course')
+            ->whereNull('cooldown_until')
+            ->get();
+            
+        $pendingApplications = $applications->where('status', 'pending');
+        $rejectedApplications = $applications->where('status', 'rejected');
+        $approvedApplications = $applications->where('status', 'approved');
+        $droppedApplications = $applications->where('status', 'dropped');
         
-        $approvedCoursesCount = count($myCourses);
-        $avgProgress = $approvedCoursesCount ? intval(collect($myCourses)->avg('progress')) : 0;
+        // Add approved courses to enrolled courses (these should show as enrolled)
+        $approvedCourses = [];
+        foreach ($approvedApplications as $application) {
+            $approvedCourses[] = [
+                'id' => $application->course->id,
+                'title' => $application->course->title,
+                'teacher' => $application->course->teacher->name,
+                'weeks' => 12, // Default value
+                'cover' => $application->course->image ? asset('storage/' . $application->course->image) : asset('images/default-course.png'),
+                'desc' => $application->course->description,
+                'progress' => 0, // New course, no progress yet
+                'next_due' => null,
+                'locked' => false, // This is an enrolled course
+                'status' => 'enrolled',
+            ];
+        }
+        
+        // Add pending courses to locked courses
+        $pendingCourses = [];
+        foreach ($pendingApplications as $application) {
+            $pendingCourses[] = [
+                'id' => $application->course->id,
+                'title' => $application->course->title,
+                'teacher' => $application->course->teacher->name,
+                'weeks' => 12, // Default value
+                'cover' => $application->course->image ? asset('storage/' . $application->course->image) : asset('images/default-course.png'),
+                'desc' => $application->course->description,
+                'progress' => 0,
+                'next_due' => null,
+                'locked' => true,
+                'status' => 'pending',
+            ];
+        }
+        
+        // Add rejected courses
+        $rejectedCourses = [];
+        foreach ($rejectedApplications as $application) {
+            $rejectedCourses[] = [
+                'id' => $application->course->id,
+                'title' => $application->course->title,
+                'teacher' => $application->course->teacher->name,
+                'weeks' => 12, // Default value
+                'cover' => $application->course->image ? asset('storage/' . $application->course->image) : asset('images/default-course.png'),
+                'desc' => $application->course->description,
+                'progress' => 0,
+                'next_due' => null,
+                'locked' => true,
+                'status' => 'rejected',
+                'application_id' => $application->id,
+            ];
+        }
+        
+        // Add dropped courses
+        $droppedCourses = [];
+        foreach ($droppedApplications as $application) {
+            $droppedCourses[] = [
+                'id' => $application->course->id,
+                'title' => $application->course->title,
+                'teacher' => $application->course->teacher->name,
+                'weeks' => 12, // Default value
+                'cover' => $application->course->image ? asset('storage/' . $application->course->image) : asset('images/default-course.png'),
+                'desc' => $application->course->description,
+                'progress' => 0,
+                'next_due' => null,
+                'locked' => true,
+                'status' => 'dropped',
+                'application_id' => $application->id,
+            ];
+        }
+        
+        // Combine enrolled, approved, locked, pending, rejected, and dropped courses
+        $allCourses = array_merge($myCourses, $approvedCourses, $lockedCourses, $pendingCourses, $rejectedCourses, $droppedCourses);
+        
+        $approvedCoursesCount = count($myCourses) + count($approvedCourses);
+        $avgProgress = $approvedCoursesCount ? intval(collect(array_merge($myCourses, $approvedCourses))->avg('progress')) : 0;
 
         // Extended upcoming tasks for scrolling demo
         $upcomingTasks = [
@@ -104,17 +188,51 @@ class StudentDashboardController extends Controller
         ];
         $pendingTasks = count($upcomingTasks);
 
-        // Extended activity stream for scrolling demo
-        $activityStream = [
-            ['type' => 'grade', 'text' => 'Assignment graded: "Modern Literature Analysis" – A', 'time' => '2 hours ago', 'tag' => 'English'],
-            ['type' => 'material', 'text' => 'New notes uploaded: "Advanced Calculus – Ch. 5"', 'time' => '4 hours ago', 'tag' => 'Mathematics'],
-            ['type' => 'assignment', 'text' => 'New assignment released: "Physics Lab Report"', 'time' => '1 day ago', 'tag' => 'Science'],
-            ['type' => 'grade', 'text' => 'Quiz graded: "World War II Timeline" – B+', 'time' => '2 days ago', 'tag' => 'History'],
-            ['type' => 'material', 'text' => 'Lecture recording posted: "Organic Chemistry"', 'time' => '3 days ago', 'tag' => 'Science'],
-            ['type' => 'assignment', 'text' => 'Assignment due: "Filipino Essay"', 'time' => '4 days ago', 'tag' => 'Filipino'],
-            ['type' => 'grade', 'text' => 'Exam graded: "Linear Algebra" – A-', 'time' => '5 days ago', 'tag' => 'Mathematics'],
-            ['type' => 'material', 'text' => 'Study guide uploaded: "Shakespeare Analysis"', 'time' => '1 week ago', 'tag' => 'English'],
+        // Get recent notifications and convert to activity stream format
+        $recentNotifications = $user->notifications()
+            ->orderBy('created_at', 'desc')
+            ->limit(8)
+            ->get();
+        
+        // Convert notifications to activity stream format
+        $notificationActivities = $recentNotifications->map(function ($notification) {
+            $type = $notification->type;
+            $timeAgo = $notification->created_at->diffForHumans();
+            
+            // Extract course name from data if available
+            $courseName = 'Course';
+            if ($notification->data && isset($notification->data['course_id'])) {
+                $course = \App\Models\Course::find($notification->data['course_id']);
+                if ($course) {
+                    $courseName = $course->title;
+                }
+            }
+            
+            return [
+                'type' => $type,
+                'title' => $notification->title,
+                'text' => $notification->message,
+                'time' => $timeAgo,
+                'subject' => $courseName,
+                'new' => !$notification->read,
+                'notification_id' => $notification->id,
+            ];
+        })->toArray();
+        
+        // Fallback demo activities if no notifications
+        $demoActivities = [
+            ['type' => 'graded', 'title' => 'Assignment Graded', 'text' => 'Assignment graded: "Modern Literature Analysis" – A', 'time' => '2 hours ago', 'subject' => 'English', 'new' => false],
+            ['type' => 'material', 'title' => 'New Material', 'text' => 'New notes uploaded: "Advanced Calculus – Ch. 5"', 'time' => '4 hours ago', 'subject' => 'Mathematics', 'new' => false],
+            ['type' => 'assignment', 'title' => 'New Assignment', 'text' => 'New assignment released: "Physics Lab Report"', 'time' => '1 day ago', 'subject' => 'Science', 'new' => false],
+            ['type' => 'graded', 'title' => 'Quiz Graded', 'text' => 'Quiz graded: "World War II Timeline" – B+', 'time' => '2 days ago', 'subject' => 'History', 'new' => false],
+            ['type' => 'material', 'title' => 'Lecture Recording', 'text' => 'Lecture recording posted: "Organic Chemistry"', 'time' => '3 days ago', 'subject' => 'Science', 'new' => false],
+            ['type' => 'assignment', 'title' => 'Assignment Due', 'text' => 'Assignment due: "Filipino Essay"', 'time' => '4 days ago', 'subject' => 'Filipino', 'new' => false],
+            ['type' => 'graded', 'title' => 'Exam Graded', 'text' => 'Exam graded: "Linear Algebra" – A-', 'time' => '5 days ago', 'subject' => 'Mathematics', 'new' => false],
+            ['type' => 'material', 'title' => 'Study Guide', 'text' => 'Study guide uploaded: "Shakespeare Analysis"', 'time' => '1 week ago', 'subject' => 'English', 'new' => false],
         ];
+        
+        // Combine real notifications with demo activities for a rich activity stream
+        $activityStream = array_merge($notificationActivities, $demoActivities);
 
         // Extended calendar markers for demo
         $calendarMarks = [
@@ -127,6 +245,14 @@ class StudentDashboardController extends Controller
             date('Y-m-') . '28' => 'deadline',
         ];
 
+        // Get recent notifications for the notification dropdown
+        $recentNotifications = $user->notifications()
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+        
+        $unreadCount = $user->unreadNotifications()->count();
+
         return view('student.dashboard', compact(
             'user',
             'homepageCourses',
@@ -137,7 +263,9 @@ class StudentDashboardController extends Controller
             'upcomingTasks',
             'pendingTasks',
             'activityStream',
-            'calendarMarks'
+            'calendarMarks',
+            'recentNotifications',
+            'unreadCount'
         ));
     }
 }

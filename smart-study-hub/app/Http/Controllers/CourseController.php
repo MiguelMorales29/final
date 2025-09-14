@@ -35,12 +35,16 @@ class CourseController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
+            'section' => 'nullable|string|max:50',
+            'student_capacity' => 'required|integer|min:1|max:200',
             'description' => 'required|string|max:1000',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $data = [
             'title' => $request->title,
+            'section' => $request->section,
+            'student_capacity' => $request->student_capacity,
             'description' => $request->description,
         ];
 
@@ -81,12 +85,16 @@ class CourseController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
+            'section' => 'nullable|string|max:50',
+            'student_capacity' => 'required|integer|min:1|max:200',
             'description' => 'required|string|max:1000',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $data = [
             'title' => $request->title,
+            'section' => $request->section,
+            'student_capacity' => $request->student_capacity,
             'description' => $request->description,
         ];
 

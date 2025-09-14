@@ -35,6 +35,38 @@
                     </div>
 
                     <div>
+                        <label for="section" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Section
+                        </label>
+                        <input type="text" 
+                               id="section" 
+                               name="section" 
+                               value="{{ old('section') }}"
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('section') border-red-500 @enderror"
+                               placeholder="Enter section (e.g., A, B, 1, 2, etc.)">
+                        @error('section')
+                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="student_capacity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Student Capacity
+                        </label>
+                        <input type="number" 
+                               id="student_capacity" 
+                               name="student_capacity" 
+                               value="{{ old('student_capacity', 30) }}"
+                               min="1"
+                               max="200"
+                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('student_capacity') border-red-500 @enderror"
+                               placeholder="Enter maximum number of students">
+                        @error('student_capacity')
+                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
                         <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Course Description
                         </label>
