@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\ArchivedApplicationsController;
+use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\CourseApplicationController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseListingController;
@@ -9,8 +10,12 @@ use App\Http\Controllers\EnrolledController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StudentAssignmentController;
 use App\Http\Controllers\StudentDashboardController;
+use App\Http\Controllers\StudentModuleController;
 use App\Http\Controllers\TeacherDashboardController;
+use App\Models\Course;
+use App\Models\CourseWeek;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -32,9 +37,36 @@ Route::middleware(['auth', 'verified', 'role:teacher'])->group(function () {
     Route::get('/teacher/courses', [CourseController::class, 'index'])->name('teacher.courses.index');
     Route::get('/teacher/courses/create', [CourseController::class, 'create'])->name('teacher.courses.create');
     Route::post('/teacher/courses', [CourseController::class, 'store'])->name('teacher.courses.store');
+    Route::get('/teacher/courses/{course}', [CourseController::class, 'show'])->name('teacher.courses.show');
     Route::get('/teacher/courses/{course}/edit', [CourseController::class, 'edit'])->name('teacher.courses.edit');
     Route::put('/teacher/courses/{course}', [CourseController::class, 'update'])->name('teacher.courses.update');
     Route::delete('/teacher/courses/{course}', [CourseController::class, 'destroy'])->name('teacher.courses.destroy');
+    
+        // Teacher material management routes
+        Route::get('/teacher/upload-materials', [CourseController::class, 'selectCourseForUpload'])->name('teacher.upload-materials.select');
+        Route::get('/teacher/courses/{course}/upload-materials', [CourseController::class, 'uploadMaterials'])->name('teacher.upload-materials');
+        Route::post('/teacher/courses/{course}/materials', [CourseController::class, 'storeMaterial'])->name('teacher.materials.store');
+        Route::get('/teacher/courses/{course}/materials/{material}/edit', [CourseController::class, 'editMaterial'])->name('teacher.materials.edit');
+        Route::get('/teacher/materials/{material}/edit-data', [CourseController::class, 'getMaterialEditData'])->name('teacher.materials.edit-data');
+        Route::get('/teacher/terms/{term}/weeks', [CourseController::class, 'getTermWeeks'])->name('teacher.terms.weeks');
+        Route::put('/teacher/courses/{course}/materials/{material}', [CourseController::class, 'updateMaterial'])->name('teacher.materials.update');
+        Route::post('/teacher/materials/{material}', [CourseController::class, 'updateMaterialAjax'])->name('teacher.materials.update-ajax');
+        Route::delete('/teacher/courses/{course}/materials/{material}', [CourseController::class, 'deleteMaterial'])->name('teacher.materials.delete');
+        
+        // Teacher assignment management routes
+        Route::get('/teacher/assignments', [AssignmentController::class, 'index'])->name('teacher.assignments.index');
+        Route::get('/teacher/assignments/select-course', [AssignmentController::class, 'selectCourse'])->name('teacher.assignments.select-course');
+Route::get('/teacher/courses/{course}/assignments', [AssignmentController::class, 'courseAssignments'])->name('teacher.course.assignments');
+Route::get('/teacher/courses/{course}/assignments/create', [AssignmentController::class, 'create'])->name('teacher.assignments.create');
+Route::get('/teacher/courses/{course}/assignments/preview', [AssignmentController::class, 'assignmentsPreview'])->name('teacher.course.assignments.preview');
+        Route::get('/teacher/assignments/{assignment}/edit-data', [AssignmentController::class, 'getAssignmentEditData'])->name('teacher.assignments.edit-data');
+        Route::post('/teacher/assignments', [AssignmentController::class, 'store'])->name('teacher.assignments.store');
+        Route::get('/teacher/assignments/{assignment}', [AssignmentController::class, 'show'])->name('teacher.assignments.show');
+        Route::get('/teacher/assignments/{assignment}/edit', [AssignmentController::class, 'edit'])->name('teacher.assignments.edit');
+        Route::put('/teacher/assignments/{assignment}', [AssignmentController::class, 'update'])->name('teacher.assignments.update');
+        Route::delete('/teacher/assignments/{assignment}', [AssignmentController::class, 'destroy'])->name('teacher.assignments.destroy');
+        Route::post('/teacher/assignments/{assignment}/submissions/{submission}/grade', [AssignmentController::class, 'grade'])->name('teacher.assignments.grade');
+        Route::get('/teacher/courses/{course}/weeks', [AssignmentController::class, 'getWeeks'])->name('teacher.assignments.weeks');
     
     // Teacher enrollment management
     Route::get('/teacher/courses/{id}/students', [EnrollmentController::class, 'courseStudents'])->name('teacher.course.students');
@@ -67,6 +99,7 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     
     // Student course browsing and enrollment
     Route::get('/courses', [CourseListingController::class, 'index'])->name('student.courses.browse');
+    Route::get('/courses/{course}', [CourseController::class, 'showForStudent'])->name('student.course.show');
     Route::post('/courses/{id}/enroll', [EnrollmentController::class, 'store'])->name('enroll');
     Route::delete('/courses/{id}/unenroll', [EnrollmentController::class, 'destroy'])->name('unenroll');
     Route::get('/my-courses', [EnrollmentController::class, 'myCourses'])->name('student.courses');
@@ -74,6 +107,18 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     // Student course applications
     Route::post('/courses/{course}/apply', [CourseApplicationController::class, 'apply'])->name('courses.apply');
     Route::delete('/applications/{application}/remove', [CourseApplicationController::class, 'removeFromView'])->name('applications.remove');
+    
+        // Student modules route
+        Route::get('/student/modules', [StudentModuleController::class, 'index'])->name('student.modules.index');
+        Route::get('/student/materials/{material}', [StudentModuleController::class, 'showMaterial'])->name('student.materials.show');
+        Route::get('/student/courses/{course}/materials', [StudentModuleController::class, 'allMaterials'])->name('student.course.all-materials');
+        Route::get('/student/courses/{course}/assignments', [StudentModuleController::class, 'allAssignments'])->name('student.course.all-assignments');
+    
+    // Student assignment routes
+    Route::get('/student/assignments', [StudentAssignmentController::class, 'index'])->name('student.assignments.index');
+    Route::get('/student/assignments/{assignment}', [StudentAssignmentController::class, 'show'])->name('student.assignments.show');
+    Route::post('/student/assignments/{assignment}/submit', [StudentAssignmentController::class, 'submit'])->name('student.assignments.submit');
+    Route::delete('/student/assignments/{assignment}/submission', [StudentAssignmentController::class, 'destroy'])->name('student.assignments.destroy');
 });
 
 // Legacy dashboard route (redirects based on role)
@@ -103,5 +148,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('api.notifications.unread-count');
     Route::get('/api/notifications/recent', [NotificationController::class, 'recent'])->name('api.notifications.recent');
 });
+
+// Model binding
+Route::model('course', Course::class);
+Route::model('week', CourseWeek::class);
 
 require __DIR__.'/auth.php';

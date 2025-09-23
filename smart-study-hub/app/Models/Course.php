@@ -59,4 +59,44 @@ class Course extends Model
     {
         return $this->hasMany(CourseApplication::class)->where('status', 'pending');
     }
+
+    /**
+     * Get the terms for the course.
+     */
+    public function terms(): HasMany
+    {
+        return $this->hasMany(CourseTerm::class)->orderBy('order');
+    }
+
+    /**
+     * Get the sub-terms for the course.
+     */
+    public function subTerms(): HasMany
+    {
+        return $this->hasMany(CourseSubTerm::class)->orderBy('order');
+    }
+
+    /**
+     * Get the weeks for the course.
+     */
+    public function weeks(): HasMany
+    {
+        return $this->hasMany(CourseWeek::class)->orderBy('week_number');
+    }
+
+    /**
+     * Get the materials for the course.
+     */
+    public function materials(): HasMany
+    {
+        return $this->hasMany(CourseMaterial::class)->orderBy('order');
+    }
+
+    /**
+     * Get the assignments for the course.
+     */
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class)->orderBy('created_at', 'desc');
+    }
 }

@@ -110,6 +110,7 @@
         @endphp
 
         @if($allCourses->count() > 0)
+            <!-- Course Cards Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
                 @foreach($allCourses as $c)
                     @if($c['status'] === 'pending')
@@ -332,7 +333,7 @@
                                         <div class="h-2 bg-indigo-600 rounded" style="width: {{ $c['progress'] }}%"></div>
                                     </div>
                                     <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">{{ $c['progress'] }}% complete @if($c['next_due']) • Next due: {{ $c['next_due'] }} @endif</div>
-                                    <a href="{{ url('/courses/'.$c['id']) }}" class="mt-3 inline-flex justify-center items-center w-full rounded-lg py-2 font-medium bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200">
+                                    <a href="{{ route('student.course.show', $c['id']) }}" class="mt-3 inline-flex justify-center items-center w-full rounded-lg py-2 font-medium bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200">
                                         Continue Learning
                                     </a>
                                 </div>
@@ -341,6 +342,183 @@
                     @endif
                 @endforeach
             </div>
+
+            <!-- Collapsible Course Structure View -->
+            @php
+                $enrolledCourses = $allCourses->where('status', 'enrolled')->where('locked', false);
+            @endphp
+            
+            @if($enrolledCourses->count() > 0)
+                <div class="mt-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Course Structure & Materials</h2>
+                    <div class="space-y-6" x-data="{ openCourses: {} }">
+                        @foreach($enrolledCourses as $courseData)
+                            @php
+                                $course = \App\Models\Course::with(['terms.subTerms.weeks.materials'])->find($courseData['id']);
+                            @endphp
+                            @if($course)
+                                <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
+                                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-4">
+                                                @if($course->image)
+                                                    <img src="{{ Storage::url($course->image) }}" 
+                                                         alt="{{ $course->title }}" 
+                                                         class="w-16 h-16 object-cover rounded-lg">
+                                                @else
+                                                    <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                                        </svg>
+                                                    </div>
+                                                @endif
+                                                <div>
+                                                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ $course->title }}</h3>
+                                                    <p class="text-gray-600 dark:text-gray-400">{{ $course->teacher->name }}</p>
+                                                </div>
+                                            </div>
+                                            <button @click="openCourses['{{ $course->id }}'] = !openCourses['{{ $course->id }}']" 
+                                                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                                                <svg class="w-6 h-6 transition-transform duration-200" 
+                                                     :class="{ 'rotate-180': openCourses['{{ $course->id }}'] }" 
+                                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div x-show="openCourses['{{ $course->id }}']" 
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0 transform scale-95"
+                                         x-transition:enter-end="opacity-100 transform scale-100"
+                                         x-transition:leave="transition ease-in duration-150"
+                                         x-transition:leave-start="opacity-100 transform scale-100"
+                                         x-transition:leave-end="opacity-0 transform scale-95"
+                                         class="p-6">
+                                        @forelse($course->terms as $term)
+                                            <div class="mb-6" x-data="{ openTerms: {} }">
+                                                <div class="flex items-center justify-between mb-4">
+                                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $term->name }}</h4>
+                                                    <button @click="openTerms['{{ $term->id }}'] = !openTerms['{{ $term->id }}']" 
+                                                            class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                                                        <svg class="w-5 h-5 transition-transform duration-200" 
+                                                             :class="{ 'rotate-180': openTerms['{{ $term->id }}'] }" 
+                                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+
+                                                <div x-show="openTerms['{{ $term->id }}']" 
+                                                     x-transition:enter="transition ease-out duration-200"
+                                                     x-transition:enter-start="opacity-0 transform scale-95"
+                                                     x-transition:enter-end="opacity-100 transform scale-100"
+                                                     x-transition:leave="transition ease-in duration-150"
+                                                     x-transition:leave-start="opacity-100 transform scale-100"
+                                                     x-transition:leave-end="opacity-0 transform scale-95"
+                                                     class="space-y-4">
+                                                    @foreach($term->subTerms as $subTerm)
+                                                        <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4" x-data="{ openWeeks: {} }">
+                                                            <div class="flex items-center justify-between mb-3">
+                                                                <h5 class="font-medium text-gray-900 dark:text-white">{{ $subTerm->title }}</h5>
+                                                                <button @click="openWeeks['{{ $subTerm->id }}'] = !openWeeks['{{ $subTerm->id }}']" 
+                                                                        class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                                                                    <svg class="w-4 h-4 transition-transform duration-200" 
+                                                                         :class="{ 'rotate-180': openWeeks['{{ $subTerm->id }}'] }" 
+                                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+
+                                                            <div x-show="openWeeks['{{ $subTerm->id }}']" 
+                                                                 x-transition:enter="transition ease-out duration-200"
+                                                                 x-transition:enter-start="opacity-0 transform scale-95"
+                                                                 x-transition:enter-end="opacity-100 transform scale-100"
+                                                                 x-transition:leave="transition ease-in duration-150"
+                                                                 x-transition:leave-start="opacity-100 transform scale-100"
+                                                                 x-transition:leave-end="opacity-0 transform scale-95"
+                                                                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                                @foreach($subTerm->weeks as $week)
+                                                                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                                                                        <h6 class="font-medium text-gray-900 dark:text-white mb-2">{{ $week->title }}</h6>
+                                                                        @if($week->description)
+                                                                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ $week->description }}</p>
+                                                                        @endif
+                                                                        
+                                                                        @if($week->materials->count() > 0)
+                                                                            <div class="space-y-2">
+                                                                                @foreach($week->materials as $material)
+                                                                                    <div class="flex items-center justify-between bg-white dark:bg-gray-800 rounded p-2">
+                                                                                        <div class="flex items-center gap-2 flex-1">
+                                                                                            @if($material->type === 'video')
+                                                                                                <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                                                                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                                                                                </svg>
+                                                                                            @elseif($material->type === 'file' || $material->type === 'pdf' || $material->type === 'ppt' || $material->type === 'document')
+                                                                                                <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                                                                </svg>
+                                                                                            @else
+                                                                                                <svg class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                                                                                </svg>
+                                                                                            @endif
+                                                                                            <span class="text-sm text-gray-900 dark:text-white truncate">{{ $material->title }}</span>
+                                                                                            @if($material->is_required)
+                                                                                                <span class="text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-1 py-0.5 rounded">Required</span>
+                                                                                            @endif
+                                                                                        </div>
+                                                                                        <div class="flex gap-1">
+                                                                                            @if($material->type === 'video' && $material->youtube_url)
+                                                                                                <button onclick="openVideoModal('{{ $material->youtube_url }}', '{{ $material->title }}')" 
+                                                                                                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1">
+                                                                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                                                                        <path d="M8 5v14l11-7z"/>
+                                                                                                    </svg>
+                                                                                                </button>
+                                                                                            @elseif($material->file_path)
+                                                                                                <a href="{{ Storage::url($material->file_path) }}" 
+                                                                                                   download="{{ $material->file_name }}"
+                                                                                                   class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1">
+                                                                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                                                                    </svg>
+                                                                                                </a>
+                                                                                            @elseif($material->external_url)
+                                                                                                <a href="{{ $material->external_url }}" 
+                                                                                                   target="_blank"
+                                                                                                   class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 p-1">
+                                                                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                                                                                    </svg>
+                                                                                                </a>
+                                                                                            @endif
+                                                                                        </div>
+                                                                                    </div>
+                                                                                @endforeach
+                                                                            </div>
+                                                                        @else
+                                                                            <p class="text-gray-500 dark:text-gray-400 text-sm">No materials available yet.</p>
+                                                                        @endif
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <p class="text-gray-500 dark:text-gray-400">No course structure available yet.</p>
+                                        @endforelse
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         @else
             <div class="text-center py-12">
                 <div class="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
@@ -356,4 +534,59 @@
             </div>
         @endif
     </div>
+
+    <!-- Video Modal -->
+    <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 id="videoModalTitle" class="text-lg font-semibold text-gray-900 dark:text-white">Video</h3>
+                <button onclick="closeVideoModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="aspect-w-16 aspect-h-9">
+                    <iframe id="videoIframe" 
+                            src="" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen
+                            class="w-full h-96">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openVideoModal(url, title) {
+            // Convert YouTube URL to embed format
+            let embedUrl = url;
+            if (url.includes('youtube.com/watch')) {
+                const videoId = url.split('v=')[1].split('&')[0];
+                embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            } else if (url.includes('youtu.be/')) {
+                const videoId = url.split('youtu.be/')[1].split('?')[0];
+                embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            }
+            
+            document.getElementById('videoModalTitle').textContent = title;
+            document.getElementById('videoIframe').src = embedUrl;
+            document.getElementById('videoModal').classList.remove('hidden');
+        }
+
+        function closeVideoModal() {
+            document.getElementById('videoModal').classList.add('hidden');
+            document.getElementById('videoIframe').src = '';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('videoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeVideoModal();
+            }
+        });
+    </script>
 </x-student-layout>

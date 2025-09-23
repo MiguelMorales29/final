@@ -1,0 +1,403 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Assignment;
+use App\Models\AssignmentSubmission;
+use App\Models\Course;
+use App\Models\CourseWeek;
+use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Stevebauman\Purify\Facades\Purify;
+
+class AssignmentController extends Controller
+{
+    /**
+     * Display a listing of assignments for teachers.
+     */
+    public function index(): View
+    {
+        $courses = auth()->user()->courses()
+            ->with(['assignments.week', 'assignments.submissions', 'terms.weeks'])
+            ->get()
+            ->map(function ($course) {
+                $course->assignments_count = $course->assignments->count();
+                $course->published_assignments_count = $course->assignments->where('is_published', true)->count();
+                $course->draft_assignments_count = $course->assignments->where('is_published', false)->count();
+                $course->total_submissions = $course->assignments->sum(function ($assignment) {
+                    return $assignment->submissions->count();
+                });
+                return $course;
+            });
+
+        return view('teacher.assignments.index', compact('courses'));
+    }
+
+    /**
+     * Display assignments for a specific course.
+     */
+    public function courseAssignments(Course $course): View
+    {
+        // Verify the course belongs to the teacher
+        if ($course->teacher_id !== auth()->id()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $assignments = $course->assignments()
+            ->with(['week.term', 'submissions'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('teacher.assignments.course-assignments', compact('course', 'assignments'));
+    }
+
+    public function assignmentsPreview(Course $course)
+    {
+        // Verify the course belongs to the teacher
+        if ($course->teacher_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized access.'], 403);
+        }
+
+        $assignments = $course->assignments()
+            ->with(['week.term', 'submissions'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $stats = [
+            'total' => $assignments->count(),
+            'published' => $assignments->where('is_published', true)->count(),
+            'drafts' => $assignments->where('is_published', false)->count(),
+            'submissions' => $assignments->sum(function ($assignment) {
+                return $assignment->submissions->count();
+            })
+        ];
+
+        $assignmentsData = $assignments->map(function ($assignment) {
+            return [
+                'id' => $assignment->id,
+                'title' => $assignment->title,
+                'description' => $assignment->description,
+                'points' => $assignment->points,
+                'max_attempts' => $assignment->max_attempts,
+                'due_date' => $assignment->due_date,
+                'is_published' => $assignment->is_published,
+                'term_name' => $assignment->week && $assignment->week->term ? $assignment->week->term->name : 'Unassigned',
+                'week_title' => $assignment->week ? $assignment->week->title : 'Unassigned',
+            ];
+        });
+
+        return response()->json([
+            'stats' => $stats,
+            'assignments' => $assignmentsData
+        ]);
+    }
+
+    public function getAssignmentEditData(Assignment $assignment)
+    {
+        try {
+            // Ensure the assignment belongs to the authenticated teacher
+            if ($assignment->course->teacher_id !== auth()->id()) {
+                return response()->json(['error' => 'Unauthorized access.'], 403);
+            }
+
+            // Load necessary relationships
+            $assignment->load(['course', 'week.term']);
+
+            // Get term and week IDs safely
+            $termId = null;
+            $weekId = $assignment->course_week_id;
+            
+            if ($assignment->week && $assignment->week->term) {
+                $termId = $assignment->week->term->id;
+            }
+
+            $data = [
+                'id' => $assignment->id,
+                'course_title' => $assignment->course->title,
+                'term_id' => $termId,
+                'week_id' => $weekId,
+                'title' => $assignment->title,
+                'description' => $assignment->description,
+                'instructions' => $assignment->instructions,
+                'points' => $assignment->points,
+                'max_attempts' => $assignment->max_attempts,
+                'due_date' => $assignment->due_date ? $assignment->due_date->format('Y-m-d\TH:i') : null,
+                'is_published' => $assignment->is_published,
+            ];
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching assignment edit data: ' . $e->getMessage());
+            return response()->json(['error' => 'Error loading assignment data: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Show course selection for assignment upload.
+     */
+    public function selectCourse(): View
+    {
+        $courses = auth()->user()->courses()
+            ->with(['terms.weeks', 'assignments'])
+            ->get();
+        
+        return view('teacher.assignments.select-course', compact('courses'));
+    }
+
+    /**
+     * Show the form for creating a new assignment.
+     */
+    public function create(Course $course): View
+    {
+        // Verify the course belongs to the teacher
+        if ($course->teacher_id !== auth()->id()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $course->load(['terms.weeks']);
+        return view('teacher.assignments.create', compact('course'));
+    }
+
+    /**
+     * Store a newly created assignment.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'course_id' => 'required|exists:courses,id',
+            'course_week_id' => 'nullable|exists:course_weeks,id',
+            'title' => 'required|string|max:500',
+            'description' => 'nullable|string|max:5000',
+            'instructions' => 'nullable|string|max:5000',
+            'submission_type' => 'required|in:text,file,both',
+            'allowed_file_types' => 'nullable|array',
+            'allowed_file_types.*' => 'string|in:pdf,doc,docx,txt,jpg,jpeg,png,gif',
+            'max_file_size' => 'required|integer|min:1|max:100',
+            'max_files' => 'required|integer|min:1|max:10',
+            'due_date' => 'required|date|after:now',
+            'points' => 'required|integer|min:1|max:1000',
+            'max_attempts' => 'required|integer|min:1|max:10',
+            'is_published' => 'boolean',
+        ]);
+
+        // Verify the course belongs to the teacher
+        $course = Course::where('id', $request->course_id)
+            ->where('teacher_id', auth()->id())
+            ->firstOrFail();
+
+        // If week is specified, verify it belongs to the course
+        if ($request->course_week_id) {
+            $week = CourseWeek::where('id', $request->course_week_id)
+                ->where('course_id', $course->id)
+                ->firstOrFail();
+        }
+
+        $assignment = Assignment::create([
+            'course_id' => $request->course_id,
+            'course_week_id' => $request->course_week_id,
+            'title' => $request->title,
+            'description' => $request->description ? Purify::clean($request->description) : null,
+            'instructions' => $request->instructions ? Purify::clean($request->instructions) : null,
+            'submission_type' => $request->submission_type,
+            'allowed_file_types' => $request->allowed_file_types,
+            'max_file_size' => $request->max_file_size,
+            'max_files' => $request->max_files,
+            'due_date' => $request->due_date,
+            'points' => $request->points,
+            'max_attempts' => $request->max_attempts,
+            'is_published' => $request->boolean('is_published', false),
+        ]);
+
+        return redirect()->route('teacher.assignments.index')
+            ->with('success', 'Assignment created successfully.');
+    }
+
+    /**
+     * Display the specified assignment.
+     */
+    public function show(Assignment $assignment): View
+    {
+        // Verify the assignment belongs to the teacher
+        if ($assignment->course->teacher_id !== auth()->id()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $assignment->load(['course', 'week', 'submissions.student']);
+        
+        return view('teacher.assignments.show', compact('assignment'));
+    }
+
+    /**
+     * Show the form for editing the specified assignment.
+     */
+    public function edit(Assignment $assignment): View
+    {
+        // Verify the assignment belongs to the teacher
+        if ($assignment->course->teacher_id !== auth()->id()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $courses = auth()->user()->courses()->with(['terms.subTerms.weeks'])->get();
+        
+        return view('teacher.assignments.edit', compact('assignment', 'courses'));
+    }
+
+    /**
+     * Update the specified assignment.
+     */
+    public function update(Request $request, Assignment $assignment)
+    {
+        // Verify the assignment belongs to the teacher
+        if ($assignment->course->teacher_id !== auth()->id()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['error' => 'Unauthorized access.'], 403);
+            }
+            abort(403, 'Unauthorized access.');
+        }
+
+        $request->validate([
+            'course_id' => 'required|exists:courses,id',
+            'course_week_id' => 'required|exists:course_weeks,id',
+            'title' => 'required|string|max:500',
+            'description' => 'nullable|string|max:5000',
+            'instructions' => 'nullable|string|max:5000',
+            'submission_type' => 'required|in:text,file,both',
+            'allowed_file_types' => 'nullable|array',
+            'allowed_file_types.*' => 'string|in:pdf,doc,docx,txt,jpg,jpeg,png,gif',
+            'max_file_size' => 'required|integer|min:1|max:100',
+            'max_files' => 'required|integer|min:1|max:10',
+            'due_date' => 'required|date|after:now',
+            'points' => 'required|integer|min:1|max:1000',
+            'max_attempts' => 'required|integer|min:1|max:10',
+            'is_published' => 'boolean',
+        ]);
+
+        $data = [
+            'course_id' => $request->course_id,
+            'course_week_id' => $request->course_week_id,
+            'title' => $request->title,
+            'description' => $request->description ? Purify::clean($request->description) : null,
+            'instructions' => $request->instructions ? Purify::clean($request->instructions) : null,
+            'submission_type' => $request->submission_type,
+            'allowed_file_types' => $request->allowed_file_types,
+            'max_file_size' => $request->max_file_size,
+            'max_files' => $request->max_files,
+            'due_date' => $request->due_date,
+            'points' => $request->points,
+            'max_attempts' => $request->max_attempts,
+            'is_published' => $request->boolean('is_published', false),
+        ];
+
+        $assignment->update($data);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Assignment updated successfully.'
+            ]);
+        }
+
+        return redirect()->route('teacher.assignments.index')
+            ->with('success', 'Assignment updated successfully.');
+    }
+
+    /**
+     * Remove the specified assignment.
+     */
+    public function destroy(Request $request, Assignment $assignment)
+    {
+        // Verify the assignment belongs to the teacher
+        if ($assignment->course->teacher_id !== auth()->id()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['error' => 'Unauthorized access.'], 403);
+            }
+            abort(403, 'Unauthorized access.');
+        }
+
+        // Delete associated files
+        foreach ($assignment->submissions as $submission) {
+            if ($submission->file_submissions) {
+                foreach ($submission->file_submissions as $file) {
+                    if (isset($file['file_path'])) {
+                        Storage::disk('public')->delete($file['file_path']);
+                    }
+                }
+            }
+        }
+
+        $assignment->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Assignment deleted successfully.'
+            ]);
+        }
+
+        return redirect()->route('teacher.assignments.index')
+            ->with('success', 'Assignment deleted successfully.');
+    }
+
+    /**
+     * Grade a submission.
+     */
+    public function grade(Request $request, Assignment $assignment, AssignmentSubmission $submission): RedirectResponse
+    {
+        // Verify the assignment belongs to the teacher
+        if ($assignment->course->teacher_id !== auth()->id()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        // Verify the submission belongs to the assignment
+        if ($submission->assignment_id !== $assignment->id) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $request->validate([
+            'points_earned' => 'required|integer|min:0|max:' . $assignment->points,
+            'feedback' => 'nullable|string',
+        ]);
+
+        $submission->update([
+            'points_earned' => $request->points_earned,
+            'feedback' => $request->feedback,
+            'status' => 'graded',
+            'graded_at' => now(),
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Submission graded successfully.');
+    }
+
+    /**
+     * Get weeks for a specific course (AJAX).
+     */
+    public function getWeeks(Course $course): \Illuminate\Http\JsonResponse
+    {
+        // Verify the course belongs to the teacher
+        if ($course->teacher_id !== auth()->id()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $weeks = $course->terms()
+            ->with(['subTerms.weeks'])
+            ->get()
+            ->pluck('subTerms')
+            ->flatten()
+            ->pluck('weeks')
+            ->flatten()
+            ->map(function ($week) {
+                return [
+                    'id' => $week->id,
+                    'title' => $week->title,
+                    'sub_term' => $week->subTerm->title,
+                    'term' => $week->subTerm->term->name,
+                ];
+            });
+
+        return response()->json($weeks);
+    }
+}
