@@ -131,7 +131,6 @@
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Student</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Student Number</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Course</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Attendance Today</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                                         </tr>
@@ -159,7 +158,6 @@
                                                     {{ $enrolled['student']->student_number ?? 'N/A' }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $enrolled['student']->email }}</td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $enrolled['course_title'] }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap">
                                                     <div class="flex items-center space-x-2">
                                                         <button onclick="markAttendance({{ $enrolled['student']->id }}, {{ $enrolled['course_id'] }}, 'present')" 
@@ -299,20 +297,20 @@
                 const dayHeaders = document.createElement('div');
                 dayHeaders.className = 'col-span-7 grid grid-cols-7 gap-2 mb-4';
                 dayHeaders.innerHTML = `
-                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">Sun</div>
-                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">Mon</div>
-                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">Tue</div>
-                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">Wed</div>
-                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">Thu</div>
-                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">Fri</div>
-                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">Sat</div>
+                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center">Sun</div>
+                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center">Mon</div>
+                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center">Tue</div>
+                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center">Wed</div>
+                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center">Thu</div>
+                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center">Fri</div>
+                    <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center">Sat</div>
                 `;
                 calendar.appendChild(dayHeaders);
                 
                 // Add empty cells for days before month starts
                 for (let i = 0; i < startingDayOfWeek; i++) {
                     const emptyDiv = document.createElement('div');
-                    emptyDiv.className = 'h-12';
+                    emptyDiv.className = 'h-8 w-8 flex items-center justify-center mx-auto';
                     calendar.appendChild(emptyDiv);
                 }
                 
@@ -341,15 +339,15 @@
                     
                     const dayButton = document.createElement('button');
                     dayButton.onclick = () => selectDate(dateStr);
-                    dayButton.className = 'h-12 w-12 rounded-full text-sm font-bold transition-all duration-200 transform hover:scale-105 hover:shadow-md flex items-center justify-center';
+                    dayButton.className = 'h-8 w-8 text-sm font-bold transition-all duration-200 transform hover:scale-105 hover:shadow-md flex items-center justify-center mx-auto';
                     
                     // Show circles based on current day and selected day
                     if (isCurrentDay) {
                         // Current day - always show emerald circle (default)
-                        dayButton.className += ' bg-emerald-500 text-black shadow-lg ring-2 ring-emerald-300';
+                        dayButton.className += ' rounded-full bg-emerald-500 text-black shadow-lg ring-2 ring-emerald-300';
                     } else if (isSelected) {
                         // Selected day (but not current day) - show blue circle
-                        dayButton.className += ' bg-blue-500 text-white shadow-lg ring-2 ring-blue-300';
+                        dayButton.className += ' rounded-full bg-blue-500 text-white shadow-lg ring-2 ring-blue-300';
                     } else {
                         // Not current day and not selected - show normal styling
                         dayButton.className += ' text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20';

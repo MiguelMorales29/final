@@ -74,6 +74,12 @@
                         'iconColor' => 'text-orange-600 dark:text-orange-400',
                         'dotColor' => 'bg-orange-500',
                         'ariaLabel' => 'Removed from course'
+                      ],
+                      'attendance_roll_call' => [
+                        'icon' => 'user-group',
+                        'iconColor' => 'text-indigo-600 dark:text-indigo-400',
+                        'dotColor' => 'bg-indigo-500',
+                        'ariaLabel' => 'Attendance roll call'
                       ]
                     ];
                     
@@ -98,7 +104,12 @@
                     <div class="relative flex-1 overflow-hidden">
                       <div class="p-5 overflow-y-auto thin-scrollbar space-y-3" style="max-height:20rem;mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)">
                         @foreach($activityStream as $i => $a)
-                          @php $config = $activityConfig[$a['type']]; @endphp
+                          @php $config = $activityConfig[$a['type']] ?? [
+                            'icon' => 'information-circle',
+                            'iconColor' => 'text-gray-600 dark:text-gray-400',
+                            'dotColor' => 'bg-gray-500',
+                            'ariaLabel' => 'Activity'
+                          ]; @endphp
                           <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition {{ $i===0 ? 'bg-gray-50 dark:bg-gray-800/40' : '' }}">
                             <div class="flex items-start gap-3">
                               {{-- Heroicon (16px) --}}
@@ -126,6 +137,14 @@
                                 @elseif($config['icon'] === 'trash')
                                   <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                  </svg>
+                                @elseif($config['icon'] === 'user-group')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                  </svg>
+                                @elseif($config['icon'] === 'information-circle')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                   </svg>
                                 @endif
                               </div>

@@ -17,8 +17,8 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900">
-    <div class="flex min-h-screen">
+<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 overflow-x-hidden">
+    <div class="flex min-h-screen overflow-x-hidden">
         <!-- Sidebar -->
         <aside class="hidden lg:block fixed left-0 top-0 h-screen w-64 bg-white dark:bg-gray-900 shadow-md z-40">
             <x-teacher-sidebar />
@@ -49,12 +49,12 @@
         </div>
         
         <!-- Main Content Area -->
-        <main class="flex-1 p-6 bg-gray-50 dark:bg-gray-900 lg:ml-64">
+        <main class="flex-1 p-6 bg-gray-50 dark:bg-gray-900 lg:ml-64 min-w-0 overflow-x-hidden">
             <!-- Top Navigation -->
             <x-teacher-top-nav />
             
             <!-- Page Content -->
-            <div class="mt-6">
+            <div class="mt-6 min-w-0 overflow-x-hidden">
                 {{ $slot }}
             </div>
         </main>
