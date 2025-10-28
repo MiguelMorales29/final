@@ -7,11 +7,11 @@
     </div>
 
     @if($courses->count() > 0)
-        <div class="space-y-8">
-            @foreach($courses as $course)
+        <div class="space-y-8" x-data="moduleManager()">
+            @foreach($courses as $courseIndex => $course)
                 <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
                     <!-- Course Header -->
-                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-200" @click="toggleCourse({{ $courseIndex }})">
                         <div class="flex items-center gap-4">
                             @if($course->image)
                                 <img src="{{ Storage::url($course->image) }}" 
@@ -41,57 +41,153 @@
                                     }) }} weeks
                                 </p>
                             </div>
+                            <svg class="w-6 h-6 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': openCourses[{{ $courseIndex }}] }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
                         </div>
                     </div>
 
                     <!-- Course Content -->
-                    <div class="p-6">
+                    <div x-show="openCourses[{{ $courseIndex }}]"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="p-6">
                         @if($course->terms->count() > 0)
                             <div class="space-y-6">
                                 @foreach($course->terms as $term)
-                                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ $term->name }}</h3>
+                                    @php
+                                        $termMaterials = $term->subTerms->sum(function($subTerm) {
+                                            return $subTerm->weeks->sum(function($week) {
+                                                return $week->materials->count();
+                                            });
+                                        });
+                                        $termWeeks = $term->subTerms->sum(function($subTerm) {
+                                            return $subTerm->weeks->count();
+                                        });
+                                    @endphp
+                                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600">
+                                        <div class="p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                                             @click="toggleTerm({{ $term->id }})">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                    </svg>
+                                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $term->name }}</h3>
+                                                </div>
+                                                <div class="flex items-center gap-3">
+                                                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                                                        {{ $termMaterials }} materials • {{ $termWeeks }} weeks
+                                                    </span>
+                                                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" 
+                                                         :class="{ 'rotate-180': openTerms[{{ $term->id }}] }" 
+                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div x-show="openTerms[{{ $term->id }}]"
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0"
+                                             x-transition:enter-end="opacity-100"
+                                             x-transition:leave="transition ease-in duration-150"
+                                             x-transition:leave-start="opacity-100"
+                                             x-transition:leave-end="opacity-0"
+                                             class="p-4 pt-0">
                                         
                                         @if($term->subTerms->count() > 0)
                                             <div class="space-y-4">
                                                 @foreach($term->subTerms as $subTerm)
-                                                    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                                                        <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">{{ $subTerm->title }}</h4>
-                                                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ $subTerm->description }}</p>
+                                                    @php
+                                                        $subTermMaterials = $subTerm->weeks->sum(function($week) {
+                                                            return $week->materials->count();
+                                                        });
+                                                    @endphp
+                                                    <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600">
+                                                        <div class="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                                                             @click="toggleSection({{ $subTerm->id }})">
+                                                            <div class="flex items-center justify-between">
+                                                                <div class="flex items-center gap-3">
+                                                                    <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                                                                    </svg>
+                                                                    <div>
+                                                                        <h4 class="text-md font-medium text-gray-900 dark:text-white">{{ $subTerm->title }}</h4>
+                                                                        @if($subTerm->description)
+                                                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $subTerm->description }}</p>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                                <div class="flex items-center gap-3">
+                                                                    <span class="text-sm text-gray-500 dark:text-gray-400">
+                                                                        {{ $subTerm->weeks->count() }} weeks • {{ $subTermMaterials }} materials
+                                                                    </span>
+                                                                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" 
+                                                                         :class="{ 'rotate-180': openSections[{{ $subTerm->id }}] }" 
+                                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div x-show="openSections[{{ $subTerm->id }}]"
+                                                             x-transition:enter="transition ease-out duration-200"
+                                                             x-transition:enter-start="opacity-0"
+                                                             x-transition:enter-end="opacity-100"
+                                                             x-transition:leave="transition ease-in duration-150"
+                                                             x-transition:leave-start="opacity-100"
+                                                             x-transition:leave-end="opacity-0"
+                                                             class="p-4 pt-0">
                                                         
                                                         @if($subTerm->weeks->count() > 0)
-                                                            <div class="space-y-3" x-data="{ openWeeks: {} }">
+                                                            <div class="divide-y divide-gray-200 dark:divide-gray-600">
                                                                 @foreach($subTerm->weeks as $week)
-                                                                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden">
+                                                                    @php
+                                                                        $weekMaterialsCount = $week->materials->count();
+                                                                    @endphp
+                                                                    <div class="p-4">
                                                                         <!-- Week Header -->
-                                                                        <div class="p-3 border-b border-gray-200 dark:border-gray-600">
-                                                                            <div class="flex items-center justify-between">
-                                                                                <div class="flex-1">
-                                                                                    <h5 class="text-sm font-medium text-gray-900 dark:text-white">{{ $week->title }}</h5>
+                                                                        <div class="flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-2 -m-2 transition-colors duration-200"
+                                                                             @click="toggleWeek({{ $week->id }})">
+                                                                            <div class="flex items-center gap-3">
+                                                                                <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                                                </svg>
+                                                                                <div>
+                                                                                    <h6 class="font-medium text-gray-900 dark:text-white">{{ $week->title }}</h6>
                                                                                     @if($week->notes)
-                                                                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ $week->notes }}</p>
+                                                                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ $week->notes }}</p>
                                                                                     @endif
                                                                                 </div>
-                                                                                <button @click="openWeeks['{{ $week->id }}'] = !openWeeks['{{ $week->id }}']" 
-                                                                                        class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                                                                                    <svg class="w-4 h-4 transition-transform duration-200" 
-                                                                                         :class="{ 'rotate-180': openWeeks['{{ $week->id }}'] }" 
+                                                                            </div>
+                                                                            <div class="flex items-center gap-3">
+                                                                                <span class="text-sm text-gray-500 dark:text-gray-400">
+                                                                                    {{ $weekMaterialsCount }} material{{ $weekMaterialsCount !== 1 ? 's' : '' }}
+                                                                                </span>
+                                                                                <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" 
+                                                                                     :class="{ 'rotate-180': openWeeks[{{ $week->id }}] }" 
                                                                                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                                                                     </svg>
-                                                                                </button>
                                                                             </div>
                                                                         </div>
 
                                                                         <!-- Week Content -->
-                                                                        <div x-show="openWeeks['{{ $week->id }}']" 
+                                                                        <div x-show="openWeeks[{{ $week->id }}]" 
                                                                              x-transition:enter="transition ease-out duration-200"
                                                                              x-transition:enter-start="opacity-0 transform scale-95"
                                                                              x-transition:enter-end="opacity-100 transform scale-100"
                                                                              x-transition:leave="transition ease-in duration-150"
                                                                              x-transition:leave-start="opacity-100 transform scale-100"
                                                                              x-transition:leave-end="opacity-0 transform scale-95"
-                                                                             class="p-4">
+                                                                             class="mt-4">
                                                                             <!-- Materials -->
                                                                             @if($week->materials->count() > 0)
                                                                                 <div class="mb-4">
@@ -236,4 +332,69 @@
             </a>
         </div>
     @endif
+
+    <script>
+        function moduleManager() {
+            return {
+                openCourses: {},
+                openTerms: {},
+                openSections: {},
+                openWeeks: {},
+
+                init() {
+                    this.loadSavedStates();
+                    if (Object.keys(this.openCourses).length === 0) {
+                        this.openCourses[0] = true;
+                    }
+                },
+
+                toggleCourse(courseIndex) {
+                    this.openCourses[courseIndex] = !this.openCourses[courseIndex];
+                    this.saveStates();
+                },
+
+                toggleTerm(termId) {
+                    this.openTerms[termId] = !this.openTerms[termId];
+                    this.saveStates();
+                },
+
+                toggleSection(sectionId) {
+                    this.openSections[sectionId] = !this.openSections[sectionId];
+                    this.saveStates();
+                },
+
+                toggleWeek(weekId) {
+                    this.openWeeks[weekId] = !this.openWeeks[weekId];
+                    this.saveStates();
+                },
+
+                saveStates() {
+                    sessionStorage.setItem('modules_courses', JSON.stringify(this.openCourses));
+                    sessionStorage.setItem('modules_terms', JSON.stringify(this.openTerms));
+                    sessionStorage.setItem('modules_sections', JSON.stringify(this.openSections));
+                    sessionStorage.setItem('modules_weeks', JSON.stringify(this.openWeeks));
+                },
+
+                loadSavedStates() {
+                    const savedCourses = sessionStorage.getItem('modules_courses');
+                    const savedTerms = sessionStorage.getItem('modules_terms');
+                    const savedSections = sessionStorage.getItem('modules_sections');
+                    const savedWeeks = sessionStorage.getItem('modules_weeks');
+
+                    if (savedCourses) {
+                        this.openCourses = JSON.parse(savedCourses);
+                    }
+                    if (savedTerms) {
+                        this.openTerms = JSON.parse(savedTerms);
+                    }
+                    if (savedSections) {
+                        this.openSections = JSON.parse(savedSections);
+                    }
+                    if (savedWeeks) {
+                        this.openWeeks = JSON.parse(savedWeeks);
+                    }
+                }
+            }
+        }
+    </script>
 </x-student-layout>

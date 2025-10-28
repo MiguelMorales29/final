@@ -51,6 +51,34 @@ class StudentModuleController extends Controller
     }
 
     /**
+     * View PDF/PPT material in a separate window
+     */
+    public function viewPdf(CourseMaterial $material)
+    {
+        $studentId = auth()->id();
+        
+        // Check if student is enrolled in this course
+        if (!$material->course->students()->where('student_id', $studentId)->exists()) {
+            abort(403, 'Unauthorized access to this material.');
+        }
+
+        // Check if material is a file (PDF or PPT)
+        if ($material->type !== 'file') {
+            abort(404, 'This material is not a PDF or PPT file.');
+        }
+
+        $filePath = storage_path('app/public/' . $material->file_path);
+        
+        if (!file_exists($filePath)) {
+            abort(404, 'File not found.');
+        }
+
+        return response()->file($filePath, [
+            'Content-Type' => mime_content_type($filePath),
+        ]);
+    }
+
+    /**
      * Display all materials for a specific week.
      */
     public function materials(Course $course, CourseWeek $week): View

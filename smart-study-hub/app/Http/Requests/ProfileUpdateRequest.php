@@ -29,6 +29,7 @@ class ProfileUpdateRequest extends FormRequest
             'gender' => ['nullable', 'in:male,female,other,prefer_not_to_say'],
             'bio' => ['nullable', 'string', 'max:1000'],
             'profile_picture' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'avatar_selected' => ['nullable', 'string'],
         ];
     }
 }

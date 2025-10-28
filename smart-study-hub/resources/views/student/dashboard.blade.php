@@ -103,7 +103,7 @@
                     {{-- Scrollable Body with fade effect --}}
                     <div class="relative flex-1 overflow-hidden">
                       <div class="p-5 overflow-y-auto thin-scrollbar space-y-3" style="max-height:20rem;mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)">
-                        @foreach($activityStream as $i => $a)
+                        @forelse($activityStream ?? [] as $i => $a)
                           @php $config = $activityConfig[$a['type']] ?? [
                             'icon' => 'information-circle',
                             'iconColor' => 'text-gray-600 dark:text-gray-400',
@@ -173,13 +173,20 @@
                               </div>
                             </div>
                           </div>
-                        @endforeach
+                        @empty
+                          <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <svg class="mx-auto h-12 w-12 mb-2 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5"></path>
+                            </svg>
+                            <p class="text-sm">No recent activity yet</p>
+                          </div>
+                        @endforelse
                       </div>
                     </div>
 
                     {{-- Footer with inset divider --}}
-                    <div class="border-t border-gray-200 dark:border-gray-800 px-5 py-3">
-                      <a href="#" class="text-indigo-600 dark:text-indigo-400 text-sm inline-flex items-center gap-1 hover:underline">
+                    <div class="border-t border-gray-200 dark:border-gray-800 px-5 py-4 bg-white dark:bg-gray-900 flex justify-center">
+                      <a href="{{ route('notifications.index') }}" class="text-indigo-600 dark:text-indigo-400 text-sm inline-flex items-center gap-1 hover:underline">
                         View all activity
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                       </a>
@@ -188,16 +195,6 @@
 
                   {{-- -------------------- Upcoming Tasks -------------------- --}}
                   @php
-                    $upcomingTasks = [
-                      ['title'=>'Chemistry Lab Report #3','course'=>'Science','due'=>'Dec 15, 2024','priority'=>'high'],
-                      ['title'=>'Essay Draft','course'=>'English','due'=>'Dec 16, 2024','priority'=>'high'],
-                      ['title'=>'Read Chapter 12–14','course'=>'Mathematics','due'=>'Dec 18, 2024','priority'=>'medium'],
-                      ['title'=>'Problem Set 6','course'=>'Mathematics','due'=>'Dec 20, 2024','priority'=>'low'],
-                      ['title'=>'Vocabulary Quiz','course'=>'English','due'=>'Dec 21, 2024','priority'=>'low'],
-                      ['title'=>'Lab Prep Notes','course'=>'Science','due'=>'Dec 22, 2024','priority'=>'medium'],
-                      ['title'=>'Weekly Reflection','course'=>'English','due'=>'Dec 23, 2024','priority'=>'low'],
-                      ['title'=>'Practice Exam A','course'=>'Mathematics','due'=>'Dec 24, 2024','priority'=>'high'],
-                    ];
                     $priorityStyle = [
                       'high'   => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200',
                       'medium' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-200',
@@ -220,7 +217,7 @@
                     {{-- Scrollable Body with fade effect --}}
                     <div class="relative flex-1 overflow-hidden">
                       <div class="p-5 overflow-y-auto thin-scrollbar space-y-3" style="max-height:20rem;mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)">
-                        @foreach($upcomingTasks as $t)
+                        @forelse($upcomingTasks ?? [] as $t)
                           @php
                             $clockColor = [
                               'high' => 'text-red-500 dark:text-red-400',
@@ -243,13 +240,20 @@
                               <span class="text-[11px] px-2 py-0.5 rounded-full {{ $priorityStyle[$t['priority']] }}">{{ $t['priority'] }}</span>
                             </div>
                           </div>
-                        @endforeach
+                        @empty
+                          <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <svg class="mx-auto h-12 w-12 mb-2 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a/r2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            <p class="text-sm">No upcoming tasks</p>
+                          </div>
+                        @endforelse
                       </div>
                     </div>
 
                     {{-- Footer with inset divider --}}
-                    <div class="border-t border-gray-200 dark:border-gray-800 px-5 py-3">
-                      <a href="#" class="text-indigo-600 dark:text-indigo-400 text-sm inline-flex items-center gap-1 hover:underline">
+                    <div class="border-t border-gray-200 dark:border-gray-800 px-5 py-4 bg-white dark:bg-gray-900 flex justify-center">
+                      <a href="{{ route('student.assignments.index') }}" class="text-indigo-600 dark:text-indigo-400 text-sm inline-flex items-center gap-1 hover:underline">
                         View all tasks
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                       </a>
@@ -262,15 +266,16 @@
                     $start = $today->copy()->startOfMonth();
                     $daysInMonth = $start->daysInMonth;
                     $startDow = $start->dayOfWeek; // 0=Sun
-                    // demo marks: day => type
-                    $calendarMarks = [
-                      8  => 'exam',
-                      13 => 'deadline',
-                      18 => 'exam',
-                      20 => 'assignment',
-                      26 => 'assignment',
+                    
+                    // Use real calendar marks from controller
+                    $realCalendarMarks = $calendarMarks ?? [];
+                    $markDot = [
+                      'exam'=>'bg-blue-500',
+                      'assignment'=>'bg-orange-500',
+                      'deadline'=>'bg-red-500',
+                      'quiz'=>'bg-red-500',
+                      'custom'=>'bg-purple-500'
                     ];
-                    $markDot = ['exam'=>'bg-blue-500','assignment'=>'bg-orange-500','deadline'=>'bg-red-500'];
                   @endphp
 
                   <div class="h-full rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition flex flex-col">
@@ -294,14 +299,82 @@
                         @for($d=1;$d<=$daysInMonth;$d++)
                           @php
                             $isToday = ($today->day==$d && $today->month==$start->month && $today->year==$start->year);
-                            $mark = $calendarMarks[$d] ?? null;
+                            // Get events for this day (date key format: Y-m-d)
+                            $dayKey = $start->copy()->day($d)->format('Y-m-d');
+                            $dayEvents = $calendarEventsByDate[$dayKey] ?? [];
+                            $mark = $realCalendarMarks[$dayKey] ?? null;
+                            
+                            // Get unique badge colors from events (max 5)
+                            $uniqueBadges = [];
+                            foreach($dayEvents as $event) {
+                              if (!in_array($event['badge_color'], $uniqueBadges) && count($uniqueBadges) < 5) {
+                                $uniqueBadges[] = $event['badge_color'];
+                              }
+                            }
+                            $totalEvents = count($dayEvents);
+                            $showMoreIndicator = $totalEvents > count($uniqueBadges);
                           @endphp
-                          <div class="relative h-10 rounded border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800/60 transition">
+                          <div 
+                            @if(count($dayEvents) > 0)
+                            x-data="{ showAbove: true }"
+                            @mouseenter="
+                              const rect = $event.currentTarget.getBoundingClientRect();
+                              const tooltipHeight = 180;
+                              const spaceAbove = rect.top;
+                              const spaceBelow = window.innerHeight - rect.bottom;
+                              showAbove = spaceAbove > spaceBelow || spaceBelow < tooltipHeight;
+                            "
+                            @endif
+                            class="relative h-10 rounded border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800/60 transition group {{ count($dayEvents) > 0 ? 'cursor-pointer' : '' }}"
+                            @if(count($dayEvents) > 0)
+                            onclick="window.location.href='{{ route('student.calendar') }}'"
+                            @endif>
                             <span class="text-gray-900 dark:text-gray-100 {{ $isToday ? 'inline-flex items-center justify-center h-7 w-7 rounded-full bg-indigo-600 text-white' : '' }}">
                               {{ $d }}
                             </span>
-                            @if($mark)
-                              <span class="absolute -bottom-1 h-1.5 w-1.5 rounded-full {{ $markDot[$mark] }}"></span>
+                            @if(count($uniqueBadges) > 0)
+                              <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex items-center gap-0.5 px-1">
+                                @foreach($uniqueBadges as $badgeColor)
+                                  <span class="h-1.5 w-1.5 rounded-full {{ $badgeColor === 'blue' ? 'bg-blue-500' : ($badgeColor === 'orange' ? 'bg-orange-500' : ($badgeColor === 'red' ? 'bg-red-500' : 'bg-purple-500')) }}"></span>
+                                @endforeach
+                                @if($showMoreIndicator)
+                                  <span class="text-[8px] text-gray-500 dark:text-gray-400 font-medium ml-0.5">+{{ $totalEvents - count($uniqueBadges) }}</span>
+                                @endif
+                              </div>
+                            @endif
+                            
+                            {{-- Hover Tooltip with Auto-Adjust --}}
+                            @if(count($dayEvents) > 0)
+                              <div 
+                                :class="showAbove ? 'bottom-full mb-3' : 'top-full mt-3'"
+                                class="absolute left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out pointer-events-none z-50 w-64">
+                                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm bg-opacity-95">
+                                  <!-- Tooltip Header -->
+                                  <div class="bg-gradient-to-r from-indigo-500 to-blue-500 px-4 py-3 border-b border-indigo-400 dark:border-indigo-600">
+                                    <div class="font-bold text-white text-sm">{{ $start->copy()->day($d)->format('M d, Y') }}</div>
+                                    <div class="text-white/80 text-xs mt-0.5">{{ count($dayEvents) }} event{{ count($dayEvents) > 1 ? 's' : '' }}</div>
+                                  </div>
+                                  <!-- Tooltip Content -->
+                                  <div class="py-2 px-3 max-h-60 overflow-y-auto">
+                                    @foreach($dayEvents as $event)
+                                      <div class="flex items-start gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors first:pt-0 last:pb-0">
+                                        <div class="flex-shrink-0 mt-0.5">
+                                          <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wide
+                                            {{ $event['badge_color'] === 'blue' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : '' }}
+                                            {{ $event['badge_color'] === 'orange' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' : '' }}
+                                            {{ $event['badge_color'] === 'red' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' : '' }}
+                                            {{ $event['badge_color'] === 'purple' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : '' }}">
+                                            {{ $event['type_display'] }}
+                                          </span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                          <div class="text-gray-900 dark:text-white font-medium leading-snug break-words">{{ $event['title'] }}</div>
+                                        </div>
+                                      </div>
+                                    @endforeach
+                                  </div>
+                                </div>
+                              </div>
                             @endif
                           </div>
                         @endfor
@@ -310,15 +383,18 @@
                       {{-- Horizontal legend with "Upcoming" text --}}
                       <div class="mt-6">
                         <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Upcoming</div>
-                        <div class="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-300">
+                        <div class="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-300 flex-wrap">
                           <span class="inline-flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-blue-500"></span> Exams
+                            <span class="h-2 w-2 rounded-full bg-blue-500"></span> Exam
                           </span>
                           <span class="inline-flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-orange-500"></span> Assignments
+                            <span class="h-2 w-2 rounded-full bg-orange-500"></span> Assignment
                           </span>
                           <span class="inline-flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-red-500"></span> Deadlines
+                            <span class="h-2 w-2 rounded-full bg-red-500"></span> Quiz
+                          </span>
+                          <span class="inline-flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-purple-500"></span> Other Events
                           </span>
                         </div>
                       </div>
@@ -612,4 +688,4 @@
         </div>
     </div>
 </div>
-</x-student-layout>
+</x-student-layout>`

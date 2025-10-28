@@ -211,8 +211,34 @@ class AssignmentController extends Controller
             'is_published' => $request->boolean('is_published', false),
         ]);
 
+        // Send notifications to all enrolled students
+        if ($assignment->is_published) {
+            $students = $course->enrollments()->with('student')->get();
+            
+            foreach ($students as $enrollment) {
+                $student = $enrollment->student;
+                
+                $student->notifications()->create([
+                    'type' => 'assignment',
+                    'title' => 'New Assignment',
+                    'message' => $assignment->title,
+                    'data' => json_encode([
+                        'course_id' => $course->id,
+                        'course_title' => $course->title,
+                        'assignment_id' => $assignment->id,
+                        'teacher_name' => auth()->user()->name
+                    ])
+                ]);
+            }
+        }
+
+        $message = 'Assignment created successfully.';
+        if ($assignment->is_published) {
+            $message .= ' Notifications sent to ' . $students->count() . ' student(s).';
+        }
+
         return redirect()->route('teacher.assignments.index')
-            ->with('success', 'Assignment created successfully.');
+            ->with('success', $message);
     }
 
     /**
@@ -260,16 +286,16 @@ class AssignmentController extends Controller
 
         $request->validate([
             'course_id' => 'required|exists:courses,id',
-            'course_week_id' => 'required|exists:course_weeks,id',
+            'course_week_id' => 'nullable|exists:course_weeks,id',
             'title' => 'required|string|max:500',
             'description' => 'nullable|string|max:5000',
             'instructions' => 'nullable|string|max:5000',
             'submission_type' => 'required|in:text,file,both',
             'allowed_file_types' => 'nullable|array',
             'allowed_file_types.*' => 'string|in:pdf,doc,docx,txt,jpg,jpeg,png,gif',
-            'max_file_size' => 'required|integer|min:1|max:100',
-            'max_files' => 'required|integer|min:1|max:10',
-            'due_date' => 'required|date|after:now',
+            'max_file_size' => 'nullable|integer|min:1|max:100',
+            'max_files' => 'nullable|integer|min:1|max:10',
+            'due_date' => 'required|date',
             'points' => 'required|integer|min:1|max:1000',
             'max_attempts' => 'required|integer|min:1|max:10',
             'is_published' => 'boolean',
@@ -291,17 +317,52 @@ class AssignmentController extends Controller
             'is_published' => $request->boolean('is_published', false),
         ];
 
+        // Check if assignment is being published (was draft, now published)
+        $wasDraft = !$assignment->is_published;
+        $isNowPublished = $request->boolean('is_published', false);
+        
         $assignment->update($data);
+        
+        // Send notifications if assignment is being published for the first time
+        if ($wasDraft && $isNowPublished) {
+            $course = \App\Models\Course::findOrFail($request->course_id);
+            $students = $course->enrollments()->with('student')->get();
+            
+            foreach ($students as $enrollment) {
+                $student = $enrollment->student;
+                
+                $student->notifications()->create([
+                    'type' => 'assignment',
+                    'title' => 'New Assignment',
+                    'message' => $assignment->title,
+                    'data' => json_encode([
+                        'course_id' => $course->id,
+                        'course_title' => $course->title,
+                        'assignment_id' => $assignment->id,
+                        'teacher_name' => auth()->user()->name
+                    ])
+                ]);
+            }
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
+            $message = 'Assignment updated successfully.';
+            if ($wasDraft && $isNowPublished) {
+                $message .= ' Notifications sent to ' . count($students ?? []) . ' student(s).';
+            }
             return response()->json([
                 'success' => true,
-                'message' => 'Assignment updated successfully.'
+                'message' => $message
             ]);
         }
 
+        $message = 'Assignment updated successfully.';
+        if ($wasDraft && $isNowPublished) {
+            $message .= ' Notifications sent to ' . count($students ?? []) . ' student(s).';
+        }
+
         return redirect()->route('teacher.assignments.index')
-            ->with('success', 'Assignment updated successfully.');
+            ->with('success', $message);
     }
 
     /**

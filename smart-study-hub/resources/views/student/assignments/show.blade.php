@@ -97,9 +97,12 @@
             </div>
 
             <!-- Submission Form -->
-            @if($submission->status !== 'graded')
+            @if($submission->status !== 'graded' && $canSubmit)
                 <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
                     <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Your Submission</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        You have {{ $remainingAttempts }} attempt(s) remaining.
+                    </p>
 
                     <form method="POST" action="{{ route('student.assignments.submit', $assignment) }}" enctype="multipart/form-data" class="space-y-6">
                         @csrf
@@ -190,6 +193,14 @@
                         </div>
                     </form>
                 </div>
+            @elseif($submission->status !== 'graded' && !$canSubmit)
+                <!-- Max Attempts Reached -->
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+                    <h2 class="text-xl font-semibold text-red-900 dark:text-red-100 mb-2">Submission Limit Reached</h2>
+                    <p class="text-red-700 dark:text-red-300">
+                        You have reached the maximum number of attempts ({{ $assignment->max_attempts }}) for this assignment.
+                    </p>
+                </div>
             @else
                 <!-- Graded Submission Display -->
                 <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
@@ -199,7 +210,9 @@
                         <div class="mb-4">
                             <h3 class="font-medium text-gray-900 dark:text-white mb-2">Text Submission</h3>
                             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                                <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ $submission->text_submission }}</p>
+                                <div class="text-gray-700 dark:text-gray-300 prose prose-sm dark:prose-invert max-w-none">
+                                    {!! $submission->text_submission !!}
+                                </div>
                             </div>
                         </div>
                     @endif

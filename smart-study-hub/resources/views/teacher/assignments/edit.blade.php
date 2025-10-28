@@ -171,6 +171,21 @@
                        class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
 
+            <!-- Max Attempts -->
+            <div>
+                <label for="max_attempts" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Max Attempts *
+                </label>
+                <input type="number" 
+                       id="max_attempts" 
+                       name="max_attempts" 
+                       value="{{ old('max_attempts', $assignment->max_attempts) }}"
+                       min="1" 
+                       max="10"
+                       class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       required>
+            </div>
+
             <!-- Points -->
             <div>
                 <label for="points" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

@@ -53,9 +53,9 @@
             <div class="mt-2 flex items-center space-x-4">
                 <div class="flex-shrink-0">
                     <img id="profile-picture-preview" 
-                         src="{{ $user->profile_picture ? asset('storage/' . $user->profile_picture) : asset('images/default-avatar.png') }}" 
+                         src="{{ $user->profile_picture ? (str_starts_with($user->profile_picture, 'images/') ? asset($user->profile_picture) : (str_starts_with($user->profile_picture, 'http') ? $user->profile_picture : asset('storage/' . $user->profile_picture))) : asset('images/avatars/avatar-default.svg') }}" 
                          alt="Profile Picture" 
-                         class="h-20 w-20 rounded-full object-cover">
+                         class="h-20 w-20 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600">
                 </div>
                 <div class="flex-1">
                     <input id="profile_picture" 
@@ -64,9 +64,34 @@
                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
                            accept="image/*"
                            onchange="previewImage(this)">
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ __('Upload a profile picture (optional)') }}</p>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ __('Or upload your own picture') }}</p>
                 </div>
             </div>
+            <!-- Default Avatar Selection -->
+            <div class="mt-4">
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ __('Choose a default avatar') }}</p>
+                <div class="grid grid-cols-8 gap-3">
+                    @for($i = 1; $i <= 8; $i++)
+                        <div class="relative cursor-pointer group">
+                            <input type="radio" 
+                                   name="selected_avatar" 
+                                   id="avatar-{{ $i }}" 
+                                   value="images/avatars/avatar-{{ $i }}.svg" 
+                                   class="peer sr-only"
+                                   {{ str_contains($user->profile_picture ?? '', 'avatar-'.$i.'.svg') ? 'checked' : '' }}
+                                   onchange="selectAvatar('images/avatars/avatar-{{ $i }}.svg', 'images/avatars/avatar-{{ $i }}.svg')">
+                            <label for="avatar-{{ $i }}" 
+                                   class="flex items-center justify-center cursor-pointer">
+                                <img src="{{ asset('images/avatars/avatar-'.$i.'.svg') }}" 
+                                     alt="Avatar {{ $i }}"
+                                     class="w-12 h-12 rounded-full peer-checked:ring-2 peer-checked:ring-indigo-500 peer-checked:ring-offset-2 transition-all hover:scale-110">
+                            </label>
+                        </div>
+                    @endfor
+                </div>
+            </div>
+            
+            <input type="hidden" name="avatar_selected" id="avatar_selected" value="">
             <x-input-error class="mt-2" :messages="$errors->get('profile_picture')" />
         </div>
 
@@ -128,8 +153,23 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('profile-picture-preview').src = e.target.result;
+                    document.getElementById('avatar_selected').value = '';
+                    // Uncheck all radio buttons
+                    document.querySelectorAll('input[name="selected_avatar"]').forEach(radio => {
+                        radio.checked = false;
+                    });
                 }
                 reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        function selectAvatar(avatarPath) {
+            document.getElementById('profile-picture-preview').src = '{{ asset('') }}' + avatarPath;
+            document.getElementById('avatar_selected').value = avatarPath;
+            // Clear file input if avatar is selected
+            var fileInput = document.getElementById('profile_picture');
+            if (fileInput) {
+                fileInput.value = '';
             }
         }
     </script>

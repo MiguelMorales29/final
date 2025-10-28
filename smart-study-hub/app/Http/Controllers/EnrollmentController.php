@@ -206,15 +206,4 @@ class EnrollmentController extends Controller
         return redirect()->back()->with('success', $successMessage);
     }
 
-    /**
-     * Admin's master view of all enrollments.
-     */
-    public function allEnrollments(): View
-    {
-        $enrollments = Enrollment::with(['student', 'course.teacher'])
-            ->latest()
-            ->paginate(20);
-        
-        return view('admin.enrollments.index', compact('enrollments'));
-    }
 }

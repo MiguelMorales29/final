@@ -58,9 +58,9 @@
         <div class="flex items-center justify-between">
             <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Course Structure & Materials</h3>
             <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <span>Total Materials: <span class="font-semibold text-gray-900 dark:text-white" x-text="totalMaterials"></span></span>
+                <span>Total Materials: <span class="font-semibold text-gray-900 dark:text-white">{{ $totalMaterials }}</span></span>
                 <span>•</span>
-                <span>Total Weeks: <span class="font-semibold text-gray-900 dark:text-white" x-text="totalWeeks"></span></span>
+                <span>Total Weeks: <span class="font-semibold text-gray-900 dark:text-white">{{ $totalWeeks }}</span></span>
             </div>
         </div>
         
@@ -128,16 +128,49 @@
                     @if($term->subTerms->count() > 0)
                         <div class="space-y-4">
                             @foreach($term->subTerms as $subTerm)
+                                @php
+                                    $subTermMaterialsCount = $subTerm->weeks->sum(function($week) {
+                                        return $week->materials->count();
+                                    });
+                                @endphp
                                 <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
-                                    <div class="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                                        <h5 class="text-lg font-medium text-gray-900 dark:text-white">{{ $subTerm->title }}</h5>
-                                    @if($subTerm->description)
-                                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">{{ $subTerm->description }}</p>
-                                    @endif
+                                    <div class="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                                         @click="toggleSection({{ $subTerm->id }})">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-3">
+                                                <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                                                </svg>
+                                                <div>
+                                                    <h5 class="text-lg font-medium text-gray-900 dark:text-white">{{ $subTerm->title }}</h5>
+                                                    @if($subTerm->description)
+                                                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">{{ $subTerm->description }}</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <span class="text-sm text-gray-500 dark:text-gray-400">
+                                                    {{ $subTerm->weeks->count() }} weeks • {{ $subTermMaterialsCount }} materials
+                                                </span>
+                                                <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" 
+                                                     :class="{ 'rotate-180': openSections[{{ $subTerm->id }}] }" 
+                                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
                                     </div>
                                     
-                                    @if($subTerm->weeks->count() > 0)
-                                        <div class="divide-y divide-gray-200 dark:divide-gray-600">
+                                    <div x-show="openSections[{{ $subTerm->id }}]"
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0"
+                                         x-transition:enter-end="opacity-100"
+                                         x-transition:leave="transition ease-in duration-150"
+                                         x-transition:leave-start="opacity-100"
+                                         x-transition:leave-end="opacity-0"
+                                         class="divide-y divide-gray-200 dark:divide-gray-600">
+                                    
+                                        @if($subTerm->weeks->count() > 0)
                                             @foreach($subTerm->weeks as $week)
                                                 @php
                                                     $weekMaterialsCount = $week->materials->count();
@@ -280,12 +313,12 @@
                                                     </div>
                                                 </div>
                                             @endforeach
-                                        </div>
-                                    @else
-                                        <div class="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
-                                            No weeks created for this section.
-                                        </div>
-                                    @endif
+                                        @else
+                                            <div class="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                                No weeks created for this section.
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
@@ -319,16 +352,12 @@
         function courseStructure() {
             return {
                 openPeriods: {},
+                openSections: {},
                 openWeeks: {},
-                totalMaterials: 0,
-                totalWeeks: 0,
 
                 init() {
                     // Load saved states from sessionStorage
                     this.loadSavedStates();
-                    
-                    // Calculate totals
-                    this.calculateTotals();
                     
                     // Set default state: first period expanded, others collapsed
                     this.setDefaultStates();
@@ -339,6 +368,11 @@
                     this.saveStates();
                 },
 
+                toggleSection(sectionId) {
+                    this.openSections[sectionId] = !this.openSections[sectionId];
+                    this.saveStates();
+                },
+
                 toggleWeek(weekId) {
                     this.openWeeks[weekId] = !this.openWeeks[weekId];
                     this.saveStates();
@@ -346,10 +380,7 @@
 
                 setDefaultStates() {
                     // Get all period IDs
-                    const periodElements = document.querySelectorAll('[x-data] [x-show*="openPeriods"]');
                     const periodIds = [];
-                    
-                    // Extract period IDs from the DOM
                     const periodHeaders = document.querySelectorAll('[x-data] [x-click*="togglePeriod"]');
                     periodHeaders.forEach(header => {
                         const onclick = header.getAttribute('@click');
@@ -359,41 +390,45 @@
                         }
                     });
 
+                    // Get all section IDs
+                    const sectionIds = [];
+                    const sectionHeaders = document.querySelectorAll('[x-click*="toggleSection"]');
+                    sectionHeaders.forEach(header => {
+                        const onclick = header.getAttribute('@click');
+                        const match = onclick.match(/toggleSection\((\d+)\)/);
+                        if (match) {
+                            sectionIds.push(parseInt(match[1]));
+                        }
+                    });
+
                     // Set first period as expanded by default if no saved state
                     if (periodIds.length > 0 && !this.hasSavedStates()) {
                         this.openPeriods[periodIds[0]] = true;
+                        // Expand all sections in the first period
+                        sectionIds.forEach(sectionId => {
+                            this.openSections[sectionId] = true;
+                        });
                     }
-                },
-
-                calculateTotals() {
-                    // Calculate total materials and weeks
-                    let materials = 0;
-                    let weeks = 0;
-
-                    // Count materials and weeks from the DOM
-                    const materialElements = document.querySelectorAll('[x-data] .space-y-3 > div');
-                    materials = materialElements.length;
-
-                    const weekElements = document.querySelectorAll('[x-data] [x-click*="toggleWeek"]');
-                    weeks = weekElements.length;
-
-                    this.totalMaterials = materials;
-                    this.totalWeeks = weeks;
                 },
 
                 saveStates() {
                     // Save current states to sessionStorage
                     sessionStorage.setItem('courseStructure_periods', JSON.stringify(this.openPeriods));
+                    sessionStorage.setItem('courseStructure_sections', JSON.stringify(this.openSections));
                     sessionStorage.setItem('courseStructure_weeks', JSON.stringify(this.openWeeks));
                 },
 
                 loadSavedStates() {
                     // Load saved states from sessionStorage
                     const savedPeriods = sessionStorage.getItem('courseStructure_periods');
+                    const savedSections = sessionStorage.getItem('courseStructure_sections');
                     const savedWeeks = sessionStorage.getItem('courseStructure_weeks');
                     
                     if (savedPeriods) {
                         this.openPeriods = JSON.parse(savedPeriods);
+                    }
+                    if (savedSections) {
+                        this.openSections = JSON.parse(savedSections);
                     }
                     if (savedWeeks) {
                         this.openWeeks = JSON.parse(savedWeeks);

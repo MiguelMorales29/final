@@ -178,8 +178,18 @@
                             @if($fileExtension === 'pdf')
                                 <!-- PDF Viewer -->
                                 <div class="bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-                                    <iframe src="{{ Storage::url($material->content) }}#toolbar=1&navpanes=1&scrollbar=1" 
-                                            class="w-full h-96"
+                                    <div class="p-4 bg-gray-200 dark:bg-gray-800 flex items-center justify-between border-b border-gray-300 dark:border-gray-600">
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">PDF Document Viewer</span>
+                                        <a href="{{ route('student.materials.view', $material) }}" target="_blank" 
+                                           class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors duration-150">
+                                            <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                            </svg>
+                                            Open in New Tab
+                                        </a>
+                                    </div>
+                                    <iframe src="{{ Storage::url($material->content) }}#toolbar=1&navpanes=1&scrollbar=0" 
+                                            class="w-full h-[80vh]"
                                             frameborder="0">
                                     </iframe>
                                 </div>
@@ -195,8 +205,18 @@
                             @elseif(in_array($fileExtension, ['doc', 'docx']))
                                 <!-- Google Docs Viewer for Word Documents -->
                                 <div class="bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                                    <div class="p-4 bg-gray-200 dark:bg-gray-800 flex items-center justify-between border-b border-gray-300 dark:border-gray-600">
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Word Document Viewer</span>
+                                        <a href="{{ route('student.materials.view', $material) }}" target="_blank" 
+                                           class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors duration-150">
+                                            <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                            </svg>
+                                            Open in New Tab
+                                        </a>
+                                    </div>
                                     <iframe src="https://docs.google.com/gview?url={{ urlencode(Storage::url($material->content)) }}&embedded=true" 
-                                            class="w-full h-96"
+                                            class="w-full h-[80vh]"
                                             frameborder="0">
                                     </iframe>
                                 </div>
@@ -204,8 +224,18 @@
                             @elseif(in_array($fileExtension, ['ppt', 'pptx']))
                                 <!-- Google Docs Viewer for PowerPoint -->
                                 <div class="bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                                    <div class="p-4 bg-gray-200 dark:bg-gray-800 flex items-center justify-between border-b border-gray-300 dark:border-gray-600">
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">PowerPoint Presentation Viewer</span>
+                                        <a href="{{ route('student.materials.view', $material) }}" target="_blank" 
+                                           class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors duration-150">
+                                            <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                            </svg>
+                                            Open in New Tab
+                                        </a>
+                                    </div>
                                     <iframe src="https://docs.google.com/gview?url={{ urlencode(Storage::url($material->content)) }}&embedded=true" 
-                                            class="w-full h-96"
+                                            class="w-full h-[80vh]"
                                             frameborder="0">
                                     </iframe>
                                 </div>

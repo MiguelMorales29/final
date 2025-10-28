@@ -155,7 +155,22 @@ class CourseController extends Controller
 
         $course->load(['terms.subTerms.weeks.materials', 'terms.weeks.materials']);
         
-        return view('teacher.courses.show', compact('course'));
+        // Calculate total materials and weeks across all terms
+        $totalMaterials = $course->terms->sum(function($term) {
+            return $term->subTerms->sum(function($subTerm) {
+                return $subTerm->weeks->sum(function($week) {
+                    return $week->materials->count();
+                });
+            });
+        });
+
+        $totalWeeks = $course->terms->sum(function($term) {
+            return $term->subTerms->sum(function($subTerm) {
+                return $subTerm->weeks->count();
+            });
+        });
+        
+        return view('teacher.courses.show', compact('course', 'totalMaterials', 'totalWeeks'));
     }
 
     /**
@@ -250,7 +265,22 @@ class CourseController extends Controller
             abort(403, 'Unauthorized access.');
         }
 
-        $course->load(['terms.subTerms.weeks', 'terms.weeks']);
+        $course->load(['terms.subTerms.weeks.materials', 'terms.weeks']);
+        
+        // Calculate total materials and weeks
+        $totalMaterials = $course->terms->sum(function($term) {
+            return $term->subTerms->sum(function($subTerm) {
+                return $subTerm->weeks->sum(function($week) {
+                    return $week->materials->count();
+                });
+            });
+        });
+
+        $totalWeeks = $course->terms->sum(function($term) {
+            return $term->subTerms->sum(function($subTerm) {
+                return $subTerm->weeks->count();
+            });
+        });
         
         // Prepare course structure data for JavaScript
         $courseStructure = $course->terms->map(function($term) {
@@ -271,7 +301,7 @@ class CourseController extends Controller
             ];
         });
         
-        return view('teacher.courses.upload-materials', compact('course', 'courseStructure'));
+        return view('teacher.courses.upload-materials', compact('course', 'courseStructure', 'totalMaterials', 'totalWeeks'));
     }
 
     /**
@@ -344,10 +374,33 @@ class CourseController extends Controller
             $data['content'] = Purify::clean($request->text_content);
         }
 
-        $course->materials()->create($data);
+        $material = $course->materials()->create($data);
+
+        // Send notifications to all enrolled students
+        $students = $course->enrollments()->with('student')->get();
+        
+        foreach ($students as $enrollment) {
+            $student = $enrollment->student;
+            
+            // Determine notification type based on material type
+            $notificationType = 'material_' . $material->type; // material_video, material_file, material_link, material_text
+            
+            $student->notifications()->create([
+                'type' => $notificationType,
+                'title' => 'New ' . ucfirst($material->type) . ' Material',
+                'message' => $material->title,
+                'data' => json_encode([
+                    'course_id' => $course->id,
+                    'course_title' => $course->title,
+                    'material_id' => $material->id,
+                    'material_type' => $material->type,
+                    'teacher_name' => auth()->user()->name
+                ])
+            ]);
+        }
 
         return redirect()->back()
-            ->with('success', 'Material uploaded successfully.');
+            ->with('success', 'Material uploaded successfully. Notifications sent to ' . $students->count() . ' student(s).');
     }
 
     /**

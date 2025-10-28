@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\GoogleAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -33,6 +34,26 @@ Route::middleware('guest')->group(function () {
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
+
+    // Google OAuth routes
+    Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle'])
+        ->name('auth.google');
+    
+    Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback'])
+        ->name('auth.google.callback');
+    
+    // Google OAuth role selection (for new users)
+    Route::get('auth/google/role-selection', [GoogleAuthController::class, 'showRoleSelection'])
+        ->name('auth.google.role-selection');
+    
+    Route::post('auth/google/role-selection', [GoogleAuthController::class, 'handleRoleSelection'])
+        ->name('auth.google.role-selection');
+    
+    Route::get('auth/google/password', [GoogleAuthController::class, 'showPasswordCreation'])
+        ->name('auth.google.password');
+    
+    Route::post('auth/google/password', [GoogleAuthController::class, 'handlePasswordCreation'])
+        ->name('auth.google.password');
 });
 
 Route::middleware('auth')->group(function () {

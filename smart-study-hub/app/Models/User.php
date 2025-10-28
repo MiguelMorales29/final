@@ -30,6 +30,7 @@ class User extends Authenticatable
         'role',
         'theme',
         'student_number',
+        'google_id',
     ];
 
     /**

@@ -33,7 +33,8 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'in:student,teacher,admin'],
+            'role' => ['required', 'in:student,teacher'],
+            'gender' => ['required', 'in:male,female'],
         ]);
 
         $userData = [
@@ -41,7 +42,12 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'gender' => $request->gender,
         ];
+
+        // Set random default profile picture (avatar 1-8)
+        $avatarNumber = rand(1, 8);
+        $userData['profile_picture'] = 'images/avatars/avatar-' . $avatarNumber . '.svg';
 
         // Generate student number for students
         if ($request->role === 'student') {

@@ -31,8 +31,6 @@ class AuthenticatedSessionController extends Controller
         // Redirect based on user role
         $user = Auth::user();
         switch ($user->role) {
-            case 'admin':
-                return redirect()->intended(route('admin.dashboard', absolute: false));
             case 'teacher':
                 return redirect()->intended(route('teacher.dashboard', absolute: false));
             case 'student':

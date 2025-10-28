@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ArchivedApplicationsController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\CourseApplicationController;
@@ -14,6 +14,8 @@ use App\Http\Controllers\StudentAssignmentController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\StudentModuleController;
 use App\Http\Controllers\TeacherDashboardController;
+use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\EmailTestController;
 use App\Models\Course;
 use App\Models\CourseWeek;
 use Illuminate\Support\Facades\Route;
@@ -23,13 +25,6 @@ Route::get('/', function () {
 });
 
 // Role-based dashboard routes
-Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
-    
-    // Admin enrollment management
-    Route::get('/admin/enrollments', [EnrollmentController::class, 'allEnrollments'])->name('admin.enrollments');
-});
-
 Route::middleware(['auth', 'verified', 'role:teacher'])->group(function () {
     Route::get('/teacher/dashboard', [TeacherDashboardController::class, 'index'])->name('teacher.dashboard');
     
@@ -92,10 +87,19 @@ Route::get('/teacher/courses/{course}/assignments/preview', [AssignmentControlle
     Route::post('/applications/archive-all', [CourseApplicationController::class, 'archiveAll'])->name('applications.archive-all');
     Route::post('/applications/{application}/unarchive', [ArchivedApplicationsController::class, 'unarchive'])->name('applications.unarchive');
     Route::post('/applications/bulk-unarchive', [ArchivedApplicationsController::class, 'bulkUnarchive'])->name('applications.bulk-unarchive');
+    
+    // Teacher announcement routes
+    Route::get('/teacher/announcements', [AnnouncementController::class, 'teacherIndex'])->name('teacher.announcements.index');
+    Route::get('/teacher/announcements/create', [AnnouncementController::class, 'create'])->name('teacher.announcements.create');
+    Route::post('/teacher/announcements', [AnnouncementController::class, 'store'])->name('teacher.announcements.store');
+    Route::get('/teacher/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('teacher.announcements.edit');
+    Route::put('/teacher/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('teacher.announcements.update');
+    Route::delete('/teacher/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('teacher.announcements.destroy');
 });
 
 Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+    Route::get('/student/calendar', [StudentDashboardController::class, 'calendar'])->name('student.calendar');
     
     // Student course browsing and enrollment
     Route::get('/courses', [CourseListingController::class, 'index'])->name('student.courses.browse');
@@ -111,6 +115,7 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
         // Student modules route
         Route::get('/student/modules', [StudentModuleController::class, 'index'])->name('student.modules.index');
         Route::get('/student/materials/{material}', [StudentModuleController::class, 'showMaterial'])->name('student.materials.show');
+        Route::get('/student/materials/{material}/view', [StudentModuleController::class, 'viewPdf'])->name('student.materials.view');
         Route::get('/student/courses/{course}/materials', [StudentModuleController::class, 'allMaterials'])->name('student.course.all-materials');
         Route::get('/student/courses/{course}/assignments', [StudentModuleController::class, 'allAssignments'])->name('student.course.all-assignments');
     
@@ -119,14 +124,15 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     Route::get('/student/assignments/{assignment}', [StudentAssignmentController::class, 'show'])->name('student.assignments.show');
     Route::post('/student/assignments/{assignment}/submit', [StudentAssignmentController::class, 'submit'])->name('student.assignments.submit');
     Route::delete('/student/assignments/{assignment}/submission', [StudentAssignmentController::class, 'destroy'])->name('student.assignments.destroy');
+    
+    // Student announcement routes
+    Route::get('/student/announcements', [AnnouncementController::class, 'studentIndex'])->name('student.announcements.index');
 });
 
 // Legacy dashboard route (redirects based on role)
 Route::get('/dashboard', function () {
     $user = auth()->user();
     switch ($user->role) {
-        case 'admin':
-            return redirect()->route('admin.dashboard');
         case 'teacher':
             return redirect()->route('teacher.dashboard');
         case 'student':
@@ -148,6 +154,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('api.notifications.unread-count');
     Route::get('/api/notifications/recent', [NotificationController::class, 'recent'])->name('api.notifications.recent');
 });
+
+// Email testing routes (for development only)
+Route::get('/email-test', function () {
+    return view('email-test');
+})->name('email.test');
+Route::post('/test-email', [EmailTestController::class, 'testEmail'])->name('test.email');
+Route::post('/test-password-reset', [EmailTestController::class, 'testPasswordReset'])->name('test.password-reset');
 
 // Model binding
 Route::model('course', Course::class);

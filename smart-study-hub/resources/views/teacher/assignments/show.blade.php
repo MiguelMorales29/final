@@ -54,15 +54,25 @@
                 </div>
 
                 <div class="space-y-4">
-                    <div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Description</h3>
-                        <p class="text-gray-700 dark:text-gray-300">{{ $assignment->description }}</p>
-                    </div>
+                    @if($assignment->description)
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Description</h3>
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600">
+                                <article class="prose prose-gray dark:prose-invert max-w-none">
+                                    {!! $assignment->description !!}
+                                </article>
+                            </div>
+                        </div>
+                    @endif
 
                     @if($assignment->instructions)
                         <div>
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Instructions</h3>
-                            <p class="text-gray-700 dark:text-gray-300">{{ $assignment->instructions }}</p>
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600">
+                                <article class="prose prose-gray dark:prose-invert max-w-none">
+                                    {!! $assignment->instructions !!}
+                                </article>
+                            </div>
                         </div>
                     @endif
 
@@ -139,7 +149,9 @@
                                     <div class="mb-3">
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-1">Text Submission</h4>
                                         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                                            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ $submission->text_submission }}</p>
+                                            <div class="text-gray-700 dark:text-gray-300 prose prose-sm dark:prose-invert max-w-none">
+                                                {!! $submission->text_submission !!}
+                                            </div>
                                         </div>
                                     </div>
                                 @endif

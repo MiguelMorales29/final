@@ -66,7 +66,7 @@
                                                     <!-- Student Avatar -->
                                                     <div class="relative">
                                                         <img class="h-10 w-10 rounded-full object-cover ring-2 ring-white dark:ring-gray-800" 
-                                                             src="{{ $application->student->profile_picture ? asset('storage/' . $application->student->profile_picture) : asset('images/default-avatar.png') }}" 
+                                                             src="{{ $application->student->profile_picture ? (str_starts_with($application->student->profile_picture, 'images/') ? asset($application->student->profile_picture) : asset('storage/' . $application->student->profile_picture)) : asset('images/avatars/avatar-default.svg') }}" 
                                                              alt="{{ $application->student->name }}">
                                                         <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-gray-400 border-2 border-white dark:border-gray-800 rounded-full"></div>
                                                     </div>

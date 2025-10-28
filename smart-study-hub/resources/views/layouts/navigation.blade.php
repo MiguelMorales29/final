@@ -12,11 +12,7 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    @if(Auth::user()->role === 'admin')
-                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
-                            {{ __('Admin Dashboard') }}
-                        </x-nav-link>
-                    @elseif(Auth::user()->role === 'teacher')
+                    @if(Auth::user()->role === 'teacher')
                         <x-nav-link :href="route('teacher.dashboard')" :active="request()->routeIs('teacher.dashboard')">
                             {{ __('Teacher Dashboard') }}
                         </x-nav-link>
@@ -77,11 +73,7 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            @if(Auth::user()->role === 'admin')
-                <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
-                    {{ __('Admin Dashboard') }}
-                </x-responsive-nav-link>
-            @elseif(Auth::user()->role === 'teacher')
+            @if(Auth::user()->role === 'teacher')
                 <x-responsive-nav-link :href="route('teacher.dashboard')" :active="request()->routeIs('teacher.dashboard')">
                     {{ __('Teacher Dashboard') }}
                 </x-responsive-nav-link>

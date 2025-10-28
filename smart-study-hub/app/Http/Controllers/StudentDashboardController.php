@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\CourseApplication;
 use App\Models\Notification;
+use App\Models\Assignment;
 
 class StudentDashboardController extends Controller
 {
@@ -174,18 +175,74 @@ class StudentDashboardController extends Controller
         $approvedCoursesCount = count($myCourses) + count($approvedCourses);
         $avgProgress = $approvedCoursesCount ? intval(collect(array_merge($myCourses, $approvedCourses))->avg('progress')) : 0;
 
-        // Extended upcoming tasks for scrolling demo
-        $upcomingTasks = [
-            ['title' => 'Chemistry Lab Report #3', 'course' => 'Science', 'due' => 'Dec 15, 2024', 'priority' => 'high'],
-            ['title' => 'Essay Draft', 'course' => 'English', 'due' => 'Dec 16, 2024', 'priority' => 'high'],
-            ['title' => 'Read Chapter 12–14', 'course' => 'Mathematics', 'due' => 'Dec 18, 2024', 'priority' => 'medium'],
-            ['title' => 'Physics Problem Set 5', 'course' => 'Science', 'due' => 'Dec 19, 2024', 'priority' => 'high'],
-            ['title' => 'History Research Paper', 'course' => 'History', 'due' => 'Dec 20, 2024', 'priority' => 'medium'],
-            ['title' => 'Math Quiz Preparation', 'course' => 'Mathematics', 'due' => 'Dec 21, 2024', 'priority' => 'low'],
-            ['title' => 'Literature Analysis', 'course' => 'English', 'due' => 'Dec 22, 2024', 'priority' => 'medium'],
-            ['title' => 'Final Project Presentation', 'course' => 'Science', 'due' => 'Dec 23, 2024', 'priority' => 'high'],
-            ['title' => 'Filipino Oral Exam', 'course' => 'Filipino', 'due' => 'Dec 24, 2024', 'priority' => 'medium'],
-        ];
+        // Get enrolled course IDs
+        $enrolledCourseIds = $user->enrollments()->pluck('course_id');
+        
+        // Get assignments the student has already submitted
+        $submittedAssignmentIds = \App\Models\AssignmentSubmission::where('student_id', $user->id)
+            ->where('status', 'submitted')
+            ->pluck('assignment_id')
+            ->unique()
+            ->toArray();
+        
+        // Get real upcoming assignments from enrolled courses (excluding submitted ones)
+        $upcomingAssignments = Assignment::whereIn('course_id', $enrolledCourseIds)
+            ->where('is_published', true)
+            ->whereNotNull('due_date')
+            ->whereNotIn('id', $submittedAssignmentIds)
+            ->orderBy('due_date', 'asc')
+            ->with('course')
+            ->limit(20)
+            ->get();
+        
+        // Convert assignments to dashboard format
+        $upcomingTasks = $upcomingAssignments->map(function ($assignment) {
+            // Calculate days until due (reverse the order to get positive numbers)
+            $daysUntilDue = now()->diffInDays($assignment->due_date, false);
+            $priority = 'low';
+            
+            if ($daysUntilDue <= 3 && $daysUntilDue >= 0) {
+                $priority = 'high';
+            } elseif ($daysUntilDue <= 7 && $daysUntilDue > 3) {
+                $priority = 'medium';
+            } elseif ($daysUntilDue < 0) {
+                // Overdue
+                $priority = 'high';
+            }
+            
+            return [
+                'title' => $assignment->title,
+                'course' => $assignment->course->title,
+                'due' => $assignment->due_date->format('M d, Y'),
+                'priority' => $priority,
+                'assignment_id' => $assignment->id,
+                'days_until_due' => $daysUntilDue,
+            ];
+        })->toArray();
+        
+        // Sort by priority: high, medium, low (then by days until due)
+        if (!empty($upcomingTasks)) {
+            usort($upcomingTasks, function($a, $b) {
+                // First sort by priority
+                $priorityOrder = ['high' => 1, 'medium' => 2, 'low' => 3];
+                
+                // Get priority order numbers
+                $aPriority = $priorityOrder[$a['priority']] ?? 3;
+                $bPriority = $priorityOrder[$b['priority']] ?? 3;
+                
+                // Compare priorities
+                $priorityDiff = $aPriority - $bPriority;
+                
+                // If different priorities, return comparison
+                if ($priorityDiff !== 0) {
+                    return $priorityDiff;
+                }
+                
+                // If same priority, sort by days until due (ascending - soonest first)
+                return $a['days_until_due'] - $b['days_until_due'];
+            });
+        }
+        
         $pendingTasks = count($upcomingTasks);
 
         // Get recent notifications and convert to activity stream format
@@ -219,31 +276,76 @@ class StudentDashboardController extends Controller
             ];
         })->toArray();
         
-        // Fallback demo activities if no notifications
-        $demoActivities = [
-            ['type' => 'graded', 'title' => 'Assignment Graded', 'text' => 'Assignment graded: "Modern Literature Analysis" – A', 'time' => '2 hours ago', 'subject' => 'English', 'new' => false],
-            ['type' => 'material', 'title' => 'New Material', 'text' => 'New notes uploaded: "Advanced Calculus – Ch. 5"', 'time' => '4 hours ago', 'subject' => 'Mathematics', 'new' => false],
-            ['type' => 'assignment', 'title' => 'New Assignment', 'text' => 'New assignment released: "Physics Lab Report"', 'time' => '1 day ago', 'subject' => 'Science', 'new' => false],
-            ['type' => 'graded', 'title' => 'Quiz Graded', 'text' => 'Quiz graded: "World War II Timeline" – B+', 'time' => '2 days ago', 'subject' => 'History', 'new' => false],
-            ['type' => 'material', 'title' => 'Lecture Recording', 'text' => 'Lecture recording posted: "Organic Chemistry"', 'time' => '3 days ago', 'subject' => 'Science', 'new' => false],
-            ['type' => 'assignment', 'title' => 'Assignment Due', 'text' => 'Assignment due: "Filipino Essay"', 'time' => '4 days ago', 'subject' => 'Filipino', 'new' => false],
-            ['type' => 'graded', 'title' => 'Exam Graded', 'text' => 'Exam graded: "Linear Algebra" – A-', 'time' => '5 days ago', 'subject' => 'Mathematics', 'new' => false],
-            ['type' => 'material', 'title' => 'Study Guide', 'text' => 'Study guide uploaded: "Shakespeare Analysis"', 'time' => '1 week ago', 'subject' => 'English', 'new' => false],
-        ];
-        
-        // Combine real notifications with demo activities for a rich activity stream
-        $activityStream = array_merge($notificationActivities, $demoActivities);
+        // Use only real notifications, no demo data
+        $activityStream = $notificationActivities;
 
-        // Extended calendar markers for demo
-        $calendarMarks = [
-            date('Y-m-') . '13' => 'deadline',
-            date('Y-m-') . '15' => 'exam',
-            date('Y-m-') . '18' => 'assignment',
-            date('Y-m-') . '20' => 'deadline',
-            date('Y-m-') . '22' => 'exam',
-            date('Y-m-') . '25' => 'assignment',
-            date('Y-m-') . '28' => 'deadline',
-        ];
+        // Get real calendar marks from announcements with event dates
+        $announcements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
+            ->whereNotNull('event_date')
+            ->where('event_date', '>=', now())
+            ->where('show_on_calendar', true)
+            ->get();
+        
+        $calendarMarks = [];
+        $calendarEventsByDate = [];
+        
+        foreach ($announcements as $announcement) {
+            $dateKey = $announcement->event_date->format('Y-m-d');
+            $eventType = $announcement->event_type;
+            
+            // Map announcement event types to calendar marker types and colors
+            if ($eventType === 'exam') {
+                $calendarMarks[$dateKey] = 'exam';
+                $badgeColor = 'blue';
+            } elseif ($eventType === 'assignment') {
+                $calendarMarks[$dateKey] = 'assignment';
+                $badgeColor = 'orange';
+            } elseif ($eventType === 'quiz') {
+                $calendarMarks[$dateKey] = 'quiz';
+                $badgeColor = 'red';
+            } else {
+                // Custom event type - use purple color
+                $calendarMarks[$dateKey] = 'custom';
+                $badgeColor = 'purple';
+            }
+            
+            // Store event details
+            if (!isset($calendarEventsByDate[$dateKey])) {
+                $calendarEventsByDate[$dateKey] = [];
+            }
+            
+            $calendarEventsByDate[$dateKey][] = [
+                'type' => $eventType,
+                'type_display' => $announcement->event_type_display,
+                'title' => $announcement->title,
+                'url' => route('student.announcements.index'),
+                'badge_color' => $badgeColor,
+            ];
+        }
+        
+        // Also add assignment due dates to calendar
+        foreach ($upcomingAssignments as $assignment) {
+            $dateKey = $assignment->due_date->format('Y-m-d');
+            
+            // Store event details
+            if (!isset($calendarEventsByDate[$dateKey])) {
+                $calendarEventsByDate[$dateKey] = [];
+            }
+            
+            $calendarEventsByDate[$dateKey][] = [
+                'type' => 'assignment',
+                'type_display' => 'Assignment',
+                'title' => $assignment->title,
+                'url' => route('student.assignments.index'),
+                'badge_color' => 'orange',
+            ];
+            
+            if (!isset($calendarMarks[$dateKey])) {
+                $calendarMarks[$dateKey] = 'assignment';
+            } else if ($calendarMarks[$dateKey] === 'deadline') {
+                $calendarMarks[$dateKey] = 'deadline';
+            }
+        }
 
         // Get recent notifications for the notification dropdown
         $recentNotifications = $user->notifications()
@@ -264,8 +366,117 @@ class StudentDashboardController extends Controller
             'pendingTasks',
             'activityStream',
             'calendarMarks',
+            'calendarEventsByDate',
             'recentNotifications',
             'unreadCount'
+        ));
+    }
+
+    public function calendar(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Handle month navigation
+        $year = $request->input('year', now()->year);
+        $month = $request->input('month', now()->month);
+        
+        // Validate month and year
+        $year = max(2020, min(2099, (int)$year));
+        $month = max(1, min(12, (int)$month));
+        
+        // Get enrolled course IDs
+        $enrolledCourseIds = $user->enrollments()->pluck('course_id');
+        
+        // Get assignments the student has already submitted
+        $submittedAssignmentIds = \App\Models\AssignmentSubmission::where('student_id', $user->id)
+            ->where('status', 'submitted')
+            ->pluck('assignment_id')
+            ->unique()
+            ->toArray();
+        
+        // Get real upcoming assignments from enrolled courses (excluding submitted ones)
+        $upcomingAssignments = Assignment::whereIn('course_id', $enrolledCourseIds)
+            ->where('is_published', true)
+            ->whereNotNull('due_date')
+            ->whereNotIn('id', $submittedAssignmentIds)
+            ->orderBy('due_date', 'asc')
+            ->with('course')
+            ->get();
+        
+        // Get real calendar marks from announcements with event dates
+        $announcements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
+            ->whereNotNull('event_date')
+            ->where('show_on_calendar', true)
+            ->get();
+        
+        $calendarMarks = [];
+        $calendarEventsByDate = [];
+        
+        foreach ($announcements as $announcement) {
+            $dateKey = $announcement->event_date->format('Y-m-d');
+            $eventType = $announcement->event_type;
+            
+            // Map announcement event types to calendar marker types and colors
+            if ($eventType === 'exam') {
+                $calendarMarks[$dateKey] = 'exam';
+                $badgeColor = 'blue';
+            } elseif ($eventType === 'assignment') {
+                $calendarMarks[$dateKey] = 'assignment';
+                $badgeColor = 'orange';
+            } elseif ($eventType === 'quiz') {
+                $calendarMarks[$dateKey] = 'quiz';
+                $badgeColor = 'red';
+            } else {
+                // Custom event type - use purple color
+                $calendarMarks[$dateKey] = 'custom';
+                $badgeColor = 'purple';
+            }
+            
+            // Store event details with proper URL based on type
+            if (!isset($calendarEventsByDate[$dateKey])) {
+                $calendarEventsByDate[$dateKey] = [];
+            }
+            
+            $calendarEventsByDate[$dateKey][] = [
+                'type' => $eventType,
+                'type_display' => $announcement->event_type_display,
+                'title' => $announcement->title,
+                'url' => route('student.announcements.index'),
+                'badge_color' => $badgeColor,
+            ];
+        }
+        
+        // Also add assignment due dates to calendar
+        foreach ($upcomingAssignments as $assignment) {
+            $dateKey = $assignment->due_date->format('Y-m-d');
+            
+            // Store event details
+            if (!isset($calendarEventsByDate[$dateKey])) {
+                $calendarEventsByDate[$dateKey] = [];
+            }
+            
+            $calendarEventsByDate[$dateKey][] = [
+                'type' => 'assignment',
+                'type_display' => 'Assignment',
+                'title' => $assignment->title,
+                'url' => route('student.assignments.show', $assignment),
+                'badge_color' => 'orange',
+                'assignment_id' => $assignment->id,
+            ];
+            
+            if (!isset($calendarMarks[$dateKey])) {
+                $calendarMarks[$dateKey] = 'assignment';
+            } else if ($calendarMarks[$dateKey] === 'deadline') {
+                $calendarMarks[$dateKey] = 'deadline';
+            }
+        }
+
+        return view('student.calendar', compact(
+            'user',
+            'calendarMarks',
+            'calendarEventsByDate',
+            'year',
+            'month'
         ));
     }
 }
