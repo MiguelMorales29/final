@@ -27,11 +27,48 @@
                         'dotColor' => 'bg-green-500',
                         'ariaLabel' => 'Assignment graded'
                       ],
-                      'material' => [
+                      'quiz' => [
+                        'icon' => 'quiz',
+                        'iconColor' => 'text-cyan-600 dark:text-cyan-400',
+                        'dotColor' => 'bg-cyan-500',
+                        'ariaLabel' => 'Quiz announcement'
+                      ],
+                      'exam' => [
+                        'icon' => 'exam',
+                        'iconColor' => 'text-red-600 dark:text-red-400',
+                        'dotColor' => 'bg-red-500',
+                        'ariaLabel' => 'Exam announcement'
+                      ],
+                      'announcement' => [
+                        'icon' => 'calendar',
+                        'iconColor' => 'text-blue-600 dark:text-blue-400',
+                        'dotColor' => 'bg-blue-500',
+                        'ariaLabel' => 'Announcement'
+                      ],
+                      // Material types
+                      'material_video' => [
+                        'icon' => 'play',
+                        'iconColor' => 'text-red-600 dark:text-red-400',
+                        'dotColor' => 'bg-red-500',
+                        'ariaLabel' => 'New video material'
+                      ],
+                      'material_file' => [
                         'icon' => 'document-text',
                         'iconColor' => 'text-blue-600 dark:text-blue-400',
                         'dotColor' => 'bg-blue-500',
-                        'ariaLabel' => 'New course material'
+                        'ariaLabel' => 'New file material'
+                      ],
+                      'material_link' => [
+                        'icon' => 'external-link',
+                        'iconColor' => 'text-green-600 dark:text-green-400',
+                        'dotColor' => 'bg-green-500',
+                        'ariaLabel' => 'New link material'
+                      ],
+                      'material_text' => [
+                        'icon' => 'document-text',
+                        'iconColor' => 'text-blue-600 dark:text-blue-400',
+                        'dotColor' => 'bg-blue-500',
+                        'ariaLabel' => 'New text material'
                       ],
                       'assignment' => [
                         'icon' => 'clipboard-document-list',
@@ -103,14 +140,59 @@
                     {{-- Scrollable Body with fade effect --}}
                     <div class="relative flex-1 overflow-hidden">
                       <div class="p-5 overflow-y-auto thin-scrollbar space-y-3" style="max-height:20rem;mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)">
-                        @forelse($activityStream ?? [] as $i => $a)
+                        @foreach($activityStream as $i => $a)
                           @php $config = $activityConfig[$a['type']] ?? [
                             'icon' => 'information-circle',
                             'iconColor' => 'text-gray-600 dark:text-gray-400',
                             'dotColor' => 'bg-gray-500',
                             'ariaLabel' => 'Activity'
                           ]; @endphp
-                          <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition {{ $i===0 ? 'bg-gray-50 dark:bg-gray-800/40' : '' }}">
+                          @php
+                            // Click URL detection
+                            $clickUrl = null;
+                            if (in_array($a['type'], ['material_video','material_file','material_link','material_text']) && !empty($a['material_id'] ?? null)) {
+                                $clickUrl = route('student.materials.show', $a['material_id']);
+                            } elseif ($a['type'] === 'assignment' && !empty($a['notification_data']['assignment_id'] ?? null)) {
+                                $clickUrl = route('student.assignments.show', $a['notification_data']['assignment_id']);
+                            } elseif (in_array($a['type'], ['quiz','exam','announcement']) && !empty($a['notification_data']['announcement_id'] ?? null)) {
+                                // requires student.announcements.show
+                                $clickUrl = route('student.announcements.show', $a['notification_data']['announcement_id']);
+                            }
+                            
+                            // Dynamic material file color override
+                            if ($a['type'] === 'material_file') {
+                                $fileExt = $a['notification_data']['file_extension'] ?? null;
+                                if ($fileExt === 'pdf') {
+                                  $activityConfig['material_file']['iconColor'] = 'text-red-600 dark:text-red-400';
+                                  $activityConfig['material_file']['dotColor'] = 'bg-red-500';
+                                } elseif (in_array($fileExt, ['ppt','pptx'])) {
+                                  $activityConfig['material_file']['iconColor'] = 'text-orange-600 dark:text-orange-400';
+                                  $activityConfig['material_file']['dotColor'] = 'bg-orange-500';
+                                } else {
+                                  $activityConfig['material_file']['iconColor'] = 'text-blue-600 dark:text-blue-400';
+                                  $activityConfig['material_file']['dotColor'] = 'bg-blue-500';
+                                }
+                            } elseif ($a['type'] === 'material_text') {
+                                $activityConfig['material_text']['iconColor'] = 'text-blue-600 dark:text-blue-400';
+                                $activityConfig['material_text']['dotColor'] = 'bg-blue-500';
+                            }
+                            $config = $activityConfig[$a['type']] ?? [
+                              'icon' => 'information-circle',
+                              'iconColor' => 'text-gray-600 dark:text-gray-400',
+                              'dotColor' => 'bg-gray-500',
+                              'ariaLabel' => 'Activity'
+                            ];
+                          @endphp
+                          @php
+                            $accent = [
+                              'English' => 'border-l-4 border-emerald-500',
+                              'Mathematics' => 'border-l-4 border-indigo-500',
+                              'Science' => 'border-l-4 border-sky-500',
+                              'Programming Fundamentals' => 'border-l-4 border-violet-500',
+                              'History' => 'border-l-4 border-amber-500',
+                            ][$a['subject']] ?? 'border-l-4 border-gray-300 dark:border-gray-700';
+                          @endphp
+                          <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition {{ $i===0 ? 'bg-gray-50 dark:bg-gray-800/40' : '' }} {{ $clickUrl ? 'cursor-pointer' : '' }} {{ $accent }}" @if($clickUrl) onclick="window.location.href='{{ $clickUrl }}'" @endif>
                             <div class="flex items-start gap-3">
                               {{-- Heroicon (16px) --}}
                               <div class="mt-0.5">
@@ -121,6 +203,14 @@
                                 @elseif($config['icon'] === 'document-text')
                                   <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                  </svg>
+                                @elseif($config['icon'] === 'play')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M8 5v14l11-7z"/>
+                                  </svg>
+                                @elseif($config['icon'] === 'external-link')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                                   </svg>
                                 @elseif($config['icon'] === 'clipboard-document-list')
                                   <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -145,6 +235,20 @@
                                 @elseif($config['icon'] === 'information-circle')
                                   <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                  </svg>
+                                @elseif($config['icon'] === 'quiz')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                                  </svg>
+                                @elseif($config['icon'] === 'exam')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                                    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v7m0 0v-7m0 7H9m3 0h3"></path>
+                                  </svg>
+                                @elseif($config['icon'] === 'calendar')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                   </svg>
                                 @endif
                               </div>
@@ -173,20 +277,13 @@
                               </div>
                             </div>
                           </div>
-                        @empty
-                          <div class="text-center py-8 text-gray-500 dark:text-gray-400">
-                            <svg class="mx-auto h-12 w-12 mb-2 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5"></path>
-                            </svg>
-                            <p class="text-sm">No recent activity yet</p>
-                          </div>
-                        @endforelse
+                        @endforeach
                       </div>
                     </div>
 
                     {{-- Footer with inset divider --}}
-                    <div class="border-t border-gray-200 dark:border-gray-800 px-5 py-4 bg-white dark:bg-gray-900 flex justify-center">
-                      <a href="{{ route('notifications.index') }}" class="text-indigo-600 dark:text-indigo-400 text-sm inline-flex items-center gap-1 hover:underline">
+                    <div class="border-t border-gray-200 dark:border-gray-800 px-5 py-3">
+                      <a href="#" class="text-indigo-600 dark:text-indigo-400 text-sm inline-flex items-center gap-1 hover:underline">
                         View all activity
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                       </a>
@@ -195,6 +292,7 @@
 
                   {{-- -------------------- Upcoming Tasks -------------------- --}}
                   @php
+                    // Use controller-provided upcoming tasks
                     $priorityStyle = [
                       'high'   => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200',
                       'medium' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-200',
@@ -210,14 +308,14 @@
                         <p class="text-sm text-gray-500 dark:text-gray-400">Your pending assignments</p>
                       </div>
                       <span class="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                        {{ count($upcomingTasks) }} pending
+                        {{ (is_countable($upcomingTasks ?? []) ? count($upcomingTasks) : 0) }} pending
                       </span>
                     </div>
 
                     {{-- Scrollable Body with fade effect --}}
                     <div class="relative flex-1 overflow-hidden">
                       <div class="p-5 overflow-y-auto thin-scrollbar space-y-3" style="max-height:20rem;mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)">
-                        @forelse($upcomingTasks ?? [] as $t)
+                        @foreach(($upcomingTasks ?? []) as $t)
                           @php
                             $clockColor = [
                               'high' => 'text-red-500 dark:text-red-400',
@@ -225,7 +323,8 @@
                               'low' => 'text-gray-500 dark:text-gray-400'
                             ][$t['priority']] ?? 'text-gray-500 dark:text-gray-400';
                           @endphp
-                          <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition">
+                          @php $assignmentUrl = isset($t['assignment_id']) ? route('student.assignments.show', $t['assignment_id']) : null; @endphp
+                          <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition {{ $assignmentUrl ? 'cursor-pointer' : '' }}" @if($assignmentUrl) onclick="window.location.href='{{ $assignmentUrl }}'" @endif>
                             <div class="flex items-start justify-between gap-3">
                               <div class="flex items-start gap-2">
                                 {{-- color-coded clock icon --}}
@@ -233,27 +332,30 @@
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3M12 22a10 10 0 110-20 10 10 0 010 20z"/>
                                 </svg>
                                 <div>
-                                  <div class="font-semibold text-gray-900 dark:text-white">{{ $t['title'] }}</div>
+                                  <div class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    {{ $t['title'] }}
+                                    @php $badgeType = $t['type'] ?? (isset($t['assignment_id']) ? 'assignment' : null); @endphp
+                                    @if($badgeType)
+                                      <span class="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full
+                                        {{ $badgeType==='assignment' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-200' : ($badgeType==='exam' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200' : ($badgeType==='quiz' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200')) }}">
+                                        @if($badgeType==='assignment') 📘 @elseif($badgeType==='exam') 🎓 @elseif($badgeType==='quiz') ✅ @else 🗓️ @endif
+                                        <span class="capitalize">{{ $badgeType }}</span>
+                                      </span>
+                                    @endif
+                                  </div>
                                   <div class="text-[12px] text-gray-500 dark:text-gray-400">{{ $t['course'] }} • Due: {{ $t['due'] }}</div>
                                 </div>
                               </div>
                               <span class="text-[11px] px-2 py-0.5 rounded-full {{ $priorityStyle[$t['priority']] }}">{{ $t['priority'] }}</span>
                             </div>
                           </div>
-                        @empty
-                          <div class="text-center py-8 text-gray-500 dark:text-gray-400">
-                            <svg class="mx-auto h-12 w-12 mb-2 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a/r2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                            </svg>
-                            <p class="text-sm">No upcoming tasks</p>
-                          </div>
-                        @endforelse
+                        @endforeach
                       </div>
                     </div>
 
                     {{-- Footer with inset divider --}}
-                    <div class="border-t border-gray-200 dark:border-gray-800 px-5 py-4 bg-white dark:bg-gray-900 flex justify-center">
-                      <a href="{{ route('student.assignments.index') }}" class="text-indigo-600 dark:text-indigo-400 text-sm inline-flex items-center gap-1 hover:underline">
+                    <div class="border-t border-gray-200 dark:border-gray-800 px-5 py-3">
+                      <a href="#" class="text-indigo-600 dark:text-indigo-400 text-sm inline-flex items-center gap-1 hover:underline">
                         View all tasks
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                       </a>
@@ -266,16 +368,7 @@
                     $start = $today->copy()->startOfMonth();
                     $daysInMonth = $start->daysInMonth;
                     $startDow = $start->dayOfWeek; // 0=Sun
-                    
-                    // Use real calendar marks from controller
-                    $realCalendarMarks = $calendarMarks ?? [];
-                    $markDot = [
-                      'exam'=>'bg-blue-500',
-                      'assignment'=>'bg-orange-500',
-                      'deadline'=>'bg-red-500',
-                      'quiz'=>'bg-red-500',
-                      'custom'=>'bg-purple-500'
-                    ];
+                    $markDot = ['exam'=>'bg-blue-500','assignment'=>'bg-orange-500','quiz'=>'bg-red-500','custom'=>'bg-purple-500'];
                   @endphp
 
                   <div class="h-full rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition flex flex-col">
@@ -298,83 +391,63 @@
                         {{-- days --}}
                         @for($d=1;$d<=$daysInMonth;$d++)
                           @php
-                            $isToday = ($today->day==$d && $today->month==$start->month && $today->year==$start->year);
-                            // Get events for this day (date key format: Y-m-d)
-                            $dayKey = $start->copy()->day($d)->format('Y-m-d');
-                            $dayEvents = $calendarEventsByDate[$dayKey] ?? [];
-                            $mark = $realCalendarMarks[$dayKey] ?? null;
-                            
-                            // Get unique badge colors from events (max 5)
-                            $uniqueBadges = [];
-                            foreach($dayEvents as $event) {
-                              if (!in_array($event['badge_color'], $uniqueBadges) && count($uniqueBadges) < 5) {
-                                $uniqueBadges[] = $event['badge_color'];
-                              }
-                            }
-                            $totalEvents = count($dayEvents);
-                            $showMoreIndicator = $totalEvents > count($uniqueBadges);
+                            $dateKey = $start->copy()->day($d)->format('Y-m-d');
+                            $isToday = ($today->format('Y-m-d') === $dateKey);
+                            $mark = $calendarMarks[$dateKey] ?? null;
                           @endphp
-                          <div 
-                            @if(count($dayEvents) > 0)
-                            x-data="{ showAbove: true }"
-                            @mouseenter="
-                              const rect = $event.currentTarget.getBoundingClientRect();
-                              const tooltipHeight = 180;
-                              const spaceAbove = rect.top;
-                              const spaceBelow = window.innerHeight - rect.bottom;
-                              showAbove = spaceAbove > spaceBelow || spaceBelow < tooltipHeight;
-                            "
-                            @endif
-                            class="relative h-10 rounded border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800/60 transition group {{ count($dayEvents) > 0 ? 'cursor-pointer' : '' }}"
-                            @if(count($dayEvents) > 0)
-                            onclick="window.location.href='{{ route('student.calendar') }}'"
-                            @endif>
+                          <div class="relative h-10 rounded border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800/60 transition group"
+                               x-data="{
+                                   openState: false,
+                                   style: '',
+                                   open(el) {
+                                       this.openState = true;
+                                       this.$nextTick(() => {
+                                           try {
+                                               const rect = el.getBoundingClientRect();
+                                               const tip = this.$refs.tip;
+                                               const vw = window.innerWidth;
+                                               const vh = window.innerHeight;
+                                               const width = 224; // ~w-56
+                                               const margin = 8;
+                                               let tipH = tip ? Math.min(tip.scrollHeight, 320) : 160;
+                                               // Prefer below
+                                               let top = rect.bottom + margin;
+                                               // If out of bottom, place above
+                                               if (top + tipH > vh - margin) top = rect.top - tipH - margin;
+                                               // Clamp to viewport
+                                               if (top < margin) top = margin;
+                                               let left = rect.left + (rect.width / 2) - (width / 2);
+                                               if (left < margin) left = margin;
+                                               if (left + width > vw - margin) left = vw - width - margin;
+                                               this.style = `position: fixed; top: ${top}px; left: ${left}px; width: ${width}px;`;
+                                           } catch (e) {}
+                                       });
+                                   },
+                                   close() { this.openState = false; }
+                               }"
+                               @mouseenter="open($el)" @mouseleave="close()">
                             <span class="text-gray-900 dark:text-gray-100 {{ $isToday ? 'inline-flex items-center justify-center h-7 w-7 rounded-full bg-indigo-600 text-white' : '' }}">
                               {{ $d }}
                             </span>
-                            @if(count($uniqueBadges) > 0)
-                              <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex items-center gap-0.5 px-1">
-                                @foreach($uniqueBadges as $badgeColor)
-                                  <span class="h-1.5 w-1.5 rounded-full {{ $badgeColor === 'blue' ? 'bg-blue-500' : ($badgeColor === 'orange' ? 'bg-orange-500' : ($badgeColor === 'red' ? 'bg-red-500' : 'bg-purple-500')) }}"></span>
-                                @endforeach
-                                @if($showMoreIndicator)
-                                  <span class="text-[8px] text-gray-500 dark:text-gray-400 font-medium ml-0.5">+{{ $totalEvents - count($uniqueBadges) }}</span>
-                                @endif
-                              </div>
-                            @endif
-                            
-                            {{-- Hover Tooltip with Auto-Adjust --}}
-                            @if(count($dayEvents) > 0)
-                              <div 
-                                :class="showAbove ? 'bottom-full mb-3' : 'top-full mt-3'"
-                                class="absolute left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out pointer-events-none z-50 w-64">
-                                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm bg-opacity-95">
-                                  <!-- Tooltip Header -->
-                                  <div class="bg-gradient-to-r from-indigo-500 to-blue-500 px-4 py-3 border-b border-indigo-400 dark:border-indigo-600">
-                                    <div class="font-bold text-white text-sm">{{ $start->copy()->day($d)->format('M d, Y') }}</div>
-                                    <div class="text-white/80 text-xs mt-0.5">{{ count($dayEvents) }} event{{ count($dayEvents) > 1 ? 's' : '' }}</div>
-                                  </div>
-                                  <!-- Tooltip Content -->
-                                  <div class="py-2 px-3 max-h-60 overflow-y-auto">
-                                    @foreach($dayEvents as $event)
-                                      <div class="flex items-start gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors first:pt-0 last:pb-0">
-                                        <div class="flex-shrink-0 mt-0.5">
-                                          <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wide
-                                            {{ $event['badge_color'] === 'blue' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : '' }}
-                                            {{ $event['badge_color'] === 'orange' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' : '' }}
-                                            {{ $event['badge_color'] === 'red' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' : '' }}
-                                            {{ $event['badge_color'] === 'purple' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : '' }}">
-                                            {{ $event['type_display'] }}
+                            @if($mark)
+                              <span class="absolute -bottom-1 h-1.5 w-1.5 rounded-full {{ $markDot[$mark] }}"></span>
+                              @php $events = $calendarEventsByDate[$dateKey] ?? []; @endphp
+                              @if(!empty($events))
+                                <div x-show="openState" x-ref="tip" x-cloak class="fixed z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 w-56 text-left" :style="style">
+                                  <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Events ({{ count($events) }})</div>
+                                  <div class="space-y-2 max-h-48 overflow-y-auto">
+                                    @foreach($events as $ev)
+                                      <a href="{{ $ev['url'] }}" class="block hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded p-2">
+                                        <span class="inline-flex items-center gap-2 text-xs">
+                                          <span class="h-2 w-2 rounded-full {{ $ev['badge_color']==='blue'?'bg-blue-500':($ev['badge_color']==='orange'?'bg-orange-500':($ev['badge_color']==='red'?'bg-red-500':'bg-purple-500')) }}"></span>
+                                          <span class="text-gray-700 dark:text-gray-300 font-medium">{{ $ev['type_display'] }}</span>
                                           </span>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                          <div class="text-gray-900 dark:text-white font-medium leading-snug break-words">{{ $event['title'] }}</div>
-                                        </div>
-                                      </div>
+                                        <div class="text-sm text-gray-900 dark:text-gray-100 leading-snug">{{ $ev['title'] }}</div>
+                                      </a>
                                     @endforeach
                                   </div>
                                 </div>
-                              </div>
+                              @endif
                             @endif
                           </div>
                         @endfor
@@ -383,19 +456,10 @@
                       {{-- Horizontal legend with "Upcoming" text --}}
                       <div class="mt-6">
                         <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Upcoming</div>
-                        <div class="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-300 flex-wrap">
-                          <span class="inline-flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-blue-500"></span> Exam
-                          </span>
-                          <span class="inline-flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-orange-500"></span> Assignment
-                          </span>
-                          <span class="inline-flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-red-500"></span> Quiz
-                          </span>
-                          <span class="inline-flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-purple-500"></span> Other Events
-                          </span>
+                        <div class="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-300">
+                          <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-blue-500"></span> Exams</span>
+                          <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-orange-500"></span> Assignments</span>
+                          <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-red-500"></span> Quizzes</span>
                         </div>
                       </div>
                     </div>
@@ -413,7 +477,8 @@
                   <div class="mt-6 relative">
                     {{-- Main grid with 3x3 layout --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
-                      @forelse(array_slice($allCourses, 0, 9) as $index => $c)
+                      @php $allCoursesSlice = collect($allCourses ?? [])->take(9)->values()->all(); @endphp
+                      @forelse($allCoursesSlice as $index => $c)
                       @if(isset($c['locked']) && $c['locked'])
                         {{-- Pending/Rejected/Locked Course Card --}}
                         <div class="group relative rounded-2xl overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 ease-out">
@@ -688,4 +753,4 @@
         </div>
     </div>
 </div>
-</x-student-layout>`
+</x-student-layout>

@@ -118,6 +118,12 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
         Route::get('/student/materials/{material}/view', [StudentModuleController::class, 'viewPdf'])->name('student.materials.view');
         Route::get('/student/courses/{course}/materials', [StudentModuleController::class, 'allMaterials'])->name('student.course.all-materials');
         Route::get('/student/courses/{course}/assignments', [StudentModuleController::class, 'allAssignments'])->name('student.course.all-assignments');
+        
+        // Material completion tracking routes
+        Route::post('/student/materials/{material}/mark-done', [StudentModuleController::class, 'markAsDone'])->name('student.materials.mark-done');
+        Route::delete('/student/materials/{material}/unmark-done', [StudentModuleController::class, 'unmarkAsDone'])->name('student.materials.unmark-done');
+        Route::get('/student/materials/{material}/completion-status', [StudentModuleController::class, 'getCompletionStatus'])->name('student.materials.completion-status');
+        Route::get('/student/courses/{course}/progress', [StudentModuleController::class, 'getCourseProgress'])->name('student.course.progress');
     
     // Student assignment routes
     Route::get('/student/assignments', [StudentAssignmentController::class, 'index'])->name('student.assignments.index');
@@ -127,6 +133,7 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     
     // Student announcement routes
     Route::get('/student/announcements', [AnnouncementController::class, 'studentIndex'])->name('student.announcements.index');
+    Route::get('/student/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('student.announcements.show');
 });
 
 // Legacy dashboard route (redirects based on role)

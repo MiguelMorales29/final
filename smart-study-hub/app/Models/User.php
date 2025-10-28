@@ -108,6 +108,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the material completions for the user (student).
+     */
+    public function materialCompletions(): HasMany
+    {
+        return $this->hasMany(MaterialCompletion::class, 'student_id');
+    }
+
+    /**
      * Generate a unique 7-digit student number starting with 2.
      */
     public static function generateStudentNumber(): string

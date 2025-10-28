@@ -231,9 +231,9 @@
                 <div class="flex items-center justify-between">
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Course Structure & Materials</h3>
                     <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span>Total Materials: <span class="font-semibold text-gray-900 dark:text-white">{{ $totalMaterials }}</span></span>
+                        <span>Total Materials: <span class="font-semibold text-gray-900 dark:text-white" x-text="totalItems"></span></span>
                         <span>•</span>
-                        <span>Total Weeks: <span class="font-semibold text-gray-900 dark:text-white">{{ $totalWeeks }}</span></span>
+                        <span>Total Weeks: <span class="font-semibold text-gray-900 dark:text-white" x-text="totalWeeks"></span></span>
                     </div>
                 </div>
                 

@@ -226,7 +226,8 @@ class AssignmentController extends Controller
                         'course_id' => $course->id,
                         'course_title' => $course->title,
                         'assignment_id' => $assignment->id,
-                        'teacher_name' => auth()->user()->name
+                        'teacher_name' => auth()->user()->name,
+                        'assignment_description' => $assignment->description
                     ])
                 ]);
             }
@@ -339,7 +340,8 @@ class AssignmentController extends Controller
                         'course_id' => $course->id,
                         'course_title' => $course->title,
                         'assignment_id' => $assignment->id,
-                        'teacher_name' => auth()->user()->name
+                        'teacher_name' => auth()->user()->name,
+                        'assignment_description' => $assignment->description
                     ])
                 ]);
             }

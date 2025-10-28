@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\CourseMaterial;
 use App\Models\CourseWeek;
+use App\Models\MaterialCompletion;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class StudentModuleController extends Controller
@@ -47,7 +50,16 @@ class StudentModuleController extends Controller
             abort(403, 'Unauthorized access to this material.');
         }
 
-        return view('student.materials.show', compact('material'));
+        // Extract text content for Smart Buddy (only for text-type materials)
+        $textContent = '';
+        if ($material->type === 'text' && $material->content) {
+            $textContent = strip_tags($material->content);
+            if ($material->description) {
+                $textContent .= ' ' . strip_tags($material->description);
+            }
+        }
+
+        return view('student.materials.show', compact('material', 'textContent'));
     }
 
     /**
@@ -73,8 +85,22 @@ class StudentModuleController extends Controller
             abort(404, 'File not found.');
         }
 
+        // Get the file extension
+        $fileExtension = strtolower(pathinfo($material->file_path, PATHINFO_EXTENSION));
+        
+        // For PDF files, serve directly with proper headers
+        if ($fileExtension === 'pdf') {
+            return response()->file($filePath, [
+                'Content-Type' => mime_content_type($filePath),
+                'Cache-Control' => 'public, max-age=3600',
+            ]);
+        }
+        
+        // For other files (PPT, DOC, etc.), serve with appropriate MIME type
         return response()->file($filePath, [
             'Content-Type' => mime_content_type($filePath),
+            'Cache-Control' => 'public, max-age=3600',
+            'Content-Disposition' => 'inline; filename="' . basename($material->file_path) . '"',
         ]);
     }
 
@@ -143,5 +169,130 @@ class StudentModuleController extends Controller
             ->groupBy('status');
 
         return view('student.modules.all-assignments', compact('course', 'assignments'));
+    }
+
+    /**
+     * Mark a material as done.
+     */
+    public function markAsDone(CourseMaterial $material): JsonResponse
+    {
+        $studentId = auth()->id();
+        
+        // Check if student is enrolled in this course
+        if (!$material->course->students()->where('student_id', $studentId)->exists()) {
+            return response()->json(['error' => 'Unauthorized access'], 403);
+        }
+
+        // Check if already marked as done
+        $existing = MaterialCompletion::where('student_id', $studentId)
+            ->where('material_id', $material->id)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Material already marked as done',
+                'completion' => $existing
+            ]);
+        }
+
+        // Create completion record
+        $completion = MaterialCompletion::create([
+            'student_id' => $studentId,
+            'material_id' => $material->id,
+            'course_id' => $material->course_id,
+            'completed_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Material marked as done successfully',
+            'completion' => $completion
+        ]);
+    }
+
+    /**
+     * Unmark a material as done.
+     */
+    public function unmarkAsDone(CourseMaterial $material): JsonResponse
+    {
+        $studentId = auth()->id();
+        
+        // Check if student is enrolled in this course
+        if (!$material->course->students()->where('student_id', $studentId)->exists()) {
+            return response()->json(['error' => 'Unauthorized access'], 403);
+        }
+
+        // Delete completion record
+        MaterialCompletion::where('student_id', $studentId)
+            ->where('material_id', $material->id)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Material unmarked successfully'
+        ]);
+    }
+
+    /**
+     * Get completion status for a material.
+     */
+    public function getCompletionStatus(CourseMaterial $material): JsonResponse
+    {
+        $studentId = auth()->id();
+        
+        $completion = MaterialCompletion::where('student_id', $studentId)
+            ->where('material_id', $material->id)
+            ->first();
+
+        return response()->json([
+            'is_completed' => $completion !== null,
+            'completed_at' => $completion ? $completion->completed_at : null
+        ]);
+    }
+
+    /**
+     * Calculate course progress for a student.
+     */
+    public function getCourseProgress(Course $course): JsonResponse
+    {
+        $studentId = auth()->id();
+        
+        // Check if student is enrolled in this course
+        if (!$course->students()->where('student_id', $studentId)->exists()) {
+            return response()->json(['error' => 'Unauthorized access'], 403);
+        }
+
+        // Get all materials for this course
+        $totalMaterials = $course->materials()->count();
+        
+        // Get completed materials
+        $completedMaterials = MaterialCompletion::where('student_id', $studentId)
+            ->where('course_id', $course->id)
+            ->count();
+        
+        // Get submitted assignments
+        $totalAssignments = $course->assignments()->count();
+        $submittedAssignments = \App\Models\AssignmentSubmission::whereHas('assignment', function ($query) use ($course) {
+            $query->where('course_id', $course->id);
+        })
+        ->where('student_id', $studentId)
+        ->where('status', '!=', 'draft')
+        ->count();
+
+        // Calculate total progress
+        $totalItems = $totalMaterials + $totalAssignments;
+        $completedItems = $completedMaterials + $submittedAssignments;
+        $progressPercentage = $totalItems > 0 ? round(($completedItems / $totalItems) * 100, 2) : 0;
+
+        return response()->json([
+            'total_materials' => $totalMaterials,
+            'completed_materials' => $completedMaterials,
+            'total_assignments' => $totalAssignments,
+            'submitted_assignments' => $submittedAssignments,
+            'total_items' => $totalItems,
+            'completed_items' => $completedItems,
+            'progress_percentage' => $progressPercentage
+        ]);
     }
 }

@@ -43,6 +43,21 @@ class AnnouncementController extends Controller
     }
 
     /**
+     * Display a single announcement for students with access control.
+     */
+    public function show(Announcement $announcement): View
+    {
+        if (auth()->user()->role === 'student') {
+            $enrolledCourseIds = auth()->user()->enrollments()->pluck('course_id');
+            if (!in_array($announcement->course_id, $enrolledCourseIds->toArray())) {
+                abort(403, 'Unauthorized access to this announcement.');
+            }
+        }
+        $announcement->load(['course','teacher']);
+        return view('student.announcements.show', compact('announcement'));
+    }
+
+    /**
      * Show the form for creating a new announcement.
      */
     public function create()
@@ -101,7 +116,11 @@ class AnnouncementController extends Controller
                     'course_id' => $course->id,
                     'course_title' => $course->title,
                     'announcement_id' => $announcement->id,
-                    'teacher_name' => auth()->user()->name
+                    'event_type' => $announcement->event_type,
+                    'custom_event_type' => $announcement->custom_event_type,
+                    'teacher_name' => auth()->user()->name,
+                    'announcement_content' => $announcement->content,
+                    'event_date' => $announcement->event_date ? $announcement->event_date->toIso8601String() : null
                 ])
             ]);
         }

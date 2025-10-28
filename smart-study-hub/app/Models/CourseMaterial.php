@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CourseMaterial extends Model
 {
@@ -42,6 +43,14 @@ class CourseMaterial extends Model
     public function week(): BelongsTo
     {
         return $this->belongsTo(CourseWeek::class, 'course_week_id');
+    }
+
+    /**
+     * Get the completion records for this material.
+     */
+    public function completions(): HasMany
+    {
+        return $this->hasMany(MaterialCompletion::class, 'material_id');
     }
 
     /**

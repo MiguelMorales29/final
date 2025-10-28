@@ -89,12 +89,12 @@
                                 Back to Modules
                             </a>
                             
-                            <!-- Future-ready: Mark as Done button -->
-                            <button class="inline-flex items-center px-4 py-2 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 text-green-700 dark:text-green-300 text-sm font-medium rounded-lg transition-colors duration-150">
+                            <!-- Mark as Done button -->
+                            <button id="markDoneBtn" onclick="toggleMarkAsDone({{ $material->id }})" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-green-100 dark:bg-gray-700 dark:hover:bg-green-900 text-gray-700 hover:text-green-700 dark:text-gray-300 dark:hover:text-green-300 text-sm font-medium rounded-lg transition-colors duration-150">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                Mark as Done
+                                <span id="markDoneText">Mark as Done</span>
                             </button>
                         </div>
                     </div>
@@ -280,10 +280,96 @@
                                     {!! $material->content !!}
                                 </article>
                             </div>
+                            
+                            <!-- Smart Buddy (only for text-based materials with extracted text) -->
+                            @if(!empty($textContent ?? ''))
+                                <x-smart-buddy :textContent="$textContent" :materialId="$material->id" />
+                            @endif
                         @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+    let isCompleted = false;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        checkCompletionStatus({{ $material->id }});
+    });
+
+    function checkCompletionStatus(materialId) {
+        fetch(`/student/materials/${materialId}/completion-status`)
+            .then(response => response.json())
+            .then(data => {
+                isCompleted = data.is_completed;
+                updateButtonState();
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function toggleMarkAsDone(materialId) {
+        const btn = document.getElementById('markDoneBtn');
+        const text = document.getElementById('markDoneText');
+        
+        btn.disabled = true;
+        text.textContent = isCompleted ? 'Unmarking...' : 'Marking...';
+        
+        const endpoint = isCompleted 
+            ? `/student/materials/${materialId}/unmark-done`
+            : `/student/materials/${materialId}/mark-done`;
+        const method = isCompleted ? 'DELETE' : 'POST';
+        
+        fetch(endpoint, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                isCompleted = !isCompleted;
+                updateButtonState();
+                const message = isCompleted ? 'Material marked as done!' : 'Material unmarked!';
+                showToast(message, isCompleted ? 'success' : 'info');
+            } else if (data.error) {
+                showToast(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('An error occurred. Please try again.', 'error');
+        })
+        .finally(() => {
+            btn.disabled = false;
+        });
+    }
+
+    function updateButtonState() {
+        const btn = document.getElementById('markDoneBtn');
+        const text = document.getElementById('markDoneText');
+        
+        if (isCompleted) {
+            btn.classList.remove('bg-gray-100','hover:bg-green-100','text-gray-700','hover:text-green-700','dark:bg-gray-700','dark:hover:bg-green-900','dark:text-gray-300','dark:hover:text-green-300');
+            btn.classList.add('bg-green-100','hover:bg-green-200','dark:bg-green-900','dark:hover:bg-green-800','text-green-700','dark:text-green-300');
+            text.textContent = 'Marked as Done';
+        } else {
+            btn.classList.remove('bg-green-100','hover:bg-green-200','dark:bg-green-900','dark:hover:bg-green-800','text-green-700','dark:text-green-300');
+            btn.classList.add('bg-gray-100','hover:bg-green-100','dark:bg-gray-700','dark:hover:bg-green-900','text-gray-700','hover:text-green-700','dark:text-gray-300','dark:hover:text-green-300');
+            text.textContent = 'Mark as Done';
+        }
+    }
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        const colors = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-blue-600');
+        toast.className = `fixed top-4 right-4 px-4 py-2 rounded text-white shadow-lg z-50 ${colors}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+    }
+    </script>
 </x-student-layout>

@@ -219,6 +219,37 @@ class StudentDashboardController extends Controller
                 'days_until_due' => $daysUntilDue,
             ];
         })->toArray();
+
+        // Include upcoming announcements with event dates (quiz, exam, assignment, custom)
+        $upcomingAnnouncements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
+            ->whereNotNull('event_date')
+            ->where('event_date', '>=', now())
+            ->where('show_on_calendar', true)
+            ->orderBy('event_date', 'asc')
+            ->with('course')
+            ->limit(20)
+            ->get();
+
+        foreach ($upcomingAnnouncements as $announcement) {
+            $daysUntil = now()->diffInDays($announcement->event_date, false);
+            $priority = 'low';
+            if ($daysUntil <= 3 && $daysUntil >= 0) {
+                $priority = 'high';
+            } elseif ($daysUntil <= 7 && $daysUntil > 3) {
+                $priority = 'medium';
+            } elseif ($daysUntil < 0) {
+                $priority = 'high';
+            }
+            $upcomingTasks[] = [
+                'title' => $announcement->title,
+                'course' => $announcement->course ? $announcement->course->title : 'Course',
+                'due' => $announcement->event_date->format('M d, Y'),
+                'priority' => $priority,
+                'announcement_id' => $announcement->id,
+                'type' => $announcement->event_type,
+                'days_until_due' => $daysUntil,
+            ];
+        }
         
         // Sort by priority: high, medium, low (then by days until due)
         if (!empty($upcomingTasks)) {
@@ -256,12 +287,20 @@ class StudentDashboardController extends Controller
             $type = $notification->type;
             $timeAgo = $notification->created_at->diffForHumans();
             
+            // Decode notification data if it's a string
+            $notificationData = is_string($notification->data) ? json_decode($notification->data, true) : $notification->data;
+            
             // Extract course name from data if available
             $courseName = 'Course';
-            if ($notification->data && isset($notification->data['course_id'])) {
-                $course = \App\Models\Course::find($notification->data['course_id']);
-                if ($course) {
-                    $courseName = $course->title;
+            if ($notificationData) {
+                // First try to get course_title directly from data
+                if (isset($notificationData['course_title'])) {
+                    $courseName = $notificationData['course_title'];
+                } elseif (isset($notificationData['course_id'])) {
+                    $course = \App\Models\Course::find($notificationData['course_id']);
+                    if ($course) {
+                        $courseName = $course->title;
+                    }
                 }
             }
             
@@ -273,6 +312,8 @@ class StudentDashboardController extends Controller
                 'subject' => $courseName,
                 'new' => !$notification->read,
                 'notification_id' => $notification->id,
+                'material_id' => $notificationData['material_id'] ?? null,
+                'notification_data' => $notificationData,
             ];
         })->toArray();
         
@@ -318,7 +359,7 @@ class StudentDashboardController extends Controller
                 'type' => $eventType,
                 'type_display' => $announcement->event_type_display,
                 'title' => $announcement->title,
-                'url' => route('student.announcements.index'),
+                'url' => route('student.announcements.show', $announcement),
                 'badge_color' => $badgeColor,
             ];
         }
