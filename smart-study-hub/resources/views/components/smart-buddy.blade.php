@@ -210,6 +210,9 @@
                 }
             },
 
+            // LLM endpoint
+            nlpEndpoint: '{{ route('smart-buddy.nlp') }}',
+
             // Chat
             sendMessage() {
                 const text = (this.chatInput || '').trim();
@@ -229,8 +232,15 @@
                     this.generateQuiz();
                     this.addMessage('bot', 'Quiz ready! Answer the questions and submit to check your score.');
                 } else {
-                    const answer = this.answerFromContent(textContent, text);
-                    this.addMessage('bot', answer);
+                    this.callNlp('answer', { question: text })
+                        .then(r => {
+                            const reply = r?.text || this.answerFromContent(textContent, text);
+                            this.addMessage('bot', reply);
+                        })
+                        .catch(() => {
+                            const answer = this.answerFromContent(textContent, text);
+                            this.addMessage('bot', answer);
+                        });
                 }
                 this.saveData();
             },
@@ -242,19 +252,43 @@
             // Reviewer
             generateReviewer() {
                 if (!textContent) return;
-                const points = this.extractKeyPoints(textContent);
-                this.reviewers = points.map((p, i) => ({ title: `Key Idea ${i+1}`, content: p }));
-                this.saveData();
+                this.callNlp('reviewer')
+                    .then(r => {
+                        if (Array.isArray(r?.reviewers) && r.reviewers.length) {
+                            this.reviewers = r.reviewers;
+                        } else {
+                            const points = this.extractKeyPoints(textContent);
+                            this.reviewers = points.map((p, i) => ({ title: `Key Idea ${i+1}`, content: p }));
+                        }
+                        this.saveData();
+                    })
+                    .catch(() => {
+                        const points = this.extractKeyPoints(textContent);
+                        this.reviewers = points.map((p, i) => ({ title: `Key Idea ${i+1}`, content: p }));
+                        this.saveData();
+                    });
             },
 
             // Flashcards
             generateFlashcards() {
                 if (!textContent) return;
-                const pairs = this.extractFlashcardPairs(textContent);
-                this.flashcards = pairs;
-                this.currentFlashcardIndex = 0;
-                this.flipCard = false;
-                this.saveData();
+                this.callNlp('flashcards')
+                    .then(r => {
+                        if (Array.isArray(r?.flashcards) && r.flashcards.length) {
+                            this.flashcards = r.flashcards;
+                        } else {
+                            this.flashcards = this.extractFlashcardPairs(textContent);
+                        }
+                        this.currentFlashcardIndex = 0;
+                        this.flipCard = false;
+                        this.saveData();
+                    })
+                    .catch(() => {
+                        this.flashcards = this.extractFlashcardPairs(textContent);
+                        this.currentFlashcardIndex = 0;
+                        this.flipCard = false;
+                        this.saveData();
+                    });
             },
             currentFlashcard() {
                 return this.flashcards[this.currentFlashcardIndex] || {};
@@ -269,10 +303,23 @@
             // Quiz
             generateQuiz() {
                 if (!textContent) return;
-                this.quizQuestions = this.buildQuiz(textContent);
-                this.currentQuizIndex = 0;
-                this.selectedAnswers = {};
-                this.saveData();
+                this.callNlp('quiz')
+                    .then(r => {
+                        if (Array.isArray(r?.quiz) && r.quiz.length) {
+                            this.quizQuestions = r.quiz;
+                        } else {
+                            this.quizQuestions = this.buildQuiz(textContent);
+                        }
+                        this.currentQuizIndex = 0;
+                        this.selectedAnswers = {};
+                        this.saveData();
+                    })
+                    .catch(() => {
+                        this.quizQuestions = this.buildQuiz(textContent);
+                        this.currentQuizIndex = 0;
+                        this.selectedAnswers = {};
+                        this.saveData();
+                    });
             },
             nextQuiz() {
                 if (this.currentQuizIndex < this.quizQuestions.length - 1) this.currentQuizIndex++;
@@ -310,24 +357,145 @@
             },
 
             extractKeyPoints(content) {
-                // Simple heuristic: split into sentences, pick informative ones
-                const sentences = (content || '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/).slice(0, 12);
-                return sentences.filter(s => s.length > 40).slice(0, 6);
+                // Heuristic: split, score by length and uniqueness, dedupe
+                const sentences = (content || '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/);
+                const cleaned = sentences.map(s => s.trim()).filter(s => s.length > 40 && /[a-zA-Z]/.test(s));
+                const seen = new Set();
+                const unique = cleaned.filter(s => {
+                    const k = s.toLowerCase();
+                    if (seen.has(k)) return false; seen.add(k); return true;
+                });
+                // prefer mid-length informative sentences
+                unique.sort((a,b) => Math.abs(a.length-160) - Math.abs(b.length-160));
+                return unique.slice(0, 8);
             },
 
             extractFlashcardPairs(content) {
-                const points = this.extractKeyPoints(content);
-                return points.map(p => ({ question: `Explain: ${p.slice(0, 50)}...`, answer: p }));
+                const points = this.extractKeyPoints(content).slice(0, 10);
+                const cards = points.slice(0, 6).map(p => {
+                    const q = `What is the main idea of: ${p.slice(0, 40)}...`;
+                    const a = p.length > 160 ? (p.slice(0, 157) + '...') : p;
+                    return { question: q, answer: a };
+                });
+                // Deduplicate by question
+                const seen = new Set();
+                return cards.filter(c => { const k = c.question.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
             },
 
             buildQuiz(content) {
                 const points = this.extractKeyPoints(content);
                 return points.slice(0, 5).map(p => {
-                    const correct = p.slice(0, 60) + '...';
-                    const distractor = (i) => `Related concept ${i+1}`;
-                    const options = [correct, distractor(1), distractor(2), distractor(3)];
-                    return { question: `What best summarizes: ${p.slice(0, 40)}...`, options, correctAnswer: 0 };
+                    const q = `What best summarizes: ${p.slice(0, 40)}...`;
+                    const opts = this.createOptionsFromSentence(p);
+                    return { question: q, options: opts.options, correctAnswer: opts.correctIndex };
                 });
+            },
+
+            createOptionsFromSentence(sentence) {
+                const base = this.cleanSummary(sentence);
+                const correct = this.paraphrase(base);
+                const d1 = this.negateMeaning(base);
+                const d2 = this.swapKeyTerms(base);
+                const d3 = this.generalizeOrOverspecify(base);
+
+                let options = [correct, d1, d2, d3]
+                    .map(s => this.normalizeOption(s))
+                    .filter(Boolean);
+
+                // Deduplicate
+                const seen = new Set();
+                options = options.filter(o => {
+                    const k = o.toLowerCase();
+                    if (seen.has(k)) return false;
+                    seen.add(k);
+                    return true;
+                });
+
+                // Ensure we have 4 options (pad with light variations if needed)
+                while (options.length < 4) {
+                    options.push(this.normalizeOption(this.paraphrase(base + ' ' + (options.length+1))));
+                }
+
+                // Shuffle and track correct index
+                const indices = options.map((_, i) => i);
+                for (let i = indices.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [indices[i], indices[j]] = [indices[j], indices[i]];
+                }
+                const shuffled = indices.map(i => options[i]);
+                const correctIndex = indices.indexOf(0); // original 0 was correct
+                return { options: shuffled, correctIndex };
+            },
+
+            cleanSummary(text) {
+                let s = (text || '').trim();
+                s = s.replace(/\s+/g, ' ');
+                // take first clause
+                const m = s.match(/^[^.;:]{20,160}[.;:]/);
+                if (m) s = m[0];
+                s = s.replace(/^\b(This|That|These|Those|It|They)\b\s+/i, '');
+                return s;
+            },
+
+            paraphrase(text) {
+                // simple paraphrase: minor synonym swaps
+                return text
+                    .replace(/interconnected/gi, 'interlinked')
+                    .replace(/systems/gi, 'platforms')
+                    .replace(/networks/gi, 'ecosystems');
+            },
+
+            negateMeaning(text) {
+                // introduce a negation to flip meaning subtly
+                let s = text;
+                if (/\bare\b/i.test(s)) s = s.replace(/\bare\b/i, 'are not');
+                else if (/\benables\b/i.test(s)) s = s.replace(/\benables\b/i, 'does not enable');
+                else s = 'Not: ' + s.toLowerCase();
+                return s;
+            },
+
+            swapKeyTerms(text) {
+                const swaps = [
+                    [/hardware/gi, 'databases'],
+                    [/software/gi, 'protocols'],
+                    [/clients?/gi, 'servers'],
+                    [/servers?/gi, 'clients'],
+                    [/network(s)?/gi, 'applications'],
+                    [/web/gi, 'local']
+                ];
+                let s = text;
+                swaps.forEach(([a,b]) => { s = s.replace(a, b); });
+                return s;
+            },
+
+            generalizeOrOverspecify(text) {
+                if (text.length > 90) return text.replace(/\b(are|is)\b/i, 'can be');
+                return 'A high-level overview with unrelated specifics about storage layers';
+            },
+
+            normalizeOption(s) {
+                if (!s) return '';
+                let out = s.trim();
+                out = out.replace(/\s+/g, ' ');
+                if (out.length > 140) out = out.slice(0, 137) + '...';
+                return out;
+            },
+
+            async callNlp(mode, extra = {}) {
+                try {
+                    const res = await fetch(this.nlpEndpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ mode, content: textContent || '', question: extra.question || '' })
+                    });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return await res.json();
+                } catch (e) {
+                    return {};
+                }
             },
 
             loadStoredData() {

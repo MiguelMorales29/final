@@ -115,7 +115,7 @@
                         <div class="flex-1 min-w-0">
                             <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Upload Materials</h4>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Share documents, presentations, and resources with your students.</p>
-                            <button class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                            <button onclick="window.location.href='{{ route('teacher.upload-materials.select') }}'" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                                 Upload Files
                                 <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -138,7 +138,7 @@
                         <div class="flex-1 min-w-0">
                             <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">View Enrollments</h4>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Track student enrollments and course participation across all your courses.</p>
-                            <button class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                            <button onclick="window.location.href='{{ route('teacher.enrolled.all') }}'" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                                 View Students
                                 <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>

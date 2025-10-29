@@ -11,6 +11,7 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentAssignmentController;
+use App\Http\Controllers\SmartBuddyController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\StudentModuleController;
 use App\Http\Controllers\TeacherDashboardController;
@@ -134,6 +135,9 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     // Student announcement routes
     Route::get('/student/announcements', [AnnouncementController::class, 'studentIndex'])->name('student.announcements.index');
     Route::get('/student/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('student.announcements.show');
+
+    // Smart Buddy minimal NLP endpoint
+    Route::post('/smart-buddy/nlp', [SmartBuddyController::class, 'nlp'])->name('smart-buddy.nlp');
 });
 
 // Legacy dashboard route (redirects based on role)

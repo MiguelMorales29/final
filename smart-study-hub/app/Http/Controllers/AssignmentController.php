@@ -157,7 +157,7 @@ class AssignmentController extends Controller
             abort(403, 'Unauthorized access.');
         }
 
-        $course->load(['terms.weeks']);
+        $course->load(['terms.subTerms.weeks']);
         return view('teacher.assignments.create', compact('course'));
     }
 

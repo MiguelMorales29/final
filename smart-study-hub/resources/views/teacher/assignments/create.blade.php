@@ -552,16 +552,20 @@
             const submissionTypeSelect = document.getElementById('submission_type');
             const fileSettings = document.getElementById('file-settings');
 
-            // Course structure data
+            // Course structure data (flatten sub-terms' weeks and include sub_term label)
             const courseTerms = @json($course->terms);
             const courseStructure = courseTerms.map(term => ({
                 id: term.id,
                 name: term.name,
-                weeks: term.weeks.map(week => ({
-                    id: week.id,
-                    title: week.title,
-                    week_number: week.week_number
-                }))
+                weeks: ((term.sub_terms || term.subTerms) || []).flatMap(subTerm => {
+                    const weeks = subTerm.weeks || [];
+                    return weeks.map(week => ({
+                        id: week.id,
+                        title: week.title,
+                        week_number: week.week_number,
+                        sub_term: subTerm.title
+                    }));
+                })
             }));
 
             // Initialize Quill editor for description

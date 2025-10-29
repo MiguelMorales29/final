@@ -50,14 +50,32 @@ class StudentModuleController extends Controller
             abort(403, 'Unauthorized access to this material.');
         }
 
-        // Extract text content for Smart Buddy (only for text-type materials)
+        // Extract text content for Smart Buddy (all material types)
         $textContent = '';
-        if ($material->type === 'text' && $material->content) {
-            $textContent = strip_tags($material->content);
-            if ($material->description) {
-                $textContent .= ' ' . strip_tags($material->description);
-            }
+        $parts = [];
+        // Title and basic context
+        if (!empty($material->title)) {
+            $parts[] = 'Title: ' . $material->title;
         }
+        if ($material->week && $material->week->subTerm && $material->week->subTerm->term) {
+            $parts[] = 'Context: ' . $material->week->subTerm->term->name . ' • ' . $material->week->subTerm->title . ' • ' . $material->week->title;
+        }
+        // Description (rich text)
+        if (!empty($material->description)) {
+            $parts[] = strip_tags($material->description);
+        }
+        // Primary content by type
+        if ($material->type === 'text' && $material->content) {
+            $parts[] = strip_tags($material->content);
+        } elseif ($material->type === 'file' && $material->content) {
+            // Include filename and any available meta; actual file OCR is out of scope here
+            $parts[] = 'Document: ' . basename($material->content);
+        } elseif ($material->type === 'video' && $material->content) {
+            $parts[] = 'Video source: ' . $material->content;
+        } elseif ($material->type === 'link' && $material->content) {
+            $parts[] = 'External link: ' . $material->content;
+        }
+        $textContent = trim(preg_replace('/\s+/', ' ', implode(' ', array_filter($parts))));
 
         return view('student.materials.show', compact('material', 'textContent'));
     }

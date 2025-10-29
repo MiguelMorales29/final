@@ -9,7 +9,7 @@
     @if($courses->count() > 0)
         <div class="space-y-8" x-data>
             @foreach($courses as $course)
-                <div class="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden border-2 border-gray-300 dark:border-gray-600">
+                <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
                     <!-- Course Header -->
                     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                         <div class="flex items-center gap-4">
@@ -67,7 +67,7 @@
                                             <div class="space-y-4">
                                                 @foreach($term->subTerms as $subTerm)
                                                     <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600">
-                                                        <div class="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200" @click="openSections[{{ $subTerm->id }}] = !openSections[{{ $subTerm->id }}]">
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200" @click="openSections[{{ $subTerm->id }}] = !openSections[{{ $subTerm->id }}]">
                                                             <div class="flex items-center justify-between">
                                                                     <div>
                                                                         <h4 class="text-md font-medium text-gray-900 dark:text-white">{{ $subTerm->title }}</h4>
@@ -84,23 +84,23 @@
                                                             <div class="space-y-3" x-data="{ openWeeks: {} }">
                                                                 @foreach($subTerm->weeks as $week)
                                                                     <div class="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden">
-                                                                        <!-- Week Header -->
+                                                                        <!-- Week Header (match teacher style) -->
                                                                         <div class="p-3 border-b border-gray-200 dark:border-gray-600">
-                                                                            <div class="flex items-center justify-between">
-                                                                                <div class="flex-1">
-                                                                                    <h5 class="text-sm font-medium text-gray-900 dark:text-white">{{ $week->title }}</h5>
-                                                                                    @if($week->notes)
-                                                                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ $week->notes }}</p>
-                                                                                    @endif
-                                                                                </div>
-                                                                                <button @click="openWeeks['{{ $week->id }}'] = !openWeeks['{{ $week->id }}']" 
-                                                                                        class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                                                                                    <svg class="w-4 h-4 transition-transform duration-200" 
-                                                                                         :class="{ 'rotate-180': openWeeks['{{ $week->id }}'] }" 
-                                                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                                            <div class="flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-2 -m-2 transition-colors duration-200" @click="openWeeks['{{ $week->id }}'] = !openWeeks['{{ $week->id }}']">
+                                                                                <div class="flex items-center gap-3">
+                                                                                    <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                                                                     </svg>
-                                                                                </button>
+                                                                                    <div>
+                                                                                        <h5 class="text-sm font-medium text-gray-900 dark:text-white">{{ $week->title }}</h5>
+                                                                                        @if($week->notes)
+                                                                                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ $week->notes }}</p>
+                                                                                        @endif
+                                                                                    </div>
+                                                                                </div>
+                                                                                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': openWeeks['{{ $week->id }}'] }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                                                </svg>
                                                                             </div>
                                                                         </div>
 
