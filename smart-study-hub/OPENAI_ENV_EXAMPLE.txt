@@ -3,4 +3,17 @@ OPENAI_API_KEY=
 OPENAI_API_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4o-mini
 
+# Available Models (Nov 2025):
+# - gpt-4o-mini: Default, budget-friendly, good for general tasks ($0.15/$0.60 per 1M tokens)
+# - gpt-4o: Fast, smart, great for code/math ($2.50/$10 per 1M tokens)
+# - gpt-4-turbo: Powerful, longer context ($10/$30 per 1M tokens)
+# - o1-preview: Advanced reasoning (different API, higher cost)
+# - o1-mini: Cheaper reasoning model
+# - gpt-3.5-turbo: Legacy model (not recommended for new projects)
+
+# Note: GPT-5, GPT-5 Pro, and GPT-5-Codex may be available through OpenAI's API
+# but require verification with OpenAI's current offerings. Check:
+# https://platform.openai.com/docs/models
+
+
 

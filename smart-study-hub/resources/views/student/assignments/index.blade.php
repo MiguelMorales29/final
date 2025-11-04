@@ -20,25 +20,13 @@
 
     <!-- Filter Options -->
     <div class="mb-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4">
-        <div class="flex items-center gap-4">
+        <div class="flex items-center justify-between flex-wrap gap-4">
             <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by:</span>
             <div class="flex items-center gap-2">
-                <button id="filter-all" 
-                        class="px-3 py-1 rounded-full text-sm font-medium transition duration-150 ease-in-out bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    All
-                </button>
-                <button id="filter-assignments" 
-                        class="px-3 py-1 rounded-full text-sm font-medium transition duration-150 ease-in-out bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
-                    Assignments Only
-                </button>
-                <button id="filter-graded" 
-                        class="px-3 py-1 rounded-full text-sm font-medium transition duration-150 ease-in-out bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
-                    Graded
-                </button>
-                <button id="filter-pending" 
-                        class="px-3 py-1 rounded-full text-sm font-medium transition duration-150 ease-in-out bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
-                    Pending
-                </button>
+                <button id="filter-all" class="filter-btn px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">All</button>
+                <button id="filter-not-started" class="filter-btn px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">Not Yet Started</button>
+                <button id="filter-graded" class="filter-btn px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">Graded</button>
+                <button id="filter-pending" class="filter-btn px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">Pending</button>
             </div>
         </div>
     </div>
@@ -54,7 +42,7 @@
                 @php
                     $course = $courseAssignments->first()->course;
                 @endphp
-                <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden border-2 border-gray-300 dark:border-gray-600">
                     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-4">
@@ -72,7 +60,11 @@
                                 <div>
                                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ $course->title }}</h3>
                                     <p class="text-gray-600 dark:text-gray-400">{{ $course->teacher->name }}</p>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ $courseAssignments->count() }} assignment(s)</p>
+                                    <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        <span class="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-full">
+                                            <span class="font-semibold text-gray-900 dark:text-white">Assignments:</span> {{ $courseAssignments->count() }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <button @click="openCourses['{{ $courseId }}'] = !openCourses['{{ $courseId }}']" 
@@ -100,7 +92,7 @@
                                     $submission = $assignment->submissions->first();
                                     $isOverdue = $assignment->due_date && $assignment->due_date->isPast() && (!$submission || $submission->status !== 'submitted');
                                 @endphp
-                                <div class="assignment-card bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600 {{ $isOverdue ? 'border-l-4 border-red-500' : '' }}" 
+                                <div class="assignment-card bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600 {{ $isOverdue ? 'border-l-4 border-red-500' : 'border-l-4 border-indigo-500/40' }}" 
                                      data-status="{{ $submission ? $submission->status : 'not-started' }}">
                                     <div class="flex items-start justify-between mb-3">
                                         <div class="flex-1">
@@ -165,18 +157,6 @@
                                                 Start
                                             @endif
                                         </a>
-                                        @if($submission && $submission->status !== 'graded')
-                                            <form action="{{ route('student.assignments.destroy', $assignment) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your submission?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" 
-                                                        class="bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-300 py-2 px-3 rounded-lg text-sm font-medium transition duration-150 ease-in-out">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -199,7 +179,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const filterButtons = {
                 'filter-all': document.getElementById('filter-all'),
-                'filter-assignments': document.getElementById('filter-assignments'),
+                'filter-not-started': document.getElementById('filter-not-started'),
                 'filter-graded': document.getElementById('filter-graded'),
                 'filter-pending': document.getElementById('filter-pending')
             };
@@ -220,14 +200,14 @@
                     let show = true;
 
                     switch(activeFilter.id) {
-                        case 'filter-assignments':
-                            show = true; // Show all assignments
+                        case 'filter-not-started':
+                            show = status === 'not-started';
                             break;
                         case 'filter-graded':
                             show = status === 'graded';
                             break;
                         case 'filter-pending':
-                            show = status === 'submitted' || status === 'draft' || status === 'not-started';
+                            show = status === 'submitted';
                             break;
                         case 'filter-all':
                         default:

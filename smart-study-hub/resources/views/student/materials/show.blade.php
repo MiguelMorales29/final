@@ -335,6 +335,11 @@
                 updateButtonState();
                 const message = isCompleted ? 'Material marked as done!' : 'Material unmarked!';
                 showToast(message, isCompleted ? 'success' : 'info');
+                
+                // Dispatch event for modules page to update badge
+                window.dispatchEvent(new CustomEvent('materialCompletionUpdated', {
+                    detail: { materialId: materialId, isCompleted: isCompleted }
+                }));
             } else if (data.error) {
                 showToast(data.error, 'error');
             }

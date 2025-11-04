@@ -19,18 +19,39 @@ class StudentModuleController extends Controller
     {
         $studentId = auth()->id();
         
-        // Get all courses the student is enrolled in
-        $courses = Course::whereHas('students', function ($query) use ($studentId) {
-            $query->where('student_id', $studentId);
-        })
+        // Get all courses the student is enrolled in (enrollments are created when applications are approved)
+        $enrolledCourseIds = \App\Models\Enrollment::where('student_id', $studentId)->pluck('course_id');
+        
+        // Also include approved applications that might not have enrollments yet
+        $approvedApplicationCourseIds = \App\Models\CourseApplication::where('student_id', $studentId)
+            ->where('status', 'approved')
+            ->pluck('course_id');
+        
+        $allCourseIds = $enrolledCourseIds->merge($approvedApplicationCourseIds)->unique();
+        
+        \Log::info('Student Modules - Student ID: ' . $studentId);
+        \Log::info('Student Modules - Enrolled IDs: ' . $enrolledCourseIds->toJson());
+        \Log::info('Student Modules - Approved App IDs: ' . $approvedApplicationCourseIds->toJson());
+        \Log::info('Student Modules - All Course IDs: ' . $allCourseIds->toJson());
+        
+        $courses = Course::whereIn('id', $allCourseIds)
         ->with([
             'terms.subTerms.weeks.materials',
             'terms.subTerms.weeks.assignments.submissions' => function ($query) use ($studentId) {
                 $query->where('student_id', $studentId);
             },
-            'teacher'
+            'terms.subTerms.weeks.assignments',
+            'teacher',
+            'terms',
+            'terms.subTerms',
+            'terms.subTerms.weeks'
         ])
         ->get();
+        
+        // Debug: Log the courses and their structure
+        foreach($courses as $course) {
+            \Log::info('Course: ' . $course->title . ' (ID: ' . $course->id . ') - Terms: ' . $course->terms->count() . ', SubTerms: ' . $course->terms->sum(function($t) { return $t->subTerms->count(); }));
+        }
 
         return view('student.modules.index', compact('courses'));
     }
