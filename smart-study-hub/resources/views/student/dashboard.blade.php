@@ -642,10 +642,10 @@
                               </div>
                             </div>
                             <div class="mt-4 flex-shrink-0">
-                              <div class="h-2 bg-gray-200 dark:bg-gray-800 rounded">
-                                <div class="h-2 bg-indigo-600 rounded" style="width: {{ $c['progress'] }}%"></div>
+                              <div class="h-2 bg-gray-200 dark:bg-gray-800 rounded" data-dashboard-course-id="{{ $c['id'] }}">
+                                <div class="h-2 bg-indigo-600 rounded dashboard-course-progress" style="width: 0%"></div>
                               </div>
-                              <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">{{ $c['progress'] }}% complete @if($c['next_due']) • Next due: {{ $c['next_due'] }} @endif</div>
+                              <div class="text-xs mt-1 text-gray-500 dark:text-gray-400 dashboard-progress-text">Loading progress... @if($c['next_due']) • Next due: {{ $c['next_due'] }} @endif</div>
                               <a href="{{ route('student.modules.index') }}" class="mt-3 inline-flex justify-center items-center w-full rounded-lg py-2 font-medium bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200">
                                 Continue Learning
                               </a>
@@ -753,4 +753,36 @@
         </div>
     </div>
 </div>
+
+<script>
+// Load course progress dynamically for dashboard
+document.addEventListener("DOMContentLoaded", function() {
+    const progressBars = document.querySelectorAll('[data-dashboard-course-id]');
+    progressBars.forEach(bar => {
+        const courseId = bar.getAttribute('data-dashboard-course-id');
+        fetch(`/student/courses/${courseId}/progress`)
+            .then(r => r.json())
+            .then(d => {
+                const fill = bar.querySelector('.dashboard-course-progress');
+                const text = bar.nextElementSibling;
+                if (fill && text) {
+                    fill.style.width = (d.progress_percentage || 0) + '%';
+                    // Keep the next due text if it exists
+                    const nextDueMatch = text.textContent.match(/• Next due:.*$/);
+                    const nextDueText = nextDueMatch ? ' ' + nextDueMatch[0] : '';
+                    text.textContent = `${d.progress_percentage || 0}% complete${nextDueText}`;
+                }
+            })
+            .catch(() => {
+                const fill = bar.querySelector('.dashboard-course-progress');
+                const text = bar.nextElementSibling;
+                if (fill && text) {
+                    fill.style.width = '0%';
+                    text.textContent = '0% complete';
+                }
+            });
+    });
+});
+</script>
+
 </x-student-layout>

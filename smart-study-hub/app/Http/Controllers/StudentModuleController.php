@@ -292,6 +292,7 @@ class StudentModuleController extends Controller
 
     /**
      * Calculate course progress for a student.
+     * Only counts REQUIRED materials and ALL assignments.
      */
     public function getCourseProgress(Course $course): JsonResponse
     {
@@ -302,15 +303,18 @@ class StudentModuleController extends Controller
             return response()->json(['error' => 'Unauthorized access'], 403);
         }
 
-        // Get all materials for this course
-        $totalMaterials = $course->materials()->count();
+        // Get only REQUIRED materials for this course
+        $totalMaterials = $course->materials()->where('is_required', true)->count();
         
-        // Get completed materials
+        // Get completed REQUIRED materials
         $completedMaterials = MaterialCompletion::where('student_id', $studentId)
             ->where('course_id', $course->id)
+            ->whereHas('material', function ($query) {
+                $query->where('is_required', true);
+            })
             ->count();
         
-        // Get submitted assignments
+        // Get ALL assignments (all assignments count towards progress)
         $totalAssignments = $course->assignments()->count();
         $submittedAssignments = \App\Models\AssignmentSubmission::whereHas('assignment', function ($query) use ($course) {
             $query->where('course_id', $course->id);
@@ -319,7 +323,7 @@ class StudentModuleController extends Controller
         ->where('status', '!=', 'draft')
         ->count();
 
-        // Calculate total progress
+        // Calculate total progress (only required materials + all assignments)
         $totalItems = $totalMaterials + $totalAssignments;
         $completedItems = $completedMaterials + $submittedAssignments;
         $progressPercentage = $totalItems > 0 ? round(($completedItems / $totalItems) * 100, 2) : 0;

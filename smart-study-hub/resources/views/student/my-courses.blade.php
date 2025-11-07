@@ -120,49 +120,49 @@
                                 <img src="{{ $c['cover'] }}" alt="{{ $c['title'] }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
                                 <div class="absolute inset-0 bg-yellow-500/20 group-hover:bg-yellow-500/30 transition-colors duration-300"></div>
                                 <div class="absolute inset-0 flex items-center justify-center z-10">
-                                    <div class="text-center">
-                                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-500/30 backdrop-blur-sm mb-2">
-                                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                        </div>
-                                        <p class="text-yellow-700 font-medium text-sm">Pending Approval</p>
-                                    </div>
+<div class="text-center">
+    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-500/30 backdrop-blur-sm mb-2">
+        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+    </div>
+    <p class="text-yellow-700 font-medium text-sm">Pending Approval</p>
+</div>
                                 </div>
                                 <div class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200">
-                                        Pending
-                                    </span>
+<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200">
+    Pending
+</span>
                                 </div>
                             </div>
                             <div class="p-5 flex flex-col h-64">
                                 <div class="flex-1 min-h-0">
-                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">{{ $c['title'] }}</h3>
-                                    <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        <span class="inline-flex items-center gap-1">
-                                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 10-6 0 3 3 0 006 0z"/></svg>
-                                            {{ $c['teacher'] }}
-                                        </span>
-                                        • {{ $c['weeks'] }} weeks
-                                    </div>
-                                    <div class="mt-3 relative group/desc">
-                                        <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{{ Str::limit($c['desc'], 80) }}</p>
-                                        @if(strlen($c['desc']) > 80)
-                                            <div class="absolute top-0 right-0 opacity-0 group-hover/desc:opacity-100 transition-opacity duration-200">
-                                                <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-gray-900 px-1 rounded">View More</span>
-                                            </div>
-                                        @endif
-                                    </div>
+<h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">{{ $c['title'] }}</h3>
+<div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+    <span class="inline-flex items-center gap-1">
+        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 10-6 0 3 3 0 006 0z"/></svg>
+        {{ $c['teacher'] }}
+    </span>
+    • {{ $c['weeks'] }} weeks
+</div>
+<div class="mt-3 relative group/desc">
+    <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{{ Str::limit($c['desc'], 80) }}</p>
+    @if(strlen($c['desc']) > 80)
+        <div class="absolute top-0 right-0 opacity-0 group-hover/desc:opacity-100 transition-opacity duration-200">
+            <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-gray-900 px-1 rounded">View More</span>
+        </div>
+    @endif
+</div>
                                 </div>
                                 <div class="mt-4 flex-shrink-0">
-                                    <div class="h-2 bg-yellow-200 dark:bg-yellow-800 rounded"></div>
-                                    <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Waiting for teacher approval</div>
-                                    <button disabled class="mt-3 w-full bg-yellow-500 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 opacity-75 cursor-not-allowed">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        Pending Approval
-                                    </button>
+<div class="h-2 bg-yellow-200 dark:bg-yellow-800 rounded"></div>
+<div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Waiting for teacher approval</div>
+<button disabled class="mt-3 w-full bg-yellow-500 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 opacity-75 cursor-not-allowed">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    Pending Approval
+</button>
                                 </div>
                             </div>
                         </div>
@@ -173,66 +173,66 @@
                                 <img src="{{ $c['cover'] }}" alt="{{ $c['title'] }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
                                 <div class="absolute inset-0 bg-red-500/20 group-hover:bg-red-500/30 transition-colors duration-300"></div>
                                 <div class="absolute inset-0 flex items-center justify-center z-10">
-                                    <div class="text-center">
-                                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-500/30 backdrop-blur-sm mb-2">
-                                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                        </div>
-                                        <p class="text-red-700 font-medium text-sm">Rejected</p>
-                                    </div>
+<div class="text-center">
+    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-500/30 backdrop-blur-sm mb-2">
+        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </div>
+    <p class="text-red-700 font-medium text-sm">Rejected</p>
+</div>
                                 </div>
                                 <div class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200">
-                                        Rejected
-                                    </span>
+<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200">
+    Rejected
+</span>
                                 </div>
                             </div>
                             <div class="p-5 flex flex-col h-64">
                                 <div class="flex-1 min-h-0">
-                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">{{ $c['title'] }}</h3>
-                                    <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        <span class="inline-flex items-center gap-1">
-                                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 10-6 0 3 3 0 006 0z"/></svg>
-                                            {{ $c['teacher'] }}
-                                        </span>
-                                        • {{ $c['weeks'] }} weeks
-                                    </div>
-                                    <div class="mt-3 relative group/desc">
-                                        <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{{ Str::limit($c['desc'], 80) }}</p>
-                                        @if(strlen($c['desc']) > 80)
-                                            <div class="absolute top-0 right-0 opacity-0 group-hover/desc:opacity-100 transition-opacity duration-200">
-                                                <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-gray-900 px-1 rounded">View More</span>
-                                            </div>
-                                        @endif
-                                    </div>
+<h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">{{ $c['title'] }}</h3>
+<div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+    <span class="inline-flex items-center gap-1">
+        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 10-6 0 3 3 0 006 0z"/></svg>
+        {{ $c['teacher'] }}
+    </span>
+    • {{ $c['weeks'] }} weeks
+</div>
+<div class="mt-3 relative group/desc">
+    <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{{ Str::limit($c['desc'], 80) }}</p>
+    @if(strlen($c['desc']) > 80)
+        <div class="absolute top-0 right-0 opacity-0 group-hover/desc:opacity-100 transition-opacity duration-200">
+            <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-gray-900 px-1 rounded">View More</span>
+        </div>
+    @endif
+</div>
                                 </div>
                                 <div class="mt-4 flex-shrink-0">
-                                    <div class="h-2 bg-red-200 dark:bg-red-800 rounded"></div>
-                                    <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Application denied by teacher</div>
-                                    <div class="mt-3 flex gap-2">
-                                        <form method="POST" action="{{ route('courses.apply', $c['id']) }}" class="flex-1">
-                                            @csrf
-                                            <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 transition-all duration-200">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                                </svg>
-                                                Apply Again
-                                            </button>
-                                        </form>
-                                        @if(isset($c['application_id']))
-                                            <form method="POST" action="{{ route('applications.remove', $c['application_id']) }}" class="flex-1">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="w-full bg-gradient-to-r from-gray-500 to-gray-600 dark:from-gray-600 dark:to-gray-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-gray-600 hover:to-gray-700 dark:hover:from-gray-700 dark:hover:to-gray-800 transition-all duration-200" onclick="return confirm('Remove this course from your view? You can reapply after 24 hours.')">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                    </svg>
-                                                    Remove
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </div>
+<div class="h-2 bg-red-200 dark:bg-red-800 rounded"></div>
+<div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Application denied by teacher</div>
+<div class="mt-3 flex gap-2">
+    <form method="POST" action="{{ route('courses.apply', $c['id']) }}" class="flex-1">
+        @csrf
+        <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+            </svg>
+            Apply Again
+        </button>
+    </form>
+    @if(isset($c['application_id']))
+        <form method="POST" action="{{ route('applications.remove', $c['application_id']) }}" class="flex-1">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="w-full bg-gradient-to-r from-gray-500 to-gray-600 dark:from-gray-600 dark:to-gray-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-gray-600 hover:to-gray-700 dark:hover:from-gray-700 dark:hover:to-gray-800 transition-all duration-200" onclick="return confirm('Remove this course from your view? You can reapply after 24 hours.')">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                Remove
+            </button>
+        </form>
+    @endif
+</div>
                                 </div>
                             </div>
                         </div>
@@ -243,58 +243,58 @@
                                 <img src="{{ $c['cover'] }}" alt="{{ $c['title'] }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
                                 <div class="absolute inset-0 bg-black/60 group-hover:bg-black/50 transition-colors duration-300"></div>
                                 <div class="absolute inset-0 flex items-center justify-center z-10">
-                                    <div class="text-center">
-                                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm mb-2">
-                                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                            </svg>
-                                        </div>
-                                        <p class="text-white font-medium text-sm">Dropped</p>
-                                    </div>
+<div class="text-center">
+    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm mb-2">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+    </div>
+    <p class="text-white font-medium text-sm">Dropped</p>
+</div>
                                 </div>
                             </div>
                             <div class="p-5 flex flex-col h-64">
                                 <div class="flex-1 min-h-0">
-                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1">{{ $c['title'] }}</h3>
-                                    <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        <span class="inline-flex items-center gap-1">
-                                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 10-6 0 3 3 0 006 0z"/></svg>
-                                            {{ $c['teacher'] }}
-                                        </span>
-                                        • {{ $c['weeks'] }} weeks
-                                    </div>
-                                    <div class="mt-3 relative group/desc">
-                                        <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{{ Str::limit($c['desc'], 80) }}</p>
-                                        @if(strlen($c['desc']) > 80)
-                                            <div class="absolute top-0 right-0 opacity-0 group-hover/desc:opacity-100 transition-opacity duration-200">
-                                                <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-gray-900 px-1 rounded">View More</span>
-                                            </div>
-                                        @endif
-                                    </div>
+<h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1">{{ $c['title'] }}</h3>
+<div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+    <span class="inline-flex items-center gap-1">
+        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 10-6 0 3 3 0 006 0z"/></svg>
+        {{ $c['teacher'] }}
+    </span>
+    • {{ $c['weeks'] }} weeks
+</div>
+<div class="mt-3 relative group/desc">
+    <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{{ Str::limit($c['desc'], 80) }}</p>
+    @if(strlen($c['desc']) > 80)
+        <div class="absolute top-0 right-0 opacity-0 group-hover/desc:opacity-100 transition-opacity duration-200">
+            <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-gray-900 px-1 rounded">View More</span>
+        </div>
+    @endif
+</div>
                                 </div>
                                 <div class="mt-4 flex-shrink-0">
-                                    <div class="h-2 bg-gradient-to-r from-orange-400 to-orange-500 dark:from-orange-500 dark:to-orange-600 rounded"></div>
-                                    <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Dropped • Removed by Teacher</div>
-                                    <div class="mt-3 flex gap-2">
-                                        <button disabled class="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 opacity-75 cursor-not-allowed">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                            </svg>
-                                            Dropped
-                                        </button>
-                                        @if(isset($c['application_id']))
-                                            <form method="POST" action="{{ route('applications.remove', $c['application_id']) }}" class="flex-1">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="w-full bg-gradient-to-r from-gray-500 to-gray-600 dark:from-gray-600 dark:to-gray-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-gray-600 hover:to-gray-700 dark:hover:from-gray-700 dark:hover:to-gray-800 transition-all duration-200" onclick="return confirm('Remove this course from your view? You can reapply after 24 hours.')">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                    </svg>
-                                                    Remove
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </div>
+<div class="h-2 bg-gradient-to-r from-orange-400 to-orange-500 dark:from-orange-500 dark:to-orange-600 rounded"></div>
+<div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Dropped • Removed by Teacher</div>
+<div class="mt-3 flex gap-2">
+    <button disabled class="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 opacity-75 cursor-not-allowed">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+        Dropped
+    </button>
+    @if(isset($c['application_id']))
+        <form method="POST" action="{{ route('applications.remove', $c['application_id']) }}" class="flex-1">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="w-full bg-gradient-to-r from-gray-500 to-gray-600 dark:from-gray-600 dark:to-gray-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-gray-600 hover:to-gray-700 dark:hover:from-gray-700 dark:hover:to-gray-800 transition-all duration-200" onclick="return confirm('Remove this course from your view? You can reapply after 24 hours.')">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                Remove
+            </button>
+        </form>
+    @endif
+</div>
                                 </div>
                             </div>
                         </div>
@@ -304,38 +304,38 @@
                             <div class="relative">
                                 <img src="{{ $c['cover'] }}" alt="{{ $c['title'] }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
                                 <div class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200">
-                                        Enrolled
-                                    </span>
+<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200">
+    Enrolled
+</span>
                                 </div>
                             </div>
                             <div class="p-5 flex flex-col h-64">
                                 <div class="flex-1 min-h-0">
-                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">{{ $c['title'] }}</h3>
-                                    <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        <span class="inline-flex items-center gap-1">
-                                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 10-6 0 3 3 0 006 0z"/></svg>
-                                            {{ $c['teacher'] }}
-                                        </span>
-                                        • {{ $c['weeks'] }} weeks
-                                    </div>
-                                    <div class="mt-3 relative group/desc">
-                                        <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{{ Str::limit($c['desc'], 80) }}</p>
-                                        @if(strlen($c['desc']) > 80)
-                                            <div class="absolute top-0 right-0 opacity-0 group-hover/desc:opacity-100 transition-opacity duration-200">
-                                                <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-gray-900 px-1 rounded">View More</span>
-                                            </div>
-                                        @endif
-                                    </div>
+<h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">{{ $c['title'] }}</h3>
+<div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+    <span class="inline-flex items-center gap-1">
+        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 10-6 0 3 3 0 006 0z"/></svg>
+        {{ $c['teacher'] }}
+    </span>
+    • {{ $c['weeks'] }} weeks
+</div>
+<div class="mt-3 relative group/desc">
+    <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{{ Str::limit($c['desc'], 80) }}</p>
+    @if(strlen($c['desc']) > 80)
+        <div class="absolute top-0 right-0 opacity-0 group-hover/desc:opacity-100 transition-opacity duration-200">
+            <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium bg-white dark:bg-gray-900 px-1 rounded">View More</span>
+        </div>
+    @endif
+</div>
                                 </div>
                                 <div class="mt-4 flex-shrink-0">
-                                    <div class="h-2 bg-gray-200 dark:bg-gray-800 rounded">
-                                        <div class="h-2 bg-indigo-600 rounded" style="width: {{ $c['progress'] }}%"></div>
-                                    </div>
-                                    <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">{{ $c['progress'] }}% complete @if($c['next_due']) • Next due: {{ $c['next_due'] }} @endif</div>
-                                    <a href="{{ route('student.modules.index') }}" class="mt-3 inline-flex justify-center items-center w-full rounded-lg py-2 font-medium bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200">
-                                        Continue Learning
-                                    </a>
+<div class="h-2 bg-gray-200 dark:bg-gray-800 rounded" data-mycourses-course-id="{{ $c['id'] }}">
+    <div class="h-2 bg-indigo-600 rounded mycourses-course-progress" style="width: 0%"></div>
+</div>
+<div class="text-xs mt-1 text-gray-500 dark:text-gray-400 mycourses-progress-text">Loading progress... @if($c['next_due']) • Next due: {{ $c['next_due'] }} @endif</div>
+<a href="{{ route('student.modules.index') }}" class="mt-3 inline-flex justify-center items-center w-full rounded-lg py-2 font-medium bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-200">
+    Continue Learning
+</a>
                                 </div>
                             </div>
                         </div>
@@ -351,168 +351,251 @@
             @if($enrolledCourses->count() > 0)
                 <div class="mt-12">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Course Structure & Materials</h2>
-                    <div class="space-y-6" x-data="{ openCourses: {} }">
+                    <div class="space-y-6">
                         @foreach($enrolledCourses as $courseData)
                             @php
-                                $course = \App\Models\Course::with(['terms.subTerms.weeks.materials'])->find($courseData['id']);
+                                $course = \App\Models\Course::with(['teacher', 'terms.subTerms.weeks.materials', 'terms.subTerms.weeks.assignments.submissions'])->find($courseData['id']);
                             @endphp
                             @if($course)
                                 <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
-                                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center gap-4">
-                                                @if($course->image)
-                                                    <img src="{{ Storage::url($course->image) }}" 
-                                                         alt="{{ $course->title }}" 
-                                                         class="w-16 h-16 object-cover rounded-lg">
-                                                @else
-                                                    <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                                        </svg>
-                                                    </div>
-                                                @endif
-                                                <div>
-                                                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ $course->title }}</h3>
-                                                    <p class="text-gray-600 dark:text-gray-400">{{ $course->teacher->name }}</p>
-                                                </div>
-                                            </div>
-                                            <button @click="openCourses['{{ $course->id }}'] = !openCourses['{{ $course->id }}']" 
-                                                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                                                <svg class="w-6 h-6 transition-transform duration-200" 
-                                                     :class="{ 'rotate-180': openCourses['{{ $course->id }}'] }" 
-                                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                </svg>
-                                            </button>
+<div class="p-6 border-b border-gray-200 dark:border-gray-700">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            @if($course->image)
+                <img src="{{ Storage::url($course->image) }}" 
+                     alt="{{ $course->title }}" 
+                     class="w-16 h-16 object-cover rounded-lg">
+            @else
+                <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                </div>
+            @endif
+            <div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ $course->title }}</h3>
+                <p class="text-gray-600 dark:text-gray-400">{{ $course->teacher->name }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if($course->terms->count() > 0)
+    <div class="p-6">
+        <div class="space-y-6" x-data="{ openTerms: {}, openSections: {}, openWeeks: {} }">
+                @foreach($course->terms as $term)
+                    @php
+                        $termWeeks = $term->subTerms->sum(function($subTerm) {
+                            return $subTerm->weeks->count();
+                        });
+                        $termMaterials = $term->subTerms->sum(function($subTerm) {
+                            return $subTerm->weeks->sum(function($week) {
+                                return $week->materials->count();
+                            });
+                        });
+                    @endphp
+                    <div class="bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600 shadow-lg">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200" @click="openTerms[{{ $term->id }}] = !openTerms[{{ $term->id }}]">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+<div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+    <svg class="w-5 h-5 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+</div>
+<div>
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $term->name }}</h3>
+    @if($term->description)
+        <p class="text-sm text-gray-600 dark:text-gray-400">{{ $term->description }}</p>
+    @endif
+    <p class="text-xs text-gray-500 dark:text-gray-300 mt-1">{{ $termWeeks }} weeks • {{ $termMaterials }} materials</p>
+</div>
+                                </div>
+                                <div class="flex items-center gap-3">
+@if(isset($term->total_weeks))
+    <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-xs font-medium">{{ $term->total_weeks }} planned</span>
+@endif
+<span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-xs font-medium">{{ $termWeeks }} created</span>
+<svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': openTerms[{{ $term->id }}] }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div x-show="openTerms[{{ $term->id }}]" style="display: none;" class="p-6 space-y-4">
+                            @if($term->subTerms->count() > 0)
+                                <div class="space-y-4">
+@foreach($term->subTerms as $subTerm)
+    @php
+        $subTermWeeks = $subTerm->weeks->count();
+        $subTermMaterials = $subTerm->weeks->sum(function($week) {
+            return $week->materials->count();
+        });
+    @endphp
+    <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+        <div class="p-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200" @click="openSections[{{ $subTerm->id }}] = !openSections[{{ $subTerm->id }}]">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                        <svg class="w-4 h-4 text-purple-600 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                    </div>
+                    <div>
+                        <h4 class="text-md font-medium text-gray-900 dark:text-white">{{ $subTerm->title }}</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-300 mt-1">{{ $subTermWeeks }} weeks • {{ $subTermMaterials }} materials</p>
+                        @if($subTerm->description)
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $subTerm->description }}</p>
+                        @endif
+                    </div>
+                </div>
+                <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': openSections[{{ $subTerm->id }}] }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+        </div>
+        <div x-show="openSections[{{ $subTerm->id }}]" style="display: none;" class="p-4 space-y-3">
+            @if($subTerm->weeks->count() > 0)
+                <div class="divide-y divide-gray-200 dark:divide-gray-600">
+                    @foreach($subTerm->weeks as $week)
+                        @php
+                            $weekMaterialsCount = $week->materials->count();
+                        @endphp
+                        <div class="p-4">
+                            <div class="flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-2 -m-2 transition-colors duration-200" @click="openWeeks['{{ $week->id }}'] = !openWeeks['{{ $week->id }}']">
+                                <div class="flex items-center gap-3">
+<svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+<div>
+    <h5 class="text-sm font-medium text-gray-900 dark:text-white">{{ $week->title }}</h5>
+    @if($week->notes)
+        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ $week->notes }}</p>
+    @endif
+</div>
+                                </div>
+                                <div class="flex items-center gap-3">
+<span class="text-sm text-gray-500 dark:text-gray-400">
+    {{ $weekMaterialsCount }} material{{ $weekMaterialsCount !== 1 ? 's' : '' }}
+</span>
+<svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': openWeeks['{{ $week->id }}'] }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
+                            </div>
+                            <div x-show="openWeeks['{{ $week->id }}']" style="display: none;"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 transform scale-95"
+                                 x-transition:enter-end="opacity-100 transform scale-100"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100 transform scale-100"
+                                 x-transition:leave-end="opacity-0 transform scale-95"
+                                 class="mt-4 space-y-4">
+                                @if($week->materials->count() > 0)
+<div class="mb-4">
+    <h6 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Materials</h6>
+    <div class="space-y-2">
+        @foreach($week->materials as $material)
+            @php
+                $isCompleted = \App\Models\MaterialCompletion::where('student_id', auth()->id())
+                    ->where('material_id', $material->id)
+                    ->exists();
+            @endphp
+            <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-sm transition-shadow material-item" data-material-id="{{ $material->id }}">
+                <div class="flex items-center gap-3">
+                    @if($material->type === 'video')
+                        <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    @elseif($material->type === 'file')
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    @elseif($material->type === 'link')
+                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    @else
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    @endif
+                    <div>
+                        <h6 class="font-medium text-gray-900 dark:text-white">{{ $material->title }}</h6>
+                        @if($material->description)
+                            <div class="text-sm text-gray-600 dark:text-gray-400 prose prose-sm max-w-none">
+                                {!! Str::limit(strip_tags($material->description), 100) !!}
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-status-badge-{{ $material->id }}">
+                        @if($isCompleted)
+                            <span class="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded font-medium">
+                                Marked as Done
+                            </span>
+                        @elseif($material->is_required)
+                            <span class="text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded font-medium">
+                                Required
+                            </span>
+                        @endif
+                    </span>
+                    <a href="{{ route('student.materials.show', $material) }}" class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors duration-150">View</a>
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
+                                @endif
+                                @if($week->assignments->count() > 0)
+<div>
+    <h6 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Assignments</h6>
+    <div class="space-y-2">
+        @foreach($week->assignments as $assignment)
+            @php
+                $submission = $assignment->submissions()->where('student_id', auth()->id())->first();
+            @endphp
+            <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-sm transition-shadow">
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <div>
+                        <h6 class="font-medium text-gray-900 dark:text-white">{{ $assignment->title }}</h6>
+                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <span>{{ $assignment->points }} points</span>
+                            <span>•</span>
+                            <span>Due {{ $assignment->due_date->format('M j, Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    @if($submission)
+                        @if($submission->status === 'graded')
+                            <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full">Graded</span>
+                        @elseif($submission->status === 'submitted')
+                            <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full">Submitted</span>
+                        @else
+                            <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs px-2 py-1 rounded-full">Draft</span>
+                        @endif
+                    @else
+                        <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">Not Started</span>
+                    @endif
+                    <a href="{{ route('student.assignments.show', $assignment) }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">View</a>
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
+                                @endif
+                                @if($week->materials->count() === 0 && $week->assignments->count() === 0)
+<div class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+    No materials or assignments available for this week.
+</div>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-sm text-gray-500 dark:text-gray-400 italic">No weeks available for this section.</p>
+            @endif
+        </div>
+    </div>
+@endforeach
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 dark:text-gray-400 italic">No sections available for this term.</p>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+                                    @else
+                                        <div class="p-6 text-center text-gray-500 dark:text-gray-400">
+                                            No course structure available yet.
                                         </div>
-                                    </div>
-
-                                    <div x-show="openCourses['{{ $course->id }}']" 
-                                         x-transition:enter="transition ease-out duration-200"
-                                         x-transition:enter-start="opacity-0 transform scale-95"
-                                         x-transition:enter-end="opacity-100 transform scale-100"
-                                         x-transition:leave="transition ease-in duration-150"
-                                         x-transition:leave-start="opacity-100 transform scale-100"
-                                         x-transition:leave-end="opacity-0 transform scale-95"
-                                         class="p-6">
-                                        @forelse($course->terms as $term)
-                                            <div class="mb-6" x-data="{ openTerms: {} }">
-                                                <div class="flex items-center justify-between mb-4">
-                                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $term->name }}</h4>
-                                                    <button @click="openTerms['{{ $term->id }}'] = !openTerms['{{ $term->id }}']" 
-                                                            class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                                                        <svg class="w-5 h-5 transition-transform duration-200" 
-                                                             :class="{ 'rotate-180': openTerms['{{ $term->id }}'] }" 
-                                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                        </svg>
-                                                    </button>
-                                                </div>
-
-                                                <div x-show="openTerms['{{ $term->id }}']" 
-                                                     x-transition:enter="transition ease-out duration-200"
-                                                     x-transition:enter-start="opacity-0 transform scale-95"
-                                                     x-transition:enter-end="opacity-100 transform scale-100"
-                                                     x-transition:leave="transition ease-in duration-150"
-                                                     x-transition:leave-start="opacity-100 transform scale-100"
-                                                     x-transition:leave-end="opacity-0 transform scale-95"
-                                                     class="space-y-4">
-                                                    @foreach($term->subTerms as $subTerm)
-                                                        <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4" x-data="{ openWeeks: {} }">
-                                                            <div class="flex items-center justify-between mb-3">
-                                                                <h5 class="font-medium text-gray-900 dark:text-white">{{ $subTerm->title }}</h5>
-                                                                <button @click="openWeeks['{{ $subTerm->id }}'] = !openWeeks['{{ $subTerm->id }}']" 
-                                                                        class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                                                                    <svg class="w-4 h-4 transition-transform duration-200" 
-                                                                         :class="{ 'rotate-180': openWeeks['{{ $subTerm->id }}'] }" 
-                                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                                    </svg>
-                                                                </button>
-                                                            </div>
-
-                                                            <div x-show="openWeeks['{{ $subTerm->id }}']" 
-                                                                 x-transition:enter="transition ease-out duration-200"
-                                                                 x-transition:enter-start="opacity-0 transform scale-95"
-                                                                 x-transition:enter-end="opacity-100 transform scale-100"
-                                                                 x-transition:leave="transition ease-in duration-150"
-                                                                 x-transition:leave-start="opacity-100 transform scale-100"
-                                                                 x-transition:leave-end="opacity-0 transform scale-95"
-                                                                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                                @foreach($subTerm->weeks as $week)
-                                                                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                                                                        <h6 class="font-medium text-gray-900 dark:text-white mb-2">{{ $week->title }}</h6>
-                                                                        @if($week->description)
-                                                                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ $week->description }}</p>
-                                                                        @endif
-                                                                        
-                                                                        @if($week->materials->count() > 0)
-                                                                            <div class="space-y-2">
-                                                                                @foreach($week->materials as $material)
-                                                                                    <div class="flex items-center justify-between bg-white dark:bg-gray-800 rounded p-2">
-                                                                                        <div class="flex items-center gap-2 flex-1">
-                                                                                            @if($material->type === 'video')
-                                                                                                <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                                                                                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                                                                                                </svg>
-                                                                                            @elseif($material->type === 'file' || $material->type === 'pdf' || $material->type === 'ppt' || $material->type === 'document')
-                                                                                                <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                                                                </svg>
-                                                                                            @else
-                                                                                                <svg class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-                                                                                                </svg>
-                                                                                            @endif
-                                                                                            <span class="text-sm text-gray-900 dark:text-white truncate">{{ $material->title }}</span>
-                                                                                            @if($material->is_required)
-                                                                                                <span class="text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-1 py-0.5 rounded">Required</span>
-                                                                                            @endif
-                                                                                        </div>
-                                                                                        <div class="flex gap-1">
-                                                                                            @if($material->type === 'video' && $material->youtube_url)
-                                                                                                <button onclick="openVideoModal('{{ $material->youtube_url }}', '{{ $material->title }}')" 
-                                                                                                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1">
-                                                                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                                                                                        <path d="M8 5v14l11-7z"/>
-                                                                                                    </svg>
-                                                                                                </button>
-                                                                                            @elseif($material->file_path)
-                                                                                                <a href="{{ Storage::url($material->file_path) }}" 
-                                                                                                   download="{{ $material->file_name }}"
-                                                                                                   class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1">
-                                                                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                                                                    </svg>
-                                                                                                </a>
-                                                                                            @elseif($material->external_url)
-                                                                                                <a href="{{ $material->external_url }}" 
-                                                                                                   target="_blank"
-                                                                                                   class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 p-1">
-                                                                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                                                                                    </svg>
-                                                                                                </a>
-                                                                                            @endif
-                                                                                        </div>
-                                                                                    </div>
-                                                                                @endforeach
-                                                                            </div>
-                                                                        @else
-                                                                            <p class="text-gray-500 dark:text-gray-400 text-sm">No materials available yet.</p>
-                                                                        @endif
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                        @empty
-                                            <p class="text-gray-500 dark:text-gray-400">No course structure available yet.</p>
-                                        @endforelse
-                                    </div>
+                                    @endif
                                 </div>
                             @endif
                         @endforeach
@@ -587,6 +670,35 @@
             if (e.target === this) {
                 closeVideoModal();
             }
+        });
+
+        // Load course progress dynamically for my courses
+        document.addEventListener("DOMContentLoaded", function() {
+            const progressBars = document.querySelectorAll('[data-mycourses-course-id]');
+            progressBars.forEach(bar => {
+                const courseId = bar.getAttribute('data-mycourses-course-id');
+                fetch(`/student/courses/${courseId}/progress`)
+                    .then(r => r.json())
+                    .then(d => {
+                        const fill = bar.querySelector('.mycourses-course-progress');
+                        const text = bar.nextElementSibling;
+                        if (fill && text) {
+                            fill.style.width = (d.progress_percentage || 0) + '%';
+                            // Keep the next due text if it exists
+                            const nextDueMatch = text.textContent.match(/• Next due:.*$/);
+                            const nextDueText = nextDueMatch ? ' ' + nextDueMatch[0] : '';
+                            text.textContent = `${d.progress_percentage || 0}% complete${nextDueText}`;
+                        }
+                    })
+                    .catch(() => {
+                        const fill = bar.querySelector('.mycourses-course-progress');
+                        const text = bar.nextElementSibling;
+                        if (fill && text) {
+                            fill.style.width = '0%';
+                            text.textContent = '0% complete';
+                        }
+                    });
+            });
         });
     </script>
 </x-student-layout>

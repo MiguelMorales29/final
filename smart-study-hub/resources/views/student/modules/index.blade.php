@@ -29,58 +29,54 @@
                 <!-- ============================================ -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-shadow duration-300">
                     <!-- Course Header Section -->
-                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-                        <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
-                            <!-- Course Image -->
-                            <div class="flex-shrink-0">
-                                @if($course->image)
-                                    <div class="w-32 h-32 rounded-lg shadow-md overflow-hidden bg-gray-100 dark:bg-gray-700">
-                                        <img src="{{ Storage::url($course->image) }}" 
-                                             alt="{{ $course->title }}" 
-                                             class="w-full h-full object-cover">
-                                    </div>
-                                @else
-                                    <div class="w-32 h-32 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-lg shadow-md flex items-center justify-center">
-                                        <svg class="w-16 h-16 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                        </svg>
-                                    </div>
-                                @endif
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700">
+                        <!-- Course Image - Full Width Rectangle -->
+                        @if($course->image)
+                            <div class="w-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden" style="max-height: 300px; min-height: 200px;">
+                                <img src="{{ Storage::url($course->image) }}" 
+                                     alt="{{ $course->title }}" 
+                                     class="w-full h-full object-contain">
+                            </div>
+                        @else
+                            <div class="w-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center" style="height: 200px;">
+                                <svg class="w-24 h-24 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                </svg>
+                            </div>
+                        @endif
+                        
+                        <!-- Course Info -->
+                        <div class="px-6 py-5">
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ $course->title }}</h2>
+                            <p class="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">{{ $course->teacher->name }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                Capacity: <span class="font-semibold">{{ $course->student_capacity }}</span> students
+                            </p>
+                            
+                            <!-- Stats -->
+                            <div class="flex flex-wrap items-center gap-3 mb-4">
+                                <span class="inline-flex items-center gap-2 bg-white dark:bg-gray-700 px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 text-sm">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <span class="font-semibold text-gray-900 dark:text-white">{{ $courseTotalMaterials }}</span>
+                                    <span class="text-gray-600 dark:text-gray-400">Materials</span>
+                                </span>
+                                <span class="inline-flex items-center gap-2 bg-white dark:bg-gray-700 px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 text-sm">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <span class="font-semibold text-gray-900 dark:text-white">{{ $courseTotalWeeks }}</span>
+                                    <span class="text-gray-600 dark:text-gray-400">Weeks</span>
+                                </span>
                             </div>
                             
-                            <!-- Course Info -->
-                            <div class="flex-1 min-w-0">
-                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ $course->title }}</h2>
-                                <p class="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">{{ $course->teacher->name }}</p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                    Capacity: <span class="font-semibold">{{ $course->student_capacity }}</span> students
-                                </p>
-                                
-                                <!-- Stats -->
-                                <div class="flex flex-wrap items-center gap-3 mb-4">
-                                    <span class="inline-flex items-center gap-2 bg-white dark:bg-gray-700 px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 text-sm">
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
-                                        <span class="font-semibold text-gray-900 dark:text-white">{{ $courseTotalMaterials }}</span>
-                                        <span class="text-gray-600 dark:text-gray-400">Materials</span>
-                                    </span>
-                                    <span class="inline-flex items-center gap-2 bg-white dark:bg-gray-700 px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 text-sm">
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                        <span class="font-semibold text-gray-900 dark:text-white">{{ $courseTotalWeeks }}</span>
-                                        <span class="text-gray-600 dark:text-gray-400">Weeks</span>
-                                    </span>
+                            <!-- Progress Bar -->
+                            <div class="w-full">
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 shadow-inner" data-course-id="{{ $course->id }}">
+                                    <div class="course-progress bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-300 shadow-sm" style="width: 0%"></div>
                                 </div>
-                                
-                                <!-- Progress Bar -->
-                                <div class="w-full">
-                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 shadow-inner" data-course-id="{{ $course->id }}">
-                                        <div class="course-progress bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-300 shadow-sm" style="width: 0%"></div>
-                                    </div>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 course-progress-text">Loading progress...</p>
-                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 course-progress-text">Loading progress...</p>
                             </div>
                         </div>
                     </div>

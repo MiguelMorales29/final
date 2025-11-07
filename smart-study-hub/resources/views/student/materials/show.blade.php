@@ -89,13 +89,15 @@
                                 Back to Modules
                             </a>
                             
-                            <!-- Mark as Done button -->
-                            <button id="markDoneBtn" onclick="toggleMarkAsDone({{ $material->id }})" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-green-100 dark:bg-gray-700 dark:hover:bg-green-900 text-gray-700 hover:text-green-700 dark:text-gray-300 dark:hover:text-green-300 text-sm font-medium rounded-lg transition-colors duration-150">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span id="markDoneText">Mark as Done</span>
-                            </button>
+                            <!-- Mark as Done button - Only show for REQUIRED materials -->
+                            @if($material->is_required)
+                                <button id="markDoneBtn" onclick="toggleMarkAsDone({{ $material->id }})" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-green-100 dark:bg-gray-700 dark:hover:bg-green-900 text-gray-700 hover:text-green-700 dark:text-gray-300 dark:hover:text-green-300 text-sm font-medium rounded-lg transition-colors duration-150">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span id="markDoneText">Mark as Done</span>
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>

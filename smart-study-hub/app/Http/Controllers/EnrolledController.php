@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class EnrolledController extends Controller
 {
@@ -129,8 +130,43 @@ class EnrolledController extends Controller
 
     public function getStudentProfile(User $student)
     {
+        $student->loadMissing(['enrollments.course']);
+
+        $profilePictureUrl = null;
+        if (!empty($student->profile_picture)) {
+            $profilePictureUrl = Storage::url($student->profile_picture);
+        } elseif (!empty($student->profile_photo_path)) {
+            $profilePictureUrl = Storage::url($student->profile_photo_path);
+        } elseif (!empty($student->profile_photo_url ?? null)) {
+            $profilePictureUrl = $student->profile_photo_url;
+        }
+
+        $courses = $student->enrollments->map(function ($enrollment) {
+            $course = $enrollment->course;
+
+            return [
+                'id' => $course?->id,
+                'title' => $course?->title,
+                'section' => $course?->section,
+                'enrolled_at' => optional($enrollment->enrolled_at)->toDateString(),
+            ];
+        })->filter(function ($course) {
+            return !empty($course['title']);
+        })->values();
+
         return response()->json([
-            'student' => $student
+            'student' => [
+                'id' => $student->id,
+                'name' => $student->name,
+                'email' => $student->email,
+                'student_number' => $student->student_number,
+                'bio' => $student->bio,
+                'gender' => $student->gender,
+                'birth_date' => optional($student->birth_date)->toDateString(),
+                'birth_date_formatted' => optional($student->birth_date)->format('M j, Y'),
+                'profile_picture_url' => $profilePictureUrl,
+                'courses' => $courses,
+            ],
         ]);
     }
 

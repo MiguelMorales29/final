@@ -15,24 +15,39 @@ use Stevebauman\Purify\Facades\Purify;
 class StudentAssignmentController extends Controller
 {
     /**
-     * Display a listing of assignments for students.
+     * Display a listing of assignments for students organized by course structure.
      */
     public function index(): View
     {
-        $student = auth()->user();
+        $studentId = auth()->id();
         
-        // Get all assignments from courses the student is enrolled in
-        $assignments = Assignment::whereHas('course.students', function($query) use ($student) {
-            $query->where('student_id', $student->id);
-        })
-        ->with(['course', 'week.subTerm.term', 'submissions' => function($query) use ($student) {
-            $query->where('student_id', $student->id);
-        }])
-        ->where('is_published', true)
-        ->orderBy('created_at', 'desc')
-        ->get();
+        // Get all courses the student is enrolled in
+        $enrolledCourseIds = \App\Models\Enrollment::where('student_id', $studentId)->pluck('course_id');
+        
+        // Also include approved applications
+        $approvedApplicationCourseIds = \App\Models\CourseApplication::where('student_id', $studentId)
+            ->where('status', 'approved')
+            ->pluck('course_id');
+        
+        $allCourseIds = $enrolledCourseIds->merge($approvedApplicationCourseIds)->unique();
+        
+        // Load courses with full structure including assignments
+        $courses = Course::whereIn('id', $allCourseIds)
+            ->with([
+                'terms.subTerms.weeks.assignments' => function($query) {
+                    $query->where('is_published', true);
+                },
+                'terms.subTerms.weeks.assignments.submissions' => function($query) use ($studentId) {
+                    $query->where('student_id', $studentId);
+                },
+                'teacher',
+                'terms',
+                'terms.subTerms',
+                'terms.subTerms.weeks'
+            ])
+            ->get();
 
-        return view('student.assignments.index', compact('assignments'));
+        return view('student.assignments.index', compact('courses'));
     }
 
     /**

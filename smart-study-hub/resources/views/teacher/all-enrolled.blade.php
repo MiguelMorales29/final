@@ -137,15 +137,44 @@
                                     </thead>
                                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                         @foreach($courseData['students'] as $enrolled)
-                                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 student-row" data-section="{{ $enrolled['section'] }}" data-course="{{ $enrolled['course_title'] }}" data-course-id="{{ $enrolled['course_id'] }}" data-student-id="{{ $enrolled['student']->id }}" data-name="{{ strtolower($enrolled['student']->name) }}" data-student-number="{{ strtolower($enrolled['student']->student_number ?? '') }}" data-email="{{ strtolower($enrolled['student']->email) }}">
+                                            @php
+                                                $student = $enrolled['student'];
+                                                $profilePictureUrl = null;
+
+                                                if (!empty($student->profile_picture)) {
+                                                    $profilePictureUrl = asset('storage/' . $student->profile_picture);
+                                                } elseif (!empty($student->profile_photo_path)) {
+                                                    $profilePictureUrl = asset('storage/' . $student->profile_photo_path);
+                                                } elseif (!empty($student->profile_photo_url ?? null)) {
+                                                    $profilePictureUrl = $student->profile_photo_url;
+                                                }
+
+                                                $profileData = [
+                                                    'id' => $student->id,
+                                                    'name' => $student->name,
+                                                    'email' => $student->email,
+                                                    'student_number' => $student->student_number,
+                                                    'bio' => $student->bio,
+                                                    'gender' => $student->gender,
+                                                    'birth_date' => optional($student->birth_date)->toDateString(),
+                                                    'birth_date_formatted' => optional($student->birth_date)->format('M j, Y'),
+                                                    'profile_picture_url' => $profilePictureUrl,
+                                                    'courses' => [[
+                                                        'id' => $enrolled['course_id'],
+                                                        'title' => $enrolled['course_title'],
+                                                        'section' => $enrolled['section'],
+                                                    ]],
+                                                ];
+                                            @endphp
+                                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 student-row" data-section="{{ $enrolled['section'] }}" data-course="{{ $enrolled['course_title'] }}" data-course-id="{{ $enrolled['course_id'] }}" data-student-id="{{ $student->id }}" data-name="{{ strtolower($student->name) }}" data-student-number="{{ strtolower($student->student_number ?? '') }}" data-email="{{ strtolower($student->email) }}" data-profile='@json($profileData)'>
                                                 <td class="px-6 py-4 whitespace-nowrap">
                                                     <div class="flex items-center">
                                                         <div class="flex-shrink-0 h-10 w-10">
-                                                            @if($enrolled['student']->profile_picture)
-                                                                <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $enrolled['student']->profile_picture) }}" alt="{{ $enrolled['student']->name }}">
+                                                            @if($profilePictureUrl)
+                                                                <img class="h-10 w-10 rounded-full object-cover" src="{{ $profilePictureUrl }}" alt="{{ $student->name }}">
                                                             @else
                                                                 <div class="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center">
-                                                                    <span class="text-sm font-medium text-white">{{ substr($enrolled['student']->name, 0, 1) }}</span>
+                                                                    <span class="text-sm font-medium text-white">{{ strtoupper(substr($student->name, 0, 1)) }}</span>
                                                                 </div>
                                                             @endif
                                                         </div>
@@ -242,6 +271,14 @@
     </div>
 
     <script>
+        const routes = {
+            studentProfile: "{{ route('teacher.student.profile', ['student' => '__STUDENT__']) }}",
+            attendanceDate: "{{ route('teacher.attendance.date', ['course' => '__COURSE__']) }}",
+            attendanceMarkGlobal: "{{ route('teacher.attendance.mark.global') }}",
+            dropStudent: "{{ route('teacher.enrolled.drop', ['course' => '__COURSE__']) }}",
+            rollCallSubmit: "{{ route('teacher.attendance.roll-call-submit') }}"
+        };
+
         // Get today's date in local timezone
         const today = new Date();
         const year = today.getFullYear();
@@ -385,7 +422,7 @@
             const courseIds = Array.from(new Set(Array.from(document.querySelectorAll('[data-course-id]')).map(row => row.getAttribute('data-course-id'))));
             
             courseIds.forEach(courseId => {
-                fetch(`/courses/${courseId}/attendance/date?date=${date}`)
+                fetch(routes.attendanceDate.replace('__COURSE__', courseId) + `?date=${encodeURIComponent(date)}`)
                     .then(response => response.json())
                     .then(attendanceData => {
                         console.log('Attendance data for course', courseId, ':', attendanceData);
@@ -443,7 +480,7 @@
                 status: status
             });
 
-            fetch('/attendance/mark', {
+            fetch(routes.attendanceMarkGlobal, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -542,7 +579,7 @@
                     }
                 });
 
-                fetch('/attendance/roll-call-submit', {
+                fetch(routes.rollCallSubmit, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -569,43 +606,185 @@
             }
         }
 
-        function viewProfile(studentId) {
-            fetch(`/students/${studentId}/profile`)
-                .then(response => response.json())
-                .then(data => {
-                    const student = data.student;
-                    
-                    document.getElementById('profileContent').innerHTML = `
-                        <div class="text-center mb-4">
-                            ${student.profile_picture ? 
-                                `<img class="h-20 w-20 rounded-full mx-auto object-cover" src="/storage/${student.profile_picture}" alt="${student.name}">` :
-                                `<div class="h-20 w-20 rounded-full bg-indigo-500 flex items-center justify-center mx-auto">
-                                    <span class="text-2xl font-medium text-white">${student.name.charAt(0)}</span>
-                                </div>`
-                            }
-                            <h4 class="mt-2 text-lg font-medium text-gray-900 dark:text-white">${student.name}</h4>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">${student.email}</p>
-                            ${student.student_number ? `<p class="text-sm text-blue-600 dark:text-blue-400 font-mono font-semibold">Student #: ${student.student_number}</p>` : ''}
-                        </div>
-                        <div class="space-y-3">
-                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Bio:</span> <span class="text-gray-600 dark:text-gray-400">${student.bio || 'Not provided'}</span></div>
-                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Gender:</span> <span class="text-gray-600 dark:text-gray-400">${student.gender || 'Not provided'}</span></div>
-                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Birthdate:</span> <span class="text-gray-600 dark:text-gray-400">${student.birth_date || 'Not provided'}</span></div>
-                        </div>
-                    `;
-                    
-                    document.getElementById('profileModal').classList.remove('hidden');
-                })
-                .catch(error => console.error('Error:', error));
-        }
 
-        function closeProfileModal() {
-            document.getElementById('profileModal').classList.add('hidden');
-        }
+function escapeHtml(value) {
+    if (value === null || value === undefined) {
+        return '';
+    }
 
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function normalizeCourses(rawCourses, fallbackCourse) {
+    const array = Array.isArray(rawCourses) ? rawCourses : [];
+    const normalized = array
+        .map(course => ({
+            id: course?.id ?? fallbackCourse?.id ?? null,
+            title: course?.title ?? fallbackCourse?.title ?? null,
+            section: course?.section ?? fallbackCourse?.section ?? null,
+            enrolled_at: course?.enrolled_at ?? fallbackCourse?.enrolled_at ?? null,
+        }))
+        .filter(course => course.title);
+
+    if (!normalized.length && fallbackCourse?.title) {
+        normalized.push({
+            id: fallbackCourse.id ?? null,
+            title: fallbackCourse.title,
+            section: fallbackCourse.section ?? null,
+            enrolled_at: fallbackCourse.enrolled_at ?? null,
+        });
+    }
+
+    return normalized;
+}
+
+function buildProfileObject(rawProfile, fallbackCourse) {
+    if (!rawProfile || typeof rawProfile !== 'object') {
+        return null;
+    }
+
+    const profilePictureUrl = rawProfile.profile_picture_url || rawProfile.profile_photo_url || null;
+
+    return {
+        id: rawProfile.id ?? null,
+        name: rawProfile.name ?? '',
+        email: rawProfile.email ?? '',
+        student_number: rawProfile.student_number ?? '',
+        bio: rawProfile.bio ?? '',
+        gender: rawProfile.gender ?? '',
+        birth_date: rawProfile.birth_date_formatted ?? rawProfile.birth_date ?? '',
+        profile_picture_url: profilePictureUrl,
+        courses: normalizeCourses(rawProfile.courses, fallbackCourse),
+    };
+}
+
+function setProfileContent(html) {
+    const contentEl = document.getElementById('profileContent');
+    if (contentEl) {
+        contentEl.innerHTML = html;
+    }
+}
+
+function showProfileLoading(message = 'Loading profile...') {
+    setProfileContent(`<div class="py-6 text-center text-sm text-gray-500 dark:text-gray-400">${escapeHtml(message)}</div>`);
+}
+
+function renderProfile(profile) {
+    if (!profile) {
+        showProfileLoading('Profile information is not available.');
+        return;
+    }
+
+    const name = escapeHtml(profile.name || 'Student');
+    const email = profile.email ? escapeHtml(profile.email) : '';
+    const studentNumber = profile.student_number ? escapeHtml(profile.student_number) : '';
+    const bio = profile.bio ? escapeHtml(profile.bio) : 'Not provided';
+    const gender = profile.gender ? escapeHtml(profile.gender) : 'Not provided';
+    const birthDate = profile.birth_date ? escapeHtml(profile.birth_date) : 'Not provided';
+    const profilePictureUrl = profile.profile_picture_url ? escapeHtml(profile.profile_picture_url) : null;
+    const courses = Array.isArray(profile.courses) ? profile.courses : [];
+    const initial = name ? escapeHtml(name.trim().charAt(0).toUpperCase()) : '?';
+
+    const courseListHtml = courses.length ? `
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-4">
+            <span class="font-medium text-gray-700 dark:text-gray-300">Enrolled Courses</span>
+            <ul class="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                ${courses.map(course => `
+                    <li class="flex items-center justify-between">
+                        <span>${escapeHtml(course.title)}</span>
+                        ${course.section ? `<span class="text-xs text-gray-500 dark:text-gray-500">Section ${escapeHtml(course.section)}</span>` : ''}
+                    </li>
+                `).join('')}
+            </ul>
+        </div>
+    ` : '';
+
+    const profileHtml = `
+        <div class="text-center mb-4">
+            ${profilePictureUrl ?
+                `<img class="h-20 w-20 rounded-full mx-auto object-cover shadow" src="${profilePictureUrl}" alt="${name}">` :
+                `<div class="h-20 w-20 rounded-full bg-indigo-500 flex items-center justify-center mx-auto">
+                    <span class="text-2xl font-medium text-white">${initial}</span>
+                </div>`
+            }
+            <h4 class="mt-2 text-lg font-medium text-gray-900 dark:text-white">${name}</h4>
+            ${email ? `<p class="text-sm text-gray-500 dark:text-gray-400">${email}</p>` : ''}
+            ${studentNumber ? `<p class="text-sm text-blue-600 dark:text-blue-400 font-mono font-semibold">Student #: ${studentNumber}</p>` : ''}
+        </div>
+        <div class="space-y-3 text-left">
+            <div><span class="font-medium text-gray-700 dark:text-gray-300">Bio:</span> <span class="text-gray-600 dark:text-gray-400">${bio}</span></div>
+            <div><span class="font-medium text-gray-700 dark:text-gray-300">Gender:</span> <span class="text-gray-600 dark:text-gray-400">${gender}</span></div>
+            <div><span class="font-medium text-gray-700 dark:text-gray-300">Birthdate:</span> <span class="text-gray-600 dark:text-gray-400">${birthDate}</span></div>
+            ${courseListHtml}
+        </div>
+    `;
+
+    setProfileContent(profileHtml);
+}
+
+function viewProfile(studentId) {
+    const studentRow = document.querySelector(`.student-row[data-student-id="${studentId}"]`);
+
+    if (!studentRow) {
+        console.error('Student row not found for profile view', studentId);
+        return;
+    }
+
+    const fallbackCourse = {
+        id: studentRow.getAttribute('data-course-id'),
+        title: studentRow.getAttribute('data-course'),
+        section: studentRow.getAttribute('data-section'),
+    };
+
+    let profileData = {};
+    try {
+        profileData = studentRow.dataset.profile ? JSON.parse(studentRow.dataset.profile) : {};
+    } catch (error) {
+        console.error('Error parsing profile data', error);
+        profileData = {};
+    }
+
+    const fallbackProfile = buildProfileObject(profileData, fallbackCourse);
+
+    showProfileLoading();
+    document.getElementById('profileModal').classList.remove('hidden');
+
+    if (fallbackProfile) {
+        renderProfile(fallbackProfile);
+    }
+
+    fetch(routes.studentProfile.replace('__STUDENT__', studentId))
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.student) {
+                const profileFromServer = buildProfileObject(data.student, fallbackCourse);
+                renderProfile(profileFromServer || fallbackProfile);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading student profile:', error);
+            if (!fallbackProfile) {
+                showProfileLoading('Unable to load profile details.');
+            }
+        });
+}
+
+function closeProfileModal() {
+    document.getElementById('profileModal').classList.add('hidden');
+}
         function dropStudent(studentId, courseId, studentName) {
             if (confirm(`Are you sure you want to drop ${studentName} from this course?`)) {
-                fetch(`/courses/${courseId}/drop-student`, {
+                fetch(routes.dropStudent.replace('__COURSE__', courseId), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

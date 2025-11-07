@@ -341,13 +341,29 @@
 
             // Helpers
             getGreeting() {
-                const greetings = [
-                    "Hi! I'm Smart Buddy, your AI study assistant.",
-                    "Hello! Ready to study? I can create flashcards, summaries, and quizzes.",
-                    "Hey there! Ask me anything about this module.",
-                    "Welcome! I can generate reviewers, flashcards, and quizzes."
+                const studentName = '{{ auth()->user()->name ?? "there" }}';
+                const firstName = studentName.split(' ')[0];
+                const hour = new Date().getHours();
+                
+                let timeGreeting = '';
+                if (hour >= 5 && hour < 12) {
+                    timeGreeting = `Good morning, ${firstName}! ☀️`;
+                } else if (hour >= 12 && hour < 17) {
+                    timeGreeting = `Good afternoon, ${firstName}! 👋`;
+                } else if (hour >= 17 && hour < 21) {
+                    timeGreeting = `Good evening, ${firstName}! 🌆`;
+                } else {
+                    timeGreeting = `Hey there, ${firstName}! Burning the midnight oil? 🌙`;
+                }
+                
+                const intros = [
+                    `${timeGreeting} Ready to dive into this module? I'm here to help you understand anything you'd like - just ask away, or I can create study tools like flashcards or a quiz. What sounds good? 📚`,
+                    `${timeGreeting} I'm Smart Buddy, your AI study companion! Want to explore this module together? I can answer questions, make flashcards, or create a quiz. Let's get started! ✨`,
+                    `${timeGreeting} Let's make studying easier! I can explain concepts, generate review points, create flashcards, or build a quiz from this module. What would you like? 🎯`,
+                    `${timeGreeting} I'm here to help you master this material! Ask me questions, or I can create study tools tailored just for you. What interests you? 💡`
                 ];
-                return greetings[Math.floor(Math.random() * greetings.length)];
+                
+                return intros[Math.floor(Math.random() * intros.length)];
             },
 
             answerFromContent(content, question) {
@@ -483,17 +499,33 @@
 
             async callNlp(mode, extra = {}) {
                 try {
+                    // Get student name from auth user (injected from backend)
+                    const studentName = '{{ auth()->user()->name ?? "there" }}';
+                    
+                    // Get current datetime
+                    const now = new Date();
+                    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                    const dateTime = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} ${now.getHours() % 12 || 12}:${String(now.getMinutes()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
+                    
                     const res = await fetch(this.nlpEndpoint, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         },
-                        body: JSON.stringify({ mode, content: textContent || '', question: extra.question || '' })
+                        body: JSON.stringify({ 
+                            mode, 
+                            content: textContent || '', 
+                            question: extra.question || '',
+                            studentName: studentName,
+                            dateTime: dateTime
+                        })
                     });
                     if (!res.ok) throw new Error('HTTP ' + res.status);
                     return await res.json();
                 } catch (e) {
+                    console.error('Smart Buddy API error:', e);
                     return {};
                 }
             },

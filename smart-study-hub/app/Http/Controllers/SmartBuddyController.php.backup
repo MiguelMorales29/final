@@ -1,0 +1,406 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
+
+class SmartBuddyController extends Controller
+{
+    public function nlp(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'mode' => 'required|in:answer,reviewer,flashcards,quiz',
+            'content' => 'required|string',
+            'question' => 'nullable|string',
+            'studentName' => 'nullable|string',
+            'dateTime' => 'nullable|string',
+        ]);
+
+        // Get student name or use default
+        $studentName = $validated['studentName'] ?? 'there';
+        $firstName = explode(' ', $studentName)[0];
+        
+        // Get datetime or use current
+        $dateTime = $validated['dateTime'] ?? Carbon::now()->format('l, F d, Y g:i A');
+        
+        // Get Groq API credentials
+        $apiKey = config('services.groq.api_key');
+        $apiUrl = rtrim(config('services.groq.api_url', 'https://api.groq.com/openai/v1'), '/');
+        $model = config('services.groq.model', 'llama-3.1-8b-instant');
+
+        // Fallback if no key configured
+        if (empty($apiKey)) {
+            return response()->json($this->fallback($validated['mode'], $validated['content'], $validated['question'] ?? '', $firstName));
+        }
+
+        try {
+            $content = $this->trimContent($validated['content']);
+            $messages = $this->buildMessages(
+                $validated['mode'], 
+                $content, 
+                $validated['question'] ?? '', 
+                $firstName,
+                $dateTime
+            );
+
+            $response = Http::timeout(30)
+                ->withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type' => 'application/json',
+                ])
+                ->post($apiUrl . '/chat/completions', [
+                'model' => $model,
+                'messages' => $messages,
+                    'temperature' => 0.7,
+                    'max_tokens' => 2000,
+                ])
+                ->throw()
+                ->json();
+
+            $text = data_get($response, 'choices.0.message.content');
+            $parsed = $this->parseResponse($validated['mode'], $text);
+            
+            return response()->json($parsed);
+        } catch (\Throwable $e) {
+            \Log::error('Smart Buddy API Error: ' . $e->getMessage());
+            // Graceful fallback on error
+            return response()->json($this->fallback($validated['mode'], $validated['content'], $validated['question'] ?? '', $firstName), 200);
+        }
+    }
+
+    private function buildMessages(string $mode, string $content, string $question, string $firstName, string $dateTime): array
+    {
+        $systemPrompt = $this->buildSystemPrompt($firstName, $dateTime, $mode);
+
+        switch($mode) {
+            case 'answer':
+                $userMessage = $this->buildAnswerPrompt($content, $question);
+                break;
+            case 'reviewer':
+                $userMessage = $this->buildReviewerPrompt($content);
+                break;
+            case 'flashcards':
+                $userMessage = $this->buildFlashcardsPrompt($content);
+                break;
+            case 'quiz':
+                $userMessage = $this->buildQuizPrompt($content);
+                break;
+            default:
+                $userMessage = $this->buildAnswerPrompt($content, $question);
+        }
+
+                return [
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $userMessage],
+        ];
+    }
+
+    private function buildSystemPrompt(string $firstName, string $dateTime, string $mode): string
+    {
+        $greeting = $this->getTimeBasedGreeting($firstName);
+        
+        $basePrompt = <<<PROMPT
+You are Smart Buddy, a friendly, encouraging AI study companion helping students learn from course modules.
+
+CURRENT CONTEXT:
+- Student's Name: {$firstName}
+- Current Date/Time: {$dateTime}
+- Greeting to use: {$greeting}
+
+PERSONALITY & BEHAVIOR:
+- ALWAYS use the student's first name ({$firstName}) when responding
+- Be warm, friendly, conversational (never robotic)
+- Show enthusiasm and encouragement
+- Use emojis naturally: 📚, ✨, 🎯, 💡, 🌟, 👍, 😊, ☀️, 🌙
+- Celebrate progress and understanding
+- Provide positive reinforcement
+
+STRICT BOUNDARY - THIS IS CRITICAL:
+- You ONLY have access to the specific module content provided
+- If asked about topics outside the module, politely redirect with:
+  "Hey {$firstName}, I'd love to help with that, but I only have access to this specific module about [topic]. Want to ask me something about [key concept from module] instead? 📚"
+- NEVER answer questions outside the provided module content
+- Always bring the conversation back to the module material
+
+PROMPT;
+
+        $modePrompts = [
+            'answer' => <<<ANSWERMODE
+MODE: CONVERSATIONAL CHAT
+- Answer questions about the module conversationally
+- Use 2-4 paragraphs typically
+- Break down complex topics into digestible pieces
+- Ask follow-up questions to check understanding
+- Offer to create study tools
+- Stay focused on the module content only
+- Return plain text response
+ANSWERMODE
+,
+            'reviewer' => <<<REVIEWMODE
+MODE: STUDY POINTS GENERATOR
+- Generate EXACTLY 5 key study points from the module
+- Each point must have:
+  * title: 3-6 words, descriptive
+  * content: Maximum 140 characters, information-dense
+- Focus on: definitions, core concepts, processes, critical facts
+- Each point must be self-contained and understandable
+- No redundancy between points
+- Return ONLY valid JSON in this exact format:
+{
+  "reviewers": [
+    {"title": "Clear Concept Name", "content": "Concise explanation under 140 chars."},
+    {"title": "Another Key Point", "content": "Different aspect explained concisely."},
+    {"title": "Third Critical Idea", "content": "Essential information clearly stated."},
+    {"title": "Fourth Important Fact", "content": "Key detail explained briefly."},
+    {"title": "Fifth Core Concept", "content": "Final crucial point summarized."}
+  ]
+}
+REVIEWMODE
+,
+            'flashcards' => <<<FLASHMODE
+MODE: FLASHCARD GENERATOR
+- Generate EXACTLY 6 flashcards from the module
+- Mix of types:
+  * Definition cards (30-40%): "What is [term]?"
+  * Application cards (25-30%): "How does [process] work?"
+  * Comparison cards (15-20%): "What's the difference between X and Y?"
+  * Example cards (10-15%): "What's an example of [concept]?"
+- Questions must test understanding, not just memory
+- Answers should be complete but concise (2-4 sentences)
+- Progressive difficulty (easy, medium, challenging)
+- Return ONLY valid JSON in this exact format:
+{
+  "flashcards": [
+    {"question": "Clear, specific question testing one concept", "answer": "Complete answer with context, 2-4 sentences"},
+    {"question": "Another focused question", "answer": "Thorough answer explaining the concept"},
+    {"question": "Different aspect question", "answer": "Clear explanation with details"},
+    {"question": "Application question", "answer": "Answer showing how concept applies"},
+    {"question": "Comparison question", "answer": "Answer highlighting key differences"},
+    {"question": "Challenging question", "answer": "Answer requiring deeper understanding"}
+  ]
+}
+FLASHMODE
+,
+            'quiz' => <<<QUIZMODE
+MODE: QUIZ GENERATOR
+CRITICAL: Generate EXACTLY 5 high-quality multiple-choice questions
+
+QUESTION QUALITY RULES (MOST IMPORTANT):
+- Each question has 4 options (A, B, C, D)
+- Exactly 1 correct answer
+- ALL options MUST be plausible and related to the module topic
+- NO OBVIOUS ANSWERS - This is critical!
+- Distractors (wrong answers) must be:
+  * Common misconceptions from the module
+  * Related concepts from the same module
+  * Partially correct information
+  * Similar in length/complexity to correct answer
+- Students must truly understand the concept to answer correctly
+
+QUESTION TYPES:
+- 40% Conceptual understanding
+- 30% Application questions
+- 20% Analysis questions
+- 10% Factual recall (but with challenging distractors)
+
+DIFFICULTY:
+- 2 easier questions (core concepts)
+- 2 medium questions (application/analysis)
+- 1 challenging question (deeper analysis)
+
+Return ONLY valid JSON in this exact format:
+{
+  "quiz": [
+    {
+      "question": "Clear, specific question",
+      "options": [
+        "Option A - plausible and related to topic",
+        "Option B - plausible and related to topic",
+        "Option C - plausible and related to topic (CORRECT)",
+        "Option D - plausible and related to topic"
+      ],
+      "correctAnswer": 2
+    }
+    // ... 4 more questions following the same quality standards
+  ]
+}
+QUIZMODE
+,
+        ];
+
+        return $basePrompt . "\n\n" . $modePrompts[$mode];
+    }
+
+    private function getTimeBasedGreeting(string $firstName): string
+    {
+        $hour = Carbon::now()->hour;
+        
+        if ($hour >= 5 && $hour < 12) {
+            return "Good morning, {$firstName}! ☀️";
+        } elseif ($hour >= 12 && $hour < 17) {
+            return "Good afternoon, {$firstName}! 👋";
+        } elseif ($hour >= 17 && $hour < 21) {
+            return "Good evening, {$firstName}! 🌆";
+        } else {
+            return "Hey there, {$firstName}! Burning the midnight oil? 🌙";
+        }
+    }
+
+    private function buildAnswerPrompt(string $content, string $question): string
+    {
+        return <<<PROMPT
+MODULE CONTENT:
+{$content}
+
+STUDENT QUESTION:
+{$question}
+
+Please answer the student's question using ONLY the module content provided. If the question is outside the module scope, politely redirect them back to the module topics.
+PROMPT;
+    }
+
+    private function buildReviewerPrompt(string $content): string
+    {
+        return <<<PROMPT
+MODULE CONTENT:
+{$content}
+
+Generate exactly 5 key study points from this module. Follow the JSON format specified in the system prompt.
+PROMPT;
+    }
+
+    private function buildFlashcardsPrompt(string $content): string
+    {
+        return <<<PROMPT
+MODULE CONTENT:
+{$content}
+
+Generate exactly 6 flashcards from this module with a mix of question types. Follow the JSON format specified in the system prompt.
+PROMPT;
+    }
+
+    private function buildQuizPrompt(string $content): string
+    {
+        return <<<PROMPT
+MODULE CONTENT:
+{$content}
+
+Generate exactly 5 high-quality multiple-choice questions from this module. ALL options must be plausible and related to the module - NO obvious answers! Follow the JSON format and quality rules specified in the system prompt.
+PROMPT;
+    }
+
+    private function parseResponse(string $mode, ?string $text): array
+    {
+        $text = trim((string) $text);
+        
+        // Strip code fences if present
+        if (preg_match('/```json\s*([\s\S]*?)\s*```/', $text, $m)) {
+            $text = trim($m[1]);
+        } elseif (preg_match('/```\s*([\s\S]*?)\s*```/', $text, $m)) {
+            $text = trim($m[1]);
+        }
+
+        if (in_array($mode, ['reviewer', 'flashcards', 'quiz'])) {
+            $json = $this->extractJson($text);
+            if ($json) {
+                $data = json_decode($json, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    return [
+                        'text' => null,
+                        'reviewers' => $data['reviewers'] ?? [],
+                        'flashcards' => $data['flashcards'] ?? [],
+                        'quiz' => $data['quiz'] ?? [],
+                    ];
+                }
+            }
+        }
+
+        return ['text' => $text];
+    }
+
+    private function trimContent(string $content, int $limit = 8000): string
+    {
+        $s = trim(preg_replace('/\s+/', ' ', $content));
+        if (mb_strlen($s) <= $limit) return $s;
+        return mb_substr($s, 0, $limit) . '...';
+    }
+
+    private function extractJson(string $text): ?string
+    {
+        // Try to find JSON object
+        if (preg_match('/\{[\s\S]*\}\s*$/m', $text, $m)) {
+            return $m[0];
+        }
+        // Try to find JSON array
+        if (preg_match('/\[[\s\S]*\]\s*$/m, $text, $m)) {
+            return $m[0];
+        }
+        return null;
+    }
+
+    private function fallback(string $mode, string $content, string $question, string $firstName): array
+    {
+        $greeting = $this->getTimeBasedGreeting($firstName);
+        
+        // Simple heuristic fallback
+        $pattern = '/(?<=[.!?])\s+/';
+        $sentences = preg_split($pattern, preg_replace('/\s+/', ' ', $content));
+        $sentences = array_values(array_filter($sentences, function($s) { return strlen($s) > 40; }));
+
+        if ($mode === 'answer') {
+            $key = isset($sentences[0]) ? $sentences[0] : 'a key concept';
+            return ['text' => "{$greeting} Based on the module, here's what I can tell you: {$key}"];
+        }
+        
+        if ($mode === 'reviewer') {
+            $items = array_slice($sentences, 0, 5);
+            $reviewers = [];
+            foreach ($items as $i => $s) {
+                $reviewers[] = [
+                    'title' => 'Key Idea ' . ($i + 1),
+                    'content' => mb_substr($s, 0, 140)
+                ];
+            }
+            return ['reviewers' => $reviewers];
+        }
+        
+        if ($mode === 'flashcards') {
+            $items = array_slice($sentences, 0, 6);
+            $flashcards = [];
+            foreach ($items as $s) {
+                $flashcards[] = [
+                    'question' => 'What is meant by: ' . mb_substr($s, 0, 50) . '...?',
+                    'answer' => mb_substr($s, 0, 200)
+                ];
+            }
+            return ['flashcards' => $flashcards];
+        }
+        
+        if ($mode === 'quiz') {
+            $items = array_slice($sentences, 0, 5);
+            $quiz = array_map(function ($s, $i) {
+                $q = 'Which statement best describes concept ' . ($i + 1) . '?';
+                $correct = mb_substr($s, 0, 100);
+                $opts = [
+                    $correct,
+                    'A different interpretation of the concept',
+                    'An alternative but related idea',
+                    'A common misconception about this'
+                ];
+                shuffle($opts);
+                $correctIndex = array_search($correct, $opts);
+                return [
+                    'question' => $q,
+                    'options' => $opts,
+                    'correctAnswer' => $correctIndex,
+                ];
+            }, $items, array_keys($items));
+            return ['quiz' => $quiz];
+        }
+
+        return ['text' => ''];
+    }
+}

@@ -266,31 +266,11 @@
                                                                                                 <h6 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Assignments</h6>
                                                                                                 <div class="space-y-2">
                                                                                                     @foreach($week->assignments as $assignment)
-                                                                                                        @php
-                                                                                                            $submission = $assignment->submissions->first();
-                                                                                                            $dueDate = $assignment->due_date;
-                                                                                                            $publishedAt = $assignment->published_at ?? $assignment->created_at;
-                                                                                                            $now = now();
-                                                                                                            $statusColor = 'bg-blue-50 border-blue-200 dark:bg-blue-900/40 dark:border-blue-700';
-
-                                                                                                            if ($submission && in_array($submission->status, ['submitted', 'graded'])) {
-                                                                                                                $statusColor = 'bg-green-50 border-green-200 dark:bg-green-900/40 dark:border-green-700';
-                                                                                                            } elseif ($dueDate) {
-                                                                                                                if ($dueDate->isPast()) {
-                                                                                                                    $statusColor = 'bg-red-50 border-red-200 dark:bg-red-900/40 dark:border-red-700';
-                                                                                                                } elseif ($publishedAt) {
-                                                                                                                    $totalSeconds = $publishedAt->diffInSeconds($dueDate, false);
-                                                                                                                    if ($totalSeconds > 0) {
-                                                                                                                        $elapsedSeconds = $publishedAt->diffInSeconds($now, false);
-                                                                                                                        if ($elapsedSeconds >= 0 && ($elapsedSeconds / $totalSeconds) >= 0.75) {
-                                                                                                                            $statusColor = 'bg-orange-50 border-orange-200 dark:bg-orange-900/40 dark:border-orange-700';
-                                                                                                                        }
-                                                                                                                    }
-                                                                                                                }
-                                                                                                            }
-                                                                                                        @endphp
-                                                                                                        <div class="assignment-card flex items-center justify-between p-3 rounded-lg border hover:shadow-sm transition-shadow {{ $statusColor }}" data-status="{{ $submission ? $submission->status : 'not-started' }}">
-                                                                                                            <div class="flex items-center gap-3 flex-1 min-w-0">
+                                @php
+                                    $submission = $assignment->submissions->first();
+                                @endphp
+                                                                                                        <div class="assignment-card flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-sm transition-shadow" data-status="{{ $submission ? $submission->status : 'not-started' }}">
+                                                                                                            <div class="flex items-center gap-3">
                                                                                                                 <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                                                                                                 </svg>
@@ -302,33 +282,33 @@
                                                                                                                         <span>Due {{ $assignment->due_date->format('M j, Y') }}</span>
                                                                                                                     </div>
                                                                                                                 </div>
-                                                                                                            </div>
-                                                                                                            <div class="flex items-center gap-2 flex-shrink-0">
-                                                                                                                @if($submission)
-                                                                                                                    @if($submission->status === 'graded')
-                                                                                                                        <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full">Graded</span>
-                                                                                                                    @elseif($submission->status === 'submitted')
-                                                                                                                        <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full">Submitted</span>
-                                                                                                                    @else
-                                                                                                                        <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs px-2 py-1 rounded-full">Draft</span>
-                                                                                                                    @endif
-                                                                                                                @else
-                                                                                                                    <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">Not Started</span>
-                                                                                                                @endif
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            @if($submission)
+                                                @if($submission->status === 'graded')
+                                                    <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full">Graded</span>
+                                                @elseif($submission->status === 'submitted')
+                                                    <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full">Submitted</span>
+                                                @else
+                                                    <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs px-2 py-1 rounded-full">Draft</span>
+                                                @endif
+                                            @else
+                                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">Not Started</span>
+                                            @endif
                                                                                                                 <a href="{{ route('student.assignments.show', $assignment) }}" 
                                                                                                                    class="text-xs text-blue-600 dark:text-blue-400 hover:underline">
                                                                                                                     View
                                                                                                                 </a>
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                    @endforeach
                                         </div>
                                     </div>
+                                                                                                    @endforeach
+                                                                                                </div>
+                                                                                            </div>
                                                                                         @else
                                                                                             <div class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
                                                                                                 No assignments available for this week.
-                                        </div>
-                                        @endif
+                                                                                            </div>
+                                                                                        @endif
                                     </div>
                                                                                 </div>
                                                                             @endif
@@ -417,7 +397,7 @@
                             break;
                     }
 
-                    card.style.display = show ? 'flex' : 'none';
+                    card.style.display = show ? 'block' : 'none';
                 });
             }
 
