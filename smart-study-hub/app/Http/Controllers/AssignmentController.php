@@ -51,6 +51,21 @@ class AssignmentController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $course->load([
+            'terms.subTerms.weeks.assignments' => function ($query) {
+                $query->with('submissions')->orderBy('due_date')->orderBy('created_at', 'desc');
+            },
+            'terms.subTerms.weeks' => function ($query) {
+                $query->orderBy('week_number');
+            },
+            'terms.subTerms' => function ($query) {
+                $query->orderBy('order');
+            },
+            'terms' => function ($query) {
+                $query->orderBy('order');
+            },
+        ]);
+
         return view('teacher.assignments.course-assignments', compact('course', 'assignments'));
     }
 
@@ -157,8 +172,64 @@ class AssignmentController extends Controller
             abort(403, 'Unauthorized access.');
         }
 
-        $course->load(['terms.subTerms.weeks']);
-        return view('teacher.assignments.create', compact('course'));
+        $course->load([
+            'terms.subTerms.weeks.assignments' => function ($query) {
+                $query->withCount('submissions')
+                    ->orderBy('due_date')
+                    ->orderBy('created_at', 'desc');
+            },
+            'terms.subTerms.weeks' => function ($query) {
+                $query->orderBy('week_number');
+            },
+            'terms.subTerms' => function ($query) {
+                $query->orderBy('order');
+            },
+            'terms' => function ($query) {
+                $query->orderBy('order');
+            },
+        ]);
+
+        $course->loadCount('enrollments');
+
+        $allAssignments = $course->assignments()
+            ->withCount('submissions')
+            ->with(['week.term'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $assignmentStats = [
+            'total' => $allAssignments->count(),
+            'published' => $allAssignments->where('is_published', true)->count(),
+            'drafts' => $allAssignments->where('is_published', false)->count(),
+            'submissions' => $allAssignments->sum(fn ($assignment) => $assignment->submissions_count ?? 0),
+        ];
+
+        $unassignedAssignments = $allAssignments->whereNull('course_week_id')->values();
+
+        $courseStructure = $course->terms->map(function ($term) {
+            $weeks = collect();
+            foreach ($term->subTerms as $subTerm) {
+                foreach ($subTerm->weeks as $week) {
+                    $weeks->push([
+                        'id' => $week->id,
+                        'title' => $week->title,
+                        'sub_term' => $subTerm->title,
+                        'sub_term_id' => $subTerm->id,
+                        'term_id' => $term->id,
+                    ]);
+                }
+            }
+
+            return [
+                'id' => $term->id,
+                'name' => $term->name,
+                'weeks' => $weeks->toArray(),
+            ];
+        });
+
+        $courseEnrollmentCount = $course->enrollments_count ?? $course->enrollments()->count();
+
+        return view('teacher.assignments.create', compact('course', 'courseStructure', 'assignmentStats', 'unassignedAssignments', 'courseEnrollmentCount'));
     }
 
     /**
@@ -420,19 +491,59 @@ class AssignmentController extends Controller
         }
 
         $request->validate([
+            'submission_id' => 'required|integer|in:' . $submission->id,
             'points_earned' => 'required|integer|min:0|max:' . $assignment->points,
             'feedback' => 'nullable|string',
         ]);
+
+        $assignment->loadMissing('course');
+        $submission->loadMissing('student');
+
+        $wasPreviouslyGraded = $submission->status === 'graded' && !is_null($submission->points_earned);
+        $previousPoints = $submission->points_earned;
+
+        $gradedAt = now();
 
         $submission->update([
             'points_earned' => $request->points_earned,
             'feedback' => $request->feedback,
             'status' => 'graded',
-            'graded_at' => now(),
+            'graded_at' => $gradedAt,
         ]);
 
+        $student = $submission->student;
+        if ($student) {
+            $course = $assignment->course;
+            $notificationType = $wasPreviouslyGraded ? 'assignment_regraded' : 'assignment_graded';
+            $scored = $request->points_earned . '/' . $assignment->points;
+            $message = $wasPreviouslyGraded
+                ? "Your submission for {$assignment->title} was regraded: {$scored}."
+                : "Your submission for {$assignment->title} was graded: {$scored}.";
+
+            $student->notifications()->create([
+                'type' => $notificationType,
+                'title' => $assignment->title,
+                'message' => $message,
+                'data' => [
+                    'course_id' => $course->id,
+                    'course_title' => $course->title,
+                    'assignment_id' => $assignment->id,
+                    'assignment_title' => $assignment->title,
+                    'submission_id' => $submission->id,
+                    'points_earned' => (int) $request->points_earned,
+                    'max_points' => (int) $assignment->points,
+                    'previous_points' => $previousPoints,
+                    'graded_at' => $gradedAt->toIso8601String(),
+                    'regraded' => $wasPreviouslyGraded,
+                    'teacher_name' => auth()->user()->name,
+                ],
+            ]);
+        }
+
+        $successMessage = $wasPreviouslyGraded ? 'Submission regraded successfully.' : 'Submission graded successfully.';
+
         return redirect()->back()
-            ->with('success', 'Submission graded successfully.');
+            ->with('success', $successMessage);
     }
 
     /**

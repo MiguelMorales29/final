@@ -1,4 +1,5 @@
 <x-teacher-layout>
+    @php $courseEnrollmentCount = $courseEnrollmentCount ?? 0; @endphp
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -304,19 +305,19 @@
                             
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-                                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="total-assignments">0</div>
+                                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $assignmentStats['total'] }}</div>
                                     <div class="text-sm text-blue-600 dark:text-blue-400">Total Assignments</div>
                                 </div>
                                 <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
-                                    <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="published-assignments">0</div>
+                                    <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $assignmentStats['published'] }}</div>
                                     <div class="text-sm text-green-600 dark:text-green-400">Published</div>
                                 </div>
                                 <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
-                                    <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400" id="draft-assignments">0</div>
+                                    <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ $assignmentStats['drafts'] }}</div>
                                     <div class="text-sm text-yellow-600 dark:text-yellow-400">Drafts</div>
                                 </div>
                                 <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
-                                    <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="total-submissions">0</div>
+                                    <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ $assignmentStats['submissions'] }}</div>
                                     <div class="text-sm text-purple-600 dark:text-purple-400">Total Submissions</div>
                                 </div>
                             </div>
@@ -333,15 +334,316 @@
                                 </div>
                             </div>
                             
-                            <div id="assignments-preview" class="space-y-6">
-                                <!-- Assignments will be loaded here via JavaScript with collapsible structure -->
-                                <div class="text-center py-8 text-gray-500 dark:text-gray-400">
-                                    <svg class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            @forelse($course->terms as $term)
+                                @php
+                                    $termAssignmentsCount = $term->subTerms->sum(function ($subTerm) {
+                                        return $subTerm->weeks->sum(function ($week) {
+                                            return $week->assignments->count();
+                                        });
+                                    });
+                                    $weeksCreated = $term->subTerms->sum(function ($subTerm) {
+                                        return $subTerm->weeks->count();
+                                    });
+                                @endphp
+
+                                <x-collapsible-section
+                                    :id="$term->id"
+                                    :title="$term->name"
+                                    :subtitle="$term->description"
+                                    :count="$termAssignmentsCount"
+                                    count-label="assignments"
+                                    :badges="[
+                                        ['class' => 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200', 'text' => $term->total_weeks . ' planned'],
+                                        ['class' => 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200', 'text' => $weeksCreated . ' created']
+                                    ]"
+                                    level="term"
+                                    :clickable="true">
+
+                                    @if($term->subTerms->count() > 0)
+                                        <div class="space-y-4">
+                                            @foreach($term->subTerms as $subTerm)
+                                                <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+                                                    <div class="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                                                        <h5 class="text-lg font-medium text-gray-900 dark:text-white">{{ $subTerm->title }}</h5>
+                                                        @if($subTerm->description)
+                                                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">{{ $subTerm->description }}</p>
+                                                        @endif
+                                                    </div>
+
+                                                    @if($subTerm->weeks->count() > 0)
+                                                        <div class="divide-y divide-gray-200 dark:divide-gray-600">
+                                                            @foreach($subTerm->weeks as $week)
+                                                                @php
+                                                                    $weekAssignments = $week->assignments;
+                                                                    $assignmentCount = $weekAssignments->count();
+                                                                @endphp
+                                                                <div class="p-4">
+                                                                    <div class="flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-2 -m-2 transition-colors duration-200"
+                                                                         @click="toggleWeek({{ $week->id }})">
+                                                                        <div class="flex items-center gap-3">
+                                                                            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                                            </svg>
+                                                                            <div>
+                                                                                <h6 class="font-medium text-gray-900 dark:text-white">{{ $week->title }}</h6>
+                                                                                @if($week->description)
+                                                                                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ $week->description }}</p>
+                                                                                @endif
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="flex items-center gap-3">
+                                                                            <span class="text-sm text-gray-500 dark:text-gray-400">
+                                                                                {{ $assignmentCount }} assignment{{ $assignmentCount === 1 ? '' : 's' }}
+                                                                            </span>
+                                                                            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                                                                                 :class="{ 'rotate-180': openWeeks[{{ $week->id }}] }"
+                                                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                                            </svg>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div x-show="openWeeks[{{ $week->id }}]"
+                                                                         x-transition:enter="transition ease-out duration-200"
+                                                                         x-transition:enter-start="opacity-0 transform scale-95"
+                                                                         x-transition:enter-end="opacity-100 transform scale-100"
+                                                                         x-transition:leave="transition ease-in duration-150"
+                                                                         x-transition:leave-start="opacity-100 transform scale-100"
+                                                                         x-transition:leave-end="opacity-0 transform scale-95"
+                                                                         class="mt-4 space-y-4">
+                                                                        <div class="flex items-center justify-between">
+                                                                            <h6 class="text-sm font-medium text-gray-700 dark:text-gray-300">Assignments</h6>
+                                                                            <button type="button"
+                                                                                class="add-assignment-btn inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                                                                                data-term-id="{{ $term->id }}"
+                                                                                data-week-id="{{ $week->id }}">
+                                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                                                                </svg>
+                                                                                Add Assignment
+                                                                            </button>
+                                                                        </div>
+
+                                                                        @if($assignmentCount > 0)
+                                                                            <div class="space-y-3">
+                                                                                @foreach($weekAssignments as $assignment)
+                                                                                    <div class="item-card bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 hover:shadow-md transition-all duration-200">
+                                                                                        <div class="flex items-start justify-between gap-4">
+                                                                                            <div class="flex-1">
+                                                                                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $assignment->title }}</h4>
+                                                                                                @if($assignment->description)
+                                                                                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                                                                                                        {{ Str::limit(strip_tags($assignment->description), 120) }}
+                                                                                                    </p>
+                                                                                                @endif
+                                                                                            </div>
+                                                                                            <div class="flex flex-col items-end gap-2">
+                                                                                                <span class="{{ $assignment->is_published ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200' }} text-xs font-semibold px-2 py-1 rounded-full">
+                                                                                                    {{ $assignment->is_published ? 'Published' : 'Draft' }}
+                                                                                                </span>
+                                                                                                <div class="flex items-center gap-2">
+                                                                                                    <a href="{{ route('teacher.assignments.show', $assignment) }}"
+                                                                                                       class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                                                                                                       title="View Assignment">
+                                                                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                                                        </svg>
+                                                                                                    </a>
+                                                                                                    <a href="{{ route('teacher.assignments.edit', $assignment) }}"
+                                                                                                       class="p-2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-200 transition-colors"
+                                                                                                       title="Edit Assignment">
+                                                                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                                                        </svg>
+                                                                                                    </a>
+                                                                                                    <form action="{{ route('teacher.assignments.destroy', $assignment) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this assignment?');">
+                                                                                                        @csrf
+                                                                                                        @method('DELETE')
+                                                                                                        <button type="submit"
+                                                                                                                class="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-200 transition-colors"
+                                                                                                                title="Delete Assignment">
+                                                                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                            </svg>
+                                                                                                        </button>
+                                                                                                    </form>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                        <div class="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                                                                            <div class="flex items-center gap-2">
+                                                                                                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
-                                    <p>No assignments yet. Create your first assignment to see it here.</p>
+                                                                                                <span><span class="font-semibold text-gray-900 dark:text-white">{{ $assignment->points }}</span> pts</span>
                                 </div>
+                                                                                            <div class="flex items-center gap-2">
+                                                                                                <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                                                                </svg>
+                                                                                                @php
+                                                                                                    $submissionsTotal = $assignment->submissions_count ?? 0;
+                                                                                                    $totalPossible = max($courseEnrollmentCount, $submissionsTotal);
+                                                                                                @endphp
+                                                                                                <span>{{ $submissionsTotal }}/{{ $totalPossible }} submissions</span>
                             </div>
+                                                                                            <div class="flex items-center gap-2">
+                                                                                                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                                                                </svg>
+                                                                                                <span class="{{ $assignment->due_date && $assignment->due_date->isPast() ? 'text-red-600 dark:text-red-400 font-semibold' : '' }}">
+                                                                                                    {{ $assignment->due_date ? $assignment->due_date->format('M j, Y g:i A') : 'No due date' }}
+                                                                                                </span>
+                        </div>
+                                                                                            <div class="flex items-center gap-2">
+                                                                                                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                                                                </svg>
+                                                                                                <span>Max Attempts: {{ $assignment->max_attempts }}</span>
+                    </div>
+                </div>
+
+            </div>
+                                                                                @endforeach
+        </div>
+                                                                        @else
+                                                                            <div class="text-center py-6 text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                                                                                <p>No assignments created for this week yet.</p>
+                                                                            </div>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @else
+                                                        <div class="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                                            No weeks defined for this section.
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div class="text-center py-6 text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                                            No sections defined for this term.
+                                        </div>
+                                    @endif
+                                </x-collapsible-section>
+                            @empty
+                                <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 text-center border border-gray-200 dark:border-gray-700">
+                                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                    </svg>
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Course Structure</h3>
+                                    <p class="text-gray-600 dark:text-gray-400 mb-4">This course doesn't have any terms or weeks defined yet.</p>
+                                    <a href="{{ route('teacher.courses.edit', $course) }}"
+                                       class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+                                        Edit Course Structure
+                                    </a>
+                                </div>
+                            @endforelse
+
+                            @if($unassignedAssignments->count() > 0)
+                                <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"></path>
+                                            </svg>
+                                            <div>
+                                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Unassigned Assignments</h3>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">Assignments not yet linked to a specific week</p>
+                                            </div>
+                                        </div>
+                                        <span class="bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-200 text-sm px-2 py-1 rounded-full">
+                                            {{ $unassignedAssignments->count() }} item{{ $unassignedAssignments->count() === 1 ? '' : 's' }}
+                                        </span>
+                                    </div>
+                                    <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                        @foreach($unassignedAssignments as $assignment)
+                                        <div class="item-card bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 hover:shadow-md transition duration-200">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <div class="flex-1">
+                                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $assignment->title }}</h4>
+                                                    @if($assignment->description)
+                                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                                                            {{ Str::limit(strip_tags($assignment->description), 120) }}
+                                                        </p>
+                                                    @endif
+                                                </div>
+                                                <div class="flex flex-col items-end gap-2">
+                                                    <span class="{{ $assignment->is_published ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200' }} text-xs font-semibold px-2 py-1 rounded-full">
+                                                        {{ $assignment->is_published ? 'Published' : 'Draft' }}
+                                                    </span>
+                                                    <div class="flex items-center gap-2">
+                                                        <a href="{{ route('teacher.assignments.show', $assignment) }}"
+                                                           class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                                                           title="View Assignment">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                            </svg>
+                                                        </a>
+                                                        <a href="{{ route('teacher.assignments.edit', $assignment) }}"
+                                                           class="p-2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-200 transition-colors"
+                                                           title="Edit Assignment">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                            </svg>
+                                                        </a>
+                                                        <form action="{{ route('teacher.assignments.destroy', $assignment) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this assignment?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit"
+                                                                    class="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-200 transition-colors"
+                                                                    title="Delete Assignment">
+                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                </svg>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @php
+                                                $unassignedSubmissions = $assignment->submissions_count ?? 0;
+                                                $unassignedTotal = max($courseEnrollmentCount, $unassignedSubmissions);
+                                            @endphp
+                                            <div class="mt-4 grid grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
+                                                <div><span class="font-semibold text-gray-900 dark:text-white">{{ $assignment->points }}</span> pts</div>
+                                                <div>{{ $unassignedSubmissions }}/{{ $unassignedTotal }} submissions</div>
+                                                <div class="{{ $assignment->due_date && $assignment->due_date->isPast() ? 'text-red-600 dark:text-red-400 font-semibold' : '' }}">
+                                                    {{ $assignment->due_date ? $assignment->due_date->format('M j, Y g:i A') : 'No due date' }}
+                                                </div>
+                                                <div>Max Attempts: {{ $assignment->max_attempts }}</div>
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if($assignmentStats['total'] === 0)
+                                <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 text-center border border-dashed border-gray-300 dark:border-gray-600">
+                                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Assignments Yet</h3>
+                                    <p class="text-gray-600 dark:text-gray-400 mb-4">Create your first assignment to populate this course structure.</p>
+                                    <button type="button"
+                                            class="add-assignment-btn bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150 ease-in-out"
+                                            @if(isset($course->terms[0]) && isset($course->terms[0]->subTerms[0]) && isset($course->terms[0]->subTerms[0]->weeks[0]))
+                                                data-term-id="{{ $course->terms[0]->id }}"
+                                                data-week-id="{{ $course->terms[0]->subTerms[0]->weeks[0]->id }}"
+                                            @else
+                                                disabled
+                                            @endif>
+                                        Add Assignment
+                                    </button>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -551,24 +853,14 @@
             const weekSelect = document.getElementById('course_week_id');
             const submissionTypeSelect = document.getElementById('submission_type');
             const fileSettings = document.getElementById('file-settings');
+            const titleInput = document.getElementById('title');
+            const titleCounter = document.getElementById('title-counter');
 
-            // Course structure data (flatten sub-terms' weeks and include sub_term label)
-            const courseTerms = @json($course->terms);
-            const courseStructure = courseTerms.map(term => ({
-                id: term.id,
-                name: term.name,
-                weeks: ((term.sub_terms || term.subTerms) || []).flatMap(subTerm => {
-                    const weeks = subTerm.weeks || [];
-                    return weeks.map(week => ({
-                        id: week.id,
-                        title: week.title,
-                        week_number: week.week_number,
-                        sub_term: subTerm.title
-                    }));
-                })
-            }));
+            const storageTermKey = 'assignment_form_selected_term';
+            const storageWeekKey = 'assignment_form_selected_week';
 
-            // Initialize Quill editor for description
+            const courseStructure = @json($courseStructure);
+
             const descriptionQuill = new Quill('#description-editor', {
                 theme: 'snow',
                 modules: {
@@ -585,7 +877,6 @@
                 placeholder: 'Enter assignment description...'
             });
 
-            // Initialize Quill editor for instructions
             const instructionsQuill = new Quill('#instructions-editor', {
                 theme: 'snow',
                 modules: {
@@ -602,7 +893,6 @@
                 placeholder: 'Enter detailed instructions...'
             });
 
-            // Update hidden inputs with HTML content
             descriptionQuill.on('text-change', function() {
                 const html = descriptionQuill.root.innerHTML;
                 document.getElementById('description').value = html;
@@ -615,16 +905,16 @@
                 updateCharacterCounter('instructions-counter', html, 5000);
             });
 
-            // Character counter for title
-            const titleInput = document.getElementById('title');
+            if (titleInput) {
             titleInput.addEventListener('input', function() {
                 updateCharacterCounter('title-counter', this.value, 500);
             });
+            }
 
-            // Function to update character counters
             function updateCharacterCounter(counterId, content, maxLength) {
                 const counter = document.getElementById(counterId);
-                const textLength = content.replace(/<[^>]*>/g, '').length; // Strip HTML tags for count
+                if (!counter) return;
+                const textLength = content.replace(/<[^>]*>/g, '').length;
                 counter.textContent = `${textLength}/${maxLength}`;
                 
                 if (textLength > maxLength) {
@@ -634,12 +924,20 @@
                 }
             }
 
-            // Handle term change
             termSelect.addEventListener('change', function() {
-                updateWeeks(this.value);
+                updateWeeks();
+                sessionStorage.setItem(storageTermKey, this.value || '');
+                sessionStorage.removeItem(storageWeekKey);
             });
 
-            // Handle submission type change
+            weekSelect.addEventListener('change', function() {
+                if (this.value) {
+                    sessionStorage.setItem(storageWeekKey, this.value);
+                } else {
+                    sessionStorage.removeItem(storageWeekKey);
+                }
+            });
+
             submissionTypeSelect.addEventListener('change', function() {
                 if (this.value === 'file' || this.value === 'both') {
                     fileSettings.style.display = 'block';
@@ -648,465 +946,107 @@
                 }
             });
 
-            // Update weeks dropdown
-            function updateWeeks(termId) {
+            function updateWeeks(preselectWeekId = null) {
                 weekSelect.innerHTML = '<option value="">Choose a week...</option>';
+                const termId = termSelect.value;
                 
                 if (termId) {
-                    const selectedTerm = courseStructure.find(term => term.id == termId);
+                    const selectedTerm = courseStructure.find(term => String(term.id) === String(termId));
                     if (selectedTerm && selectedTerm.weeks) {
                         selectedTerm.weeks.forEach(week => {
                             const option = document.createElement('option');
                             option.value = week.id;
                             option.textContent = `${week.sub_term || 'Week'} - ${week.title}`;
-                            weekSelect.appendChild(option);
-                        });
-                    }
-                }
-            }
-
-            // Load assignments preview
-            loadAssignmentsPreview();
-
-            // Function to load assignments preview
-            function loadAssignmentsPreview() {
-                fetch(`/teacher/courses/{{ $course->id }}/assignments/preview`)
-                    .then(response => response.json())
-                    .then(data => {
-                        updateStats(data.stats);
-                        renderAssignments(data.assignments);
-                    })
-                    .catch(error => {
-                        console.error('Error loading assignments:', error);
-                    });
-            }
-
-            // Function to update stats
-            function updateStats(stats) {
-                document.getElementById('total-assignments').textContent = stats.total || 0;
-                document.getElementById('published-assignments').textContent = stats.published || 0;
-                document.getElementById('draft-assignments').textContent = stats.drafts || 0;
-                document.getElementById('total-submissions').textContent = stats.submissions || 0;
-            }
-
-            // Function to render assignments
-            function renderAssignments(assignments) {
-                const container = document.getElementById('assignments-preview');
-                
-                if (assignments.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center py-8 text-gray-500 dark:text-gray-400">
-                            <svg class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            <p>No assignments yet. Create your first assignment to see it here.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                // Group assignments by term first, then by week
-                const termGroups = {};
-                assignments.forEach(assignment => {
-                    const termName = assignment.term_name || 'Unassigned';
-                    if (!termGroups[termName]) {
-                        termGroups[termName] = {};
-                    }
-                    const weekTitle = assignment.week_title || 'Unassigned';
-                    if (!termGroups[termName][weekTitle]) {
-                        termGroups[termName][weekTitle] = [];
-                    }
-                    termGroups[termName][weekTitle].push(assignment);
-                });
-
-                let html = '';
-                Object.keys(termGroups).forEach(termName => {
-                    const termAssignments = termGroups[termName];
-                    const totalAssignments = Object.values(termAssignments).flat().length;
-                    const totalWeeks = Object.keys(termAssignments).length;
-                    
-                    html += `
-                        <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                            <!-- Term Header (Collapsible) -->
-                            <div class="p-6 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-                                 onclick="toggleTerm('${termName.replace(/'/g, "\\'")}')">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-4">
-                                        <div class="flex items-center gap-2">
-                                            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                            </svg>
-                                            <h4 class="text-xl font-semibold text-gray-900 dark:text-white">${termName}</h4>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-4">
-                                        <!-- Summary Row -->
-                                        <div class="text-right">
-                                            <div class="text-sm text-gray-600 dark:text-gray-400">
-                                                ${totalWeeks} weeks, ${totalAssignments} assignments
-                                            </div>
-                                        </div>
-                                        <!-- Collapse/Expand Icon -->
-                                        <svg class="w-6 h-6 text-gray-400 transition-transform duration-200" 
-                                             id="term-icon-${termName.replace(/[^a-zA-Z0-9]/g, '')}" 
-                                             style="transform: rotate(180deg);"
-                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Term Content (Collapsible) -->
-                            <div id="term-content-${termName.replace(/[^a-zA-Z0-9]/g, '')}" class="p-6" style="display: block;">
-                                <div class="space-y-4">
-                    `;
-                    
-                    Object.keys(termAssignments).forEach(weekTitle => {
-                        const weekAssignments = termAssignments[weekTitle];
-                        const weekId = `week-${termName.replace(/[^a-zA-Z0-9]/g, '')}-${weekTitle.replace(/[^a-zA-Z0-9]/g, '')}`;
-                        
-                        html += `
-                            <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
-                                <div class="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                                    <div class="flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg p-2 -m-2 transition-colors duration-200"
-                                         onclick="toggleWeek('${weekId}')">
-                                        <div class="flex items-center gap-3">
-                                            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                            </svg>
-                                            <div>
-                                                <h6 class="font-medium text-gray-900 dark:text-white">${weekTitle}</h6>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <span class="text-sm text-gray-500 dark:text-gray-400">
-                                                ${weekAssignments.length} assignment${weekAssignments.length !== 1 ? 's' : ''}
-                                            </span>
-                                            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" 
-                                                 id="week-icon-${weekId}" 
-                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div id="week-content-${weekId}" class="p-4" style="display: none;">
-                                    <div class="space-y-3">
-                        `;
-                        
-                        weekAssignments.forEach(assignment => {
-                            html += `
-                                <div class="item-card bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 hover:shadow-md hover:scale-[1.02] transition-all duration-200">
-                                    <div class="flex items-start justify-between">
-                                        <div class="flex-1">
-                                            <div class="flex items-center gap-2 mb-2">
-                                                <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                </svg>
-                                                <span class="font-medium text-gray-900 dark:text-white">${assignment.title}</span>
-                                                <span class="text-xs text-gray-500 dark:text-gray-400 capitalize bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                                                    Assignment
-                                                </span>
-                                                <span class="px-2 py-1 text-xs rounded-full ${assignment.is_published ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'}">
-                                                    ${assignment.is_published ? 'Published' : 'Draft'}
-                                                </span>
-                                            </div>
-                                            ${assignment.description ? `<div class="text-sm text-gray-600 dark:text-gray-400 mb-2 prose prose-sm max-w-none">${assignment.description}</div>` : ''}
-                                            <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                                                <span>${assignment.points} points</span>
-                                                <span>Due: ${new Date(assignment.due_date).toLocaleDateString()}</span>
-                                                <span>Max Attempts: ${assignment.max_attempts}</span>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-2 ml-4">
-                                            <button onclick="editAssignment(${assignment.id})" 
-                                                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition duration-150 ease-in-out"
-                                                    title="Edit Assignment">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                </svg>
-                                            </button>
-                                            <button onclick="deleteAssignment(${assignment.id})" 
-                                                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition duration-150 ease-in-out"
-                                                    title="Delete Assignment">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        
-                        html += `
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    html += `
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                container.innerHTML = html;
-            }
-
-            // Toggle functions for collapsible sections (make them global)
-            window.toggleTerm = function(termName) {
-                const content = document.getElementById(`term-content-${termName.replace(/[^a-zA-Z0-9]/g, '')}`);
-                const icon = document.getElementById(`term-icon-${termName.replace(/[^a-zA-Z0-9]/g, '')}`);
-                
-                if (content && icon) {
-                    if (content.style.display === 'none' || content.style.display === '') {
-                        content.style.display = 'block';
-                        icon.style.transform = 'rotate(180deg)';
-                    } else {
-                        content.style.display = 'none';
-                        icon.style.transform = 'rotate(0deg)';
-                    }
-                }
-            }
-
-            window.toggleWeek = function(weekId) {
-                const content = document.getElementById(`week-content-${weekId}`);
-                const icon = document.getElementById(`week-icon-${weekId}`);
-                
-                if (content && icon) {
-                    if (content.style.display === 'none' || content.style.display === '') {
-                        content.style.display = 'block';
-                        icon.style.transform = 'rotate(180deg)';
-                    } else {
-                        content.style.display = 'none';
-                        icon.style.transform = 'rotate(0deg)';
-                    }
-                }
-            }
-
-            // Global variables for edit modal
-            let editDescriptionQuill = null;
-            let editInstructionsQuill = null;
-            let currentAssignmentId = null;
-
-            // Initialize edit modal Quill editors
-            function initializeEditQuill() {
-                if (editDescriptionQuill) {
-                    editDescriptionQuill.destroy();
-                }
-                
-                editDescriptionQuill = new Quill('#edit-description-editor', {
-                    theme: 'snow',
-                    modules: {
-                        toolbar: [
-                            [{ 'header': [1, 2, 3, false] }],
-                            ['bold', 'italic', 'underline', 'strike'],
-                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                            [{ 'indent': '-1'}, { 'indent': '+1' }],
-                            ['link'],
-                            [{ 'align': [] }],
-                            ['clean']
-                        ]
-                    },
-                    placeholder: 'Enter assignment description...'
-                });
-
-                if (editInstructionsQuill) {
-                    editInstructionsQuill.destroy();
-                }
-                
-                editInstructionsQuill = new Quill('#edit-instructions-editor', {
-                    theme: 'snow',
-                    modules: {
-                        toolbar: [
-                            [{ 'header': [1, 2, 3, false] }],
-                            ['bold', 'italic', 'underline', 'strike'],
-                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                            [{ 'indent': '-1'}, { 'indent': '+1' }],
-                            ['link'],
-                            [{ 'align': [] }],
-                            ['clean']
-                        ]
-                    },
-                    placeholder: 'Enter detailed instructions...'
-                });
-
-                // Update hidden inputs with HTML content
-                editDescriptionQuill.on('text-change', function() {
-                    const html = editDescriptionQuill.root.innerHTML;
-                    document.getElementById('edit_description').value = html;
-                    updateCharacterCounter('edit-description-counter', html, 5000);
-                });
-
-                editInstructionsQuill.on('text-change', function() {
-                    const html = editInstructionsQuill.root.innerHTML;
-                    document.getElementById('edit_instructions').value = html;
-                    updateCharacterCounter('edit-instructions-counter', html, 5000);
-                });
-            }
-
-            // Global functions for assignment actions
-            window.editAssignment = function(assignmentId) {
-                console.log('Edit assignment:', assignmentId);
-                currentAssignmentId = assignmentId;
-                
-                // Show modal
-                document.getElementById('editAssignmentModal').classList.remove('hidden');
-                
-                // Initialize Quill editors
-                setTimeout(() => {
-                    initializeEditQuill();
-                }, 100);
-                
-                // Fetch assignment data
-                fetch(`/teacher/assignments/${assignmentId}/edit-data`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) {
-                            throw new Error(data.error);
-                        }
-                        
-                        // Populate form fields
-                        document.getElementById('edit_course_title').value = data.course_title || '';
-                        document.getElementById('edit_term_id').value = data.term_id || '';
-                        document.getElementById('edit_title').value = data.title || '';
-                        document.getElementById('edit_points').value = data.points || '';
-                        document.getElementById('edit_due_date').value = data.due_date || '';
-                        document.getElementById('edit_max_attempts').value = data.max_attempts || '';
-                        document.getElementById('edit_is_published').checked = data.is_published || false;
-                        
-                        // Set description in Quill editor
-                        if (data.description) {
-                            editDescriptionQuill.root.innerHTML = data.description;
-                            document.getElementById('edit_description').value = data.description;
-                        }
-                        
-                        // Set instructions in Quill editor
-                        if (data.instructions) {
-                            editInstructionsQuill.root.innerHTML = data.instructions;
-                            document.getElementById('edit_instructions').value = data.instructions;
-                        }
-                        
-                        // Update weeks dropdown
-                        if (data.term_id) {
-                            updateEditWeeks(data.term_id, data.week_id);
-                        }
-                        
-                        // Update character counters
-                        updateCharacterCounter('edit-title-counter', data.title || '', 500);
-                        updateCharacterCounter('edit-description-counter', data.description || '', 5000);
-                        updateCharacterCounter('edit-instructions-counter', data.instructions || '', 5000);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching assignment data:', error);
-                        alert('Error loading assignment data: ' + error.message);
-                    });
-            };
-
-            window.deleteAssignment = function(assignmentId) {
-                if (confirm('Are you sure you want to delete this assignment?')) {
-                    fetch(`/teacher/assignments/${assignmentId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'Content-Type': 'application/json',
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            loadAssignmentsPreview(); // Reload the preview
-                            alert('Assignment deleted successfully');
-                        } else {
-                            alert('Error deleting assignment: ' + (data.error || 'Unknown error'));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error deleting assignment:', error);
-                        alert('Error deleting assignment: ' + error.message);
-                    });
-                }
-            };
-
-            // Close edit modal
-            window.closeEditModal = function() {
-                document.getElementById('editAssignmentModal').classList.add('hidden');
-                currentAssignmentId = null;
-                
-                // Reset form
-                document.getElementById('editAssignmentForm').reset();
-                if (editDescriptionQuill) {
-                    editDescriptionQuill.setContents([]);
-                }
-                if (editInstructionsQuill) {
-                    editInstructionsQuill.setContents([]);
-                }
-            };
-
-            // Handle term change in edit modal
-            document.getElementById('edit_term_id').addEventListener('change', function() {
-                updateEditWeeks(this.value);
-            });
-
-            // Update weeks dropdown in edit modal
-            function updateEditWeeks(termId, selectedWeekId = null) {
-                const weekSelect = document.getElementById('edit_course_week_id');
-                weekSelect.innerHTML = '<option value="">Choose a week...</option>';
-                
-                if (termId) {
-                    const selectedTerm = courseStructure.find(term => term.id == termId);
-                    if (selectedTerm && selectedTerm.weeks) {
-                        selectedTerm.weeks.forEach(week => {
-                            const option = document.createElement('option');
-                            option.value = week.id;
-                            option.textContent = `${week.sub_term || 'Week'} - ${week.title}`;
-                            if (selectedWeekId && week.id == selectedWeekId) {
+                            if (preselectWeekId && String(week.id) === String(preselectWeekId)) {
                                 option.selected = true;
                             }
                             weekSelect.appendChild(option);
                         });
+
+                        if (preselectWeekId && !selectedTerm.weeks.some(week => String(week.id) === String(preselectWeekId))) {
+                            weekSelect.selectedIndex = 0;
+                        }
                     }
                 }
             }
 
-            // Handle edit form submission
-            document.getElementById('editAssignmentForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                if (!currentAssignmentId) {
-                    alert('No assignment selected for editing');
-                    return;
-                }
-                
-                const formData = new FormData(this);
-                
-                fetch(`/teacher/assignments/${currentAssignmentId}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        closeEditModal();
-                        loadAssignmentsPreview(); // Reload the preview
-                        alert('Assignment updated successfully');
-                    } else {
-                        alert('Error updating assignment: ' + (data.error || 'Unknown error'));
+            function findTermByWeek(weekId) {
+                for (const term of courseStructure) {
+                    const week = term.weeks.find(week => String(week.id) === String(weekId));
+                    if (week) {
+                        return { termId: term.id, weekId: week.id };
                     }
-                })
-                .catch(error => {
-                    console.error('Error updating assignment:', error);
-                    alert('Error updating assignment: ' + error.message);
+                }
+                return { termId: null, weekId: null };
+            }
+
+            function selectTermAndWeek(termId, weekId) {
+                if (!termId) return;
+
+                termSelect.value = termId;
+                updateWeeks(weekId);
+
+                if (weekId) {
+                    weekSelect.value = weekId;
+                    sessionStorage.setItem(storageWeekKey, weekId);
+                }
+
+                sessionStorage.setItem(storageTermKey, termId);
+
+                const savedTerms = JSON.parse(sessionStorage.getItem('collapsible_terms') || '{}');
+                savedTerms[termId] = true;
+                sessionStorage.setItem('collapsible_terms', JSON.stringify(savedTerms));
+
+                if (weekId) {
+                    const savedWeeks = JSON.parse(sessionStorage.getItem('collapsible_weeks') || '{}');
+                    savedWeeks[weekId] = true;
+                    sessionStorage.setItem('collapsible_weeks', JSON.stringify(savedWeeks));
+                }
+
+                if (titleInput) {
+                    titleInput.focus();
+                }
+            }
+
+            document.querySelectorAll('.add-assignment-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const termId = button.dataset.termId;
+                    const weekId = button.dataset.weekId || null;
+                    if (termId) {
+                        selectTermAndWeek(termId, weekId);
+                    }
                 });
             });
+
+            const urlParams = new URL(window.location.href).searchParams;
+            const urlWeekId = urlParams.get('week');
+            const storedTermId = sessionStorage.getItem(storageTermKey) || null;
+            const storedWeekId = sessionStorage.getItem(storageWeekKey) || null;
+
+            let initialWeekId = urlWeekId || storedWeekId || null;
+            let initialTermId = storedTermId || null;
+
+            if (initialWeekId && !initialTermId) {
+                const { termId } = findTermByWeek(initialWeekId);
+                initialTermId = termId;
+            }
+
+            if (initialTermId) {
+                selectTermAndWeek(initialTermId, initialWeekId);
+            } else {
+                updateWeeks();
+            }
+
+            submissionTypeSelect.dispatchEvent(new Event('change'));
+            updateCharacterCounter('title-counter', titleInput ? titleInput.value : '', 500);
+            updateCharacterCounter('description-counter', descriptionQuill.root.innerHTML, 5000);
+            updateCharacterCounter('instructions-counter', instructionsQuill.root.innerHTML, 5000);
+
+            if (urlWeekId) {
+                urlParams.delete('week');
+                const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
+                window.history.replaceState({}, document.title, newUrl);
+            }
         });
     </script>
 </x-teacher-layout>

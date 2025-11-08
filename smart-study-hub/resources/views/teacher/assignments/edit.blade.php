@@ -81,7 +81,7 @@
                           rows="4"
                           class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           placeholder="Describe the assignment..."
-                          required>{{ old('description', $assignment->description) }}</textarea>
+                          required>{{ old('description', strip_tags($assignment->description)) }}</textarea>
             </div>
 
             <!-- Instructions -->
@@ -93,7 +93,7 @@
                           name="instructions" 
                           rows="3"
                           class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Provide specific instructions for students...">{{ old('instructions', $assignment->instructions) }}</textarea>
+                          placeholder="Provide specific instructions for students...">{{ old('instructions', strip_tags($assignment->instructions)) }}</textarea>
             </div>
 
             <!-- Submission Type -->

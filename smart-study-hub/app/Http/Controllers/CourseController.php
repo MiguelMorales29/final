@@ -260,7 +260,9 @@ class CourseController extends Controller
                     $weeks->push([
                         'id' => $week->id,
                         'title' => $week->title,
-                        'sub_term' => $subTerm->title
+                        'sub_term' => $subTerm->title,
+                        'sub_term_id' => $subTerm->id,
+                        'term_id' => $term->id,
                     ]);
                 }
             }

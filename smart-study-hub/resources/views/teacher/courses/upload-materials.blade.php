@@ -317,13 +317,15 @@
                                                              class="mt-4">
                                                             <div class="flex items-center justify-between mb-4">
                                                                 <h6 class="text-sm font-medium text-gray-700 dark:text-gray-300">Materials</h6>
-                                                                <a href="{{ route('teacher.upload-materials', $course) }}?week={{ $week->id }}" 
-                                                                   class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">
+                                                                <button type="button"
+                                                                   class="add-material-btn inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                                                                   data-term-id="{{ $term->id }}"
+                                                                   data-week-id="{{ $week->id }}">
                                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                                                     </svg>
                                                                     Add Material
-                                                                </a>
+                                                                </button>
                                                             </div>
                                                             
                                                             @if($week->materials->count() > 0)
@@ -461,6 +463,8 @@
             const textContentField = document.getElementById('text-content-field');
             const termSelect = document.getElementById('term_id');
             const weekSelect = document.getElementById('course_week_id');
+            const titleInput = document.getElementById('title');
+            const titleCounter = document.getElementById('title-counter');
 
             function toggleFields() {
                 // Hide all fields
@@ -482,7 +486,7 @@
                 }
             }
 
-            function updateWeeks() {
+            function updateWeeks(preselectWeekId = null) {
                 const selectedTermId = termSelect.value;
                 weekSelect.innerHTML = '<option value="">Choose a week...</option>';
                 
@@ -493,8 +497,15 @@
                             const option = document.createElement('option');
                             option.value = week.id;
                             option.textContent = `${week.sub_term} - ${week.title}`;
+                            if (preselectWeekId && String(week.id) === String(preselectWeekId)) {
+                                option.selected = true;
+                            }
                             weekSelect.appendChild(option);
                         });
+
+                        if (preselectWeekId && !selectedTerm.weeks.some(week => String(week.id) === String(preselectWeekId))) {
+                            weekSelect.selectedIndex = 0;
+                        }
                     }
                 }
             }
@@ -518,20 +529,105 @@
             }
 
             // Initialize character counters
-            const titleInput = document.getElementById('title');
-            const titleCounter = document.getElementById('title-counter');
-
-            titleInput.addEventListener('input', () => updateCharacterCounter(titleInput, titleCounter, 500));
+            if (titleInput && titleCounter) {
+                titleInput.addEventListener('input', () => updateCharacterCounter(titleInput, titleCounter, 500));
+            }
 
             typeSelect.addEventListener('change', toggleFields);
-            termSelect.addEventListener('change', updateWeeks);
+            termSelect.addEventListener('change', () => {
+                updateWeeks();
+                sessionStorage.removeItem('upload_materials_selected_week');
+            });
             
             // Initialize on page load
             toggleFields();
-            updateWeeks();
             
+            function findWeek(termId, weekId) {
+                const term = courseStructure.find(term => String(term.id) === String(termId));
+                if (!term) return { term: null, week: null };
+                const week = term.weeks.find(week => String(week.id) === String(weekId));
+                return { term, week };
+            }
+
+            function findTermByWeek(weekId) {
+                for (const term of courseStructure) {
+                    const week = term.weeks.find(week => String(week.id) === String(weekId));
+                    if (week) {
+                        return { termId: term.id, week };
+                    }
+                }
+                return { termId: null, week: null };
+            }
+
+            function persistSelection(termId, weekId) {
+                if (termId) {
+                    sessionStorage.setItem('upload_materials_selected_term', termId);
+                }
+                if (weekId) {
+                    sessionStorage.setItem('upload_materials_selected_week', weekId);
+                }
+            }
+
+            function selectTermAndWeek(termId, weekId) {
+                if (!termId) return;
+                termSelect.value = termId;
+                updateWeeks(weekId);
+                if (weekId) {
+                    weekSelect.value = weekId;
+                    weekSelect.dispatchEvent(new Event('change'));
+                }
+                persistSelection(termId, weekId);
+                const savedTerms = JSON.parse(sessionStorage.getItem('collapsible_terms') || '{}');
+                savedTerms[termId] = true;
+                sessionStorage.setItem('collapsible_terms', JSON.stringify(savedTerms));
+                if (weekId) {
+                    const savedWeeks = JSON.parse(sessionStorage.getItem('collapsible_weeks') || '{}');
+                    savedWeeks[weekId] = true;
+                    sessionStorage.setItem('collapsible_weeks', JSON.stringify(savedWeeks));
+                }
+                const titleInput = document.getElementById('title');
+                if (titleInput) {
+                    titleInput.focus();
+                }
+            }
+
+            const addMaterialButtons = document.querySelectorAll('.add-material-btn');
+            addMaterialButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const termId = button.dataset.termId;
+                    const weekId = button.dataset.weekId;
+                    selectTermAndWeek(termId, weekId);
+                });
+            });
+
+            const urlParams = new URL(window.location.href).searchParams;
+            const urlWeekId = urlParams.get('week');
+            const storedTermId = sessionStorage.getItem('upload_materials_selected_term');
+            const storedWeekId = sessionStorage.getItem('upload_materials_selected_week');
+            let initialWeekId = urlWeekId || storedWeekId || null;
+            let initialTermId = storedTermId || null;
+
+            if (initialWeekId && !initialTermId) {
+                const { termId } = findTermByWeek(initialWeekId);
+                initialTermId = termId;
+            }
+
+            if (initialTermId) {
+                selectTermAndWeek(initialTermId, initialWeekId);
+            } else {
+                updateWeeks();
+            }
+
+            if (urlWeekId) {
+                urlParams.delete('week');
+                const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+
             // Initialize counters
-            updateCharacterCounter(titleInput, titleCounter, 500);
+            if (titleInput && titleCounter) {
+                updateCharacterCounter(titleInput, titleCounter, 500);
+            }
         });
     </script>
 

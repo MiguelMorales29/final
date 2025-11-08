@@ -24,7 +24,7 @@
                                 $clickUrl = null;
                                 if (in_array($notification->type, ['material_video','material_file','material_link','material_text']) && !empty($data['material_id'] ?? null)) {
                                     $clickUrl = route('student.materials.show', $data['material_id']);
-                                } elseif ($notification->type === 'assignment' && !empty($data['assignment_id'] ?? null)) {
+                                } elseif (in_array($notification->type, ['assignment','assignment_graded','assignment_regraded']) && !empty($data['assignment_id'] ?? null)) {
                                     $clickUrl = route('student.assignments.show', $data['assignment_id']);
                                 } elseif (in_array($notification->type, ['quiz','exam','announcement']) && !empty($data['announcement_id'] ?? null)) {
                                     $clickUrl = route('student.announcements.show', $data['announcement_id']);
@@ -72,6 +72,22 @@
                                                     <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                                 @endif
                                             </div>
+                                        @elseif($notification->type === 'assignment_graded')
+                                            <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m2-4h-3.586a1 1 0 01-.707-.293l-1.414-1.414a1 1 0 00-.707-.293h-2a1 1 0 00-.707.293L7.707 5.293A1 1 0 017 5H4a2 2 0 00-2 2v12a2 2 0 002 2h13a2 2 0 002-2V7a2 2 0 00-2-2z"/></svg>
+                                            </div>
+                                        @elseif($notification->type === 'assignment_regraded')
+                                            <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582a9 9 0 0115.356-2.532L22 5m-2 15v-5h-.582a9 9 0 01-15.356 2.532L2 19"/></svg>
+                                            </div>
+                                        @elseif($notification->type === 'attendance_roll_call')
+                                            <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2a3 3 0 00-5.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2a3 3 0 015.356-1.857M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                            </div>
+                                        @elseif($notification->type === 'attendance_update')
+                                            <div class="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2a3 3 0 00-5.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2a3 3 0 015.356-1.857M12 11c1.657 0 3-1.567 3-3.5S13.657 4 12 4 9 5.567 9 7.5 10.343 11 12 11z"/></svg>
+                                            </div>
                                         @else
                                             <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
                                                 <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5"/></svg>
@@ -97,6 +113,18 @@
                                                 @endif
                                                 @if(isset($data['teacher_name']))
                                                     <div class="text-sm text-gray-700 dark:text-gray-300"><span class="font-medium">Teacher:</span> {{ $data['teacher_name'] }}</div>
+                                                @endif
+                                                @if(isset($data['points_earned']))
+                                                    <div class="text-sm text-gray-700 dark:text-gray-300"><span class="font-medium">Grade:</span> {{ $data['points_earned'] }}/{{ $data['max_points'] ?? '-' }}</div>
+                                                    @if(array_key_exists('previous_points', $data) && $data['previous_points'] !== null)
+                                                        <div class="text-xs text-gray-500 dark:text-gray-400">Previous grade: {{ $data['previous_points'] }}/{{ $data['max_points'] ?? '-' }}</div>
+                                                    @endif
+                                                @endif
+                                                @if(isset($data['status_label']))
+                                                    <div class="text-sm text-gray-700 dark:text-gray-300"><span class="font-medium">Status:</span> {{ $data['status_label'] }}</div>
+                                                @endif
+                                                @if(isset($data['date']) && in_array($notification->type, ['attendance_update','attendance_roll_call']))
+                                                    <div class="text-sm text-gray-700 dark:text-gray-300"><span class="font-medium">Date:</span> {{ \Carbon\Carbon::parse($data['date'])->format('M d, Y') }}</div>
                                                 @endif
                                                 @php
                                                     $description = $data['material_description'] ?? ($data['assignment_description'] ?? ($data['announcement_content'] ?? null));

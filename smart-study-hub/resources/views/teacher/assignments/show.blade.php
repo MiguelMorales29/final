@@ -184,25 +184,74 @@
                                     </div>
                                 @endif
 
+                                @php
+                                    $oldSubmissionMatch = old('submission_id') == $submission->id;
+                                    $oldPointsValue = $oldSubmissionMatch ? old('points_earned') : ($submission->points_earned ?? '');
+                                    $oldFeedbackValue = $oldSubmissionMatch ? old('feedback') : ($submission->feedback ?? '');
+                                @endphp
                                 @if($submission->status === 'graded')
-                                    <div class="border-t border-gray-200 dark:border-gray-600 pt-3">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <h4 class="font-medium text-gray-900 dark:text-white">Grade</h4>
-                                            <span class="text-lg font-semibold text-gray-900 dark:text-white">
-                                                {{ $submission->points_earned }} / {{ $assignment->points }}
-                                            </span>
-                                        </div>
-                                        @if($submission->feedback)
-                                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                                                <p class="text-sm text-gray-700 dark:text-gray-300">{{ $submission->feedback }}</p>
+                                    <div class="border-t border-gray-200 dark:border-gray-600 pt-3" x-data="{ editing: {{ $oldSubmissionMatch ? 'true' : 'false' }} }">
+                                        <div class="flex items-center justify-between gap-3">
+                                            <div>
+                                                <h4 class="font-medium text-gray-900 dark:text-white">Grade</h4>
+                                                @if($submission->feedback)
+                                                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mt-2">
+                                                        <p class="text-sm text-gray-700 dark:text-gray-300">{{ $submission->feedback }}</p>
+                                                    </div>
+                                                @endif
                                             </div>
-                                        @endif
+                                            <div class="flex items-center gap-3">
+                                                <span class="text-lg font-semibold text-gray-900 dark:text-white">
+                                                    {{ $submission->points_earned }} / {{ $assignment->points }}
+                                                </span>
+                                                <button type="button" @click="editing = !editing" class="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                                    <span x-show="!editing">Regrade</span>
+                                                    <span x-show="editing">Cancel</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div x-show="editing" x-transition class="mt-4">
+                                            <form action="{{ route('teacher.assignments.grade', [$assignment, $submission]) }}" method="POST" class="space-y-3">
+                                                @csrf
+                                                <input type="hidden" name="submission_id" value="{{ $submission->id }}">
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label for="points_earned_{{ $submission->id }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                            Points Earned
+                                                        </label>
+                                                        <input type="number"
+                                                               id="points_earned_{{ $submission->id }}"
+                                                               name="points_earned"
+                                                               min="0"
+                                                               max="{{ $assignment->points }}"
+                                                               value="{{ $oldPointsValue }}"
+                                                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                    </div>
+                                                    <div>
+                                                        <label for="feedback_{{ $submission->id }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                            Feedback (Optional)
+                                                        </label>
+                                                        <textarea id="feedback_{{ $submission->id }}"
+                                                                  name="feedback"
+                                                                  rows="2"
+                                                                  class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                                  placeholder="Add feedback...">{{ $oldFeedbackValue }}</textarea>
+                                                    </div>
+                                                </div>
+                                                <button type="submit"
+                                                        class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg transition duration-150 ease-in-out">
+                                                    Update Grade
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 @else
                                     <!-- Grading Form -->
                                     <div class="border-t border-gray-200 dark:border-gray-600 pt-3">
                                         <form action="{{ route('teacher.assignments.grade', [$assignment, $submission]) }}" method="POST">
                                             @csrf
+                                            <input type="hidden" name="submission_id" value="{{ $submission->id }}">
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
                                                     <label for="points_earned_{{ $submission->id }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -213,6 +262,7 @@
                                                            name="points_earned" 
                                                            min="0" 
                                                            max="{{ $assignment->points }}"
+                                                           value="{{ $oldSubmissionMatch ? $oldPointsValue : '' }}"
                                                            class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                                 </div>
                                                 <div>
@@ -223,7 +273,7 @@
                                                               name="feedback" 
                                                               rows="2"
                                                               class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                              placeholder="Add feedback..."></textarea>
+                                                              placeholder="Add feedback...">{{ $oldSubmissionMatch ? $oldFeedbackValue : '' }}</textarea>
                                                 </div>
                                             </div>
                                             <button type="submit" 

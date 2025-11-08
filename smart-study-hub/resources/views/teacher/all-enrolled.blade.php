@@ -139,14 +139,26 @@
                                         @foreach($courseData['students'] as $enrolled)
                                             @php
                                                 $student = $enrolled['student'];
-                                                $profilePictureUrl = null;
+                                                $profilePictureUrl = $enrolled['profile_picture_url'] ?? null;
 
-                                                if (!empty($student->profile_picture)) {
-                                                    $profilePictureUrl = asset('storage/' . $student->profile_picture);
-                                                } elseif (!empty($student->profile_photo_path)) {
-                                                    $profilePictureUrl = asset('storage/' . $student->profile_photo_path);
-                                                } elseif (!empty($student->profile_photo_url ?? null)) {
-                                                    $profilePictureUrl = $student->profile_photo_url;
+                                                if (!$profilePictureUrl) {
+                                                    if (!empty($student->profile_picture)) {
+                                                        if (\Illuminate\Support\Str::startsWith($student->profile_picture, ['http://', 'https://'])) {
+                                                            $profilePictureUrl = $student->profile_picture;
+                                                        } elseif (\Illuminate\Support\Str::startsWith($student->profile_picture, 'images/')) {
+                                                            $profilePictureUrl = asset($student->profile_picture);
+                                                        } else {
+                                                            $profilePictureUrl = asset('storage/' . $student->profile_picture);
+                                                        }
+                                                    } elseif (!empty($student->profile_photo_path)) {
+                                                        if (\Illuminate\Support\Str::startsWith($student->profile_photo_path, ['http://', 'https://'])) {
+                                                            $profilePictureUrl = $student->profile_photo_path;
+                                                        } else {
+                                                            $profilePictureUrl = asset('storage/' . $student->profile_photo_path);
+                                                        }
+                                                    } elseif (!empty($student->profile_photo_url ?? null)) {
+                                                        $profilePictureUrl = $student->profile_photo_url;
+                                                    }
                                                 }
 
                                                 $profileData = [

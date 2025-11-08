@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class EnrolledController extends Controller
 {
@@ -27,7 +28,8 @@ class EnrolledController extends Controller
                         'section' => $course->section ?? 'Default',
                         'course_title' => $course->title,
                         'course_id' => $course->id,
-                        'attendance_today' => null // Will be populated by JavaScript
+                        'attendance_today' => null, // Will be populated by JavaScript
+                        'profile_picture_url' => $this->resolveProfilePictureUrl($enrollment->student),
                     ];
                 });
                 
@@ -60,27 +62,38 @@ class EnrolledController extends Controller
 
     public function index(Course $course)
     {
-        // Get enrolled students
-        $enrolledStudents = $course->enrollments()
-            ->with(['student'])
-            ->get()
-            ->map(function ($enrollment) use ($course) {
-                return [
-                    'enrollment' => $enrollment,
-                    'student' => $enrollment->student,
-                    'section' => $course->section ?? 'Default',
-                    'attendance_today' => null // Will be populated by JavaScript
-                ];
-            });
+        $course->loadMissing(['enrollments.student']);
 
-        // Get attendance records for the current month
+        $enrolledStudents = $course->enrollments->map(function ($enrollment) use ($course) {
+            return [
+                'enrollment' => $enrollment,
+                'student' => $enrollment->student,
+                'section' => $course->section ?? 'Default',
+                'course_title' => $course->title,
+                'course_id' => $course->id,
+                'attendance_today' => null, // Will be populated by JavaScript
+                'profile_picture_url' => $this->resolveProfilePictureUrl($enrollment->student),
+            ];
+        });
+
+        $courses = collect([[
+            'course' => $course,
+            'students' => $enrolledStudents,
+            'section' => $course->section ?? 'Default',
+        ]]);
+
+        $sections = $courses->pluck('section')->unique()->values();
+        if ($sections->isEmpty()) {
+            $sections = collect(['Default']);
+        }
+
         $currentMonth = now()->format('Y-m');
         $attendanceRecords = Attendance::where('course_id', $course->id)
             ->where('date', 'like', $currentMonth . '%')
             ->get()
             ->groupBy(['student_id', 'date']);
 
-        return view('teacher.enrolled', compact('course', 'enrolledStudents', 'attendanceRecords'));
+        return view('teacher.all-enrolled', compact('courses', 'sections', 'attendanceRecords'));
     }
 
     public function markAttendance(Request $request, Course $course)
@@ -132,15 +145,7 @@ class EnrolledController extends Controller
     {
         $student->loadMissing(['enrollments.course']);
 
-        $profilePictureUrl = null;
-        if (!empty($student->profile_picture)) {
-            $profilePictureUrl = Storage::url($student->profile_picture);
-        } elseif (!empty($student->profile_photo_path)) {
-            $profilePictureUrl = Storage::url($student->profile_photo_path);
-        } elseif (!empty($student->profile_photo_url ?? null)) {
-            $profilePictureUrl = $student->profile_photo_url;
-        }
-
+        $profilePictureUrl = $this->resolveProfilePictureUrl($student);
         $courses = $student->enrollments->map(function ($enrollment) {
             $course = $enrollment->course;
 
@@ -197,6 +202,13 @@ class EnrolledController extends Controller
 
         \Log::info('Validation passed, creating attendance record');
 
+        $existingAttendance = Attendance::where('student_id', $request->student_id)
+            ->where('course_id', $request->course_id)
+            ->where('date', $request->date)
+            ->first();
+
+        $previousStatus = $existingAttendance?->status;
+
         $attendance = Attendance::updateOrCreate(
             [
                 'student_id' => $request->student_id,
@@ -207,6 +219,31 @@ class EnrolledController extends Controller
                 'status' => $request->status
             ]
         );
+
+        if (!$previousStatus || $previousStatus !== $request->status) {
+            $student = User::find($request->student_id);
+            $course = Course::find($request->course_id);
+
+            if ($student && $course) {
+                $statusLabel = ucfirst($request->status);
+                $dateLabel = \Carbon\Carbon::parse($request->date)->format('M d, Y');
+
+                $student->notifications()->create([
+                    'type' => 'attendance_update',
+                    'title' => 'Attendance Updated',
+                    'message' => "Your attendance for {$course->title} on {$dateLabel} was marked as {$statusLabel}.",
+                    'data' => [
+                        'course_id' => $course->id,
+                        'course_title' => $course->title,
+                        'status' => $request->status,
+                        'status_label' => $statusLabel,
+                        'date' => $request->date,
+                        'teacher_name' => auth()->user()->name,
+                        'previous_status' => $previousStatus,
+                    ],
+                ]);
+            }
+        }
 
         \Log::info('Attendance record created/updated:', $attendance->toArray());
 
@@ -269,5 +306,40 @@ class EnrolledController extends Controller
             'message' => 'Roll call attendance submitted successfully. All students have been notified.',
             'notified_students' => $students->count()
         ]);
+    }
+    protected function resolveProfilePictureUrl(?User $student): ?string
+    {
+        if (!$student) {
+            return null;
+        }
+
+        $profilePicture = $student->profile_picture;
+        if (!empty($profilePicture)) {
+            if (Str::startsWith($profilePicture, ['http://', 'https://'])) {
+                return $profilePicture;
+            }
+
+            if (Str::startsWith($profilePicture, 'images/')) {
+                return asset($profilePicture);
+            }
+
+            return Storage::url($profilePicture);
+        }
+
+        $profilePhotoPath = $student->profile_photo_path;
+        if (!empty($profilePhotoPath)) {
+            if (Str::startsWith($profilePhotoPath, ['http://', 'https://'])) {
+                return $profilePhotoPath;
+            }
+
+            return Storage::url($profilePhotoPath);
+        }
+
+        $profilePhotoUrl = $student->profile_photo_url ?? null;
+        if (!empty($profilePhotoUrl)) {
+            return $profilePhotoUrl;
+        }
+
+        return null;
     }
 }

@@ -27,6 +27,18 @@
                         'dotColor' => 'bg-green-500',
                         'ariaLabel' => 'Assignment graded'
                       ],
+                      'assignment_graded' => [
+                        'icon' => 'clipboard-check',
+                        'iconColor' => 'text-emerald-600 dark:text-emerald-400',
+                        'dotColor' => 'bg-emerald-500',
+                        'ariaLabel' => 'Assignment graded'
+                      ],
+                      'assignment_regraded' => [
+                        'icon' => 'arrow-path',
+                        'iconColor' => 'text-purple-600 dark:text-purple-400',
+                        'dotColor' => 'bg-purple-500',
+                        'ariaLabel' => 'Assignment regraded'
+                      ],
                       'quiz' => [
                         'icon' => 'quiz',
                         'iconColor' => 'text-cyan-600 dark:text-cyan-400',
@@ -117,6 +129,12 @@
                         'iconColor' => 'text-indigo-600 dark:text-indigo-400',
                         'dotColor' => 'bg-indigo-500',
                         'ariaLabel' => 'Attendance roll call'
+                      ],
+                      'attendance_update' => [
+                        'icon' => 'user-group',
+                        'iconColor' => 'text-amber-600 dark:text-amber-400',
+                        'dotColor' => 'bg-amber-500',
+                        'ariaLabel' => 'Attendance updated'
                       ]
                     ];
                     
@@ -152,7 +170,7 @@
                             $clickUrl = null;
                             if (in_array($a['type'], ['material_video','material_file','material_link','material_text']) && !empty($a['material_id'] ?? null)) {
                                 $clickUrl = route('student.materials.show', $a['material_id']);
-                            } elseif ($a['type'] === 'assignment' && !empty($a['notification_data']['assignment_id'] ?? null)) {
+                            } elseif (in_array($a['type'], ['assignment','assignment_graded','assignment_regraded']) && !empty($a['notification_data']['assignment_id'] ?? null)) {
                                 $clickUrl = route('student.assignments.show', $a['notification_data']['assignment_id']);
                             } elseif (in_array($a['type'], ['quiz','exam','announcement']) && !empty($a['notification_data']['announcement_id'] ?? null)) {
                                 // requires student.announcements.show
@@ -200,6 +218,14 @@
                                   <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                   </svg>
+                                @elseif($config['icon'] === 'clipboard-check')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m2-4h-3.586a1 1 0 01-.707-.293l-1.414-1.414a1 1 0 00-.707-.293h-2a1 1 0 00-.707.293L7.707 5.293A1 1 0 017 5H4a2 2 0 00-2 2v12a2 2 0 002 2h13a2 2 0 002-2V7a2 2 0 00-2-2z"/>
+                                  </svg>
+                                @elseif($config['icon'] === 'arrow-path')
+                                  <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582a9 9 0 0115.356-2.532L22 5m-2 15v-5h-.582a9 9 0 01-15.356 2.532L2 19"/>
+                                  </svg>
                                 @elseif($config['icon'] === 'document-text')
                                   <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -230,7 +256,7 @@
                                   </svg>
                                 @elseif($config['icon'] === 'user-group')
                                   <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2a3 3 0 00-5.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2a3 3 0 015.356-1.857M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                                   </svg>
                                 @elseif($config['icon'] === 'information-circle')
                                   <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
