@@ -332,9 +332,9 @@
                                                                 <div class="space-y-3">
                                                                     @foreach($week->materials as $material)
                                                                         <div class="item-card bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 hover:shadow-md hover:scale-[1.02] transition-all duration-200">
-                                                                            <div class="flex items-start justify-between gap-3 min-w-0">
-                                                                                <div class="flex-1 min-w-0">
-                                                                                    <div class="flex items-center gap-2 mb-2 min-w-0">
+                                                                            <div class="flex items-start justify-between gap-4 min-w-0">
+                                                                                <div class="flex-1 min-w-0 space-y-2">
+                                                                                    <div class="flex items-center gap-2 min-w-0">
                                                                                 @if($material->type === 'video')
                                                                                             <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                                                                                                 <path d="M8 5v14l11-7z"/>
@@ -352,7 +352,7 @@
                                                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                                                                     </svg>
                                                                                 @endif
-                                                                                        <span class="font-medium text-gray-900 dark:text-white truncate max-w-[55%]">{{ $material->title }}</span>
+                                                                                        <span class="font-medium text-gray-900 dark:text-white truncate max-w-[55%] break-all" title="{{ $material->title }}">{{ $material->title }}</span>
                                                                                         <span class="text-xs text-gray-500 dark:text-gray-400 capitalize bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded flex-shrink-0">
                                                                                             {{ $material->type }}
                                                                                         </span>
@@ -363,43 +363,43 @@
                                                                                         @endif
                                                                                     </div>
                                                                                     @if($material->description)
-                                                                                        <div class="text-sm text-gray-600 dark:text-gray-400 mb-2 prose prose-sm max-w-none">
-                                                                                            {!! Str::limit(strip_tags($material->description), 100) !!}
+                                                                                        <div class="text-sm text-gray-600 dark:text-gray-400 break-all line-clamp-3">
+                                                                                            {!! Str::limit(strip_tags($material->description), 240) !!}
                                                                                         </div>
-                                                                                    @endif
-                                                                                    <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                                                                                        <span>Uploaded {{ $material->created_at->format('M j, Y') }}</span>
-                                                                                        @if($material->created_at->diffInDays() < 7)
-                                                                                            <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded">
-                                                                                                New
-                                                                                            </span>
-                                                                                @endif
-                                                                            </div>
-                                                                                </div>
-                                                                                <div class="flex items-center gap-2 ml-4">
-                                                                                    <button type="button" 
-                                                                                            class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition duration-150 ease-in-out"
-                                                                                            onclick="openEditModal({{ $material->id }})"
-                                                                                            title="Edit Material">
-                                                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                                                        </svg>
-                                                                                    </button>
-                                                                            <form method="POST" action="{{ route('teacher.materials.delete', [$course, $material]) }}" class="inline">
-                                                                                @csrf
-                                                                                @method('DELETE')
-                                                                                <button type="submit" 
-                                                                                                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition duration-150 ease-in-out"
-                                                                                                onclick="return confirm('Are you sure you want to delete this material?')"
-                                                                                                title="Delete Material">
-                                                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                                                    </svg>
-                                                                                </button>
-                                                                            </form>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
+                                                                                     @endif
+                                                                                     <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                                                                                         <span>Uploaded {{ $material->created_at->format('M j, Y') }}</span>
+                                                                                         @if($material->created_at->diffInDays() < 7)
+                                                                                             <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded">
+                                                                                                 New
+                                                                                             </span>
+                                                                                 @endif
+                                                                             </div>
+                                                                         </div>
+                                                                         <div class="flex items-center gap-2 ml-4 flex-shrink-0">
+                                                                             <button type="button" 
+                                                                                             class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition duration-150 ease-in-out"
+                                                                                             onclick="openEditModal({{ $material->id }})"
+                                                                                             title="Edit Material">
+                                                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                                                         </svg>
+                                                                                     </button>
+                                                                               <form method="POST" action="{{ route('teacher.materials.delete', [$course, $material]) }}" class="inline">
+                                                                                 @csrf
+                                                                                 @method('DELETE')
+                                                                                 <button type="submit" 
+                                                                                                 class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition duration-150 ease-in-out"
+                                                                                                 onclick="return confirm('Are you sure you want to delete this material?')"
+                                                                                                 title="Delete Material">
+                                                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                                                     </svg>
+                                                                                 </button>
+                                                                             </form>
+                                                                                 </div>
+                                                                             </div>
+                                                                         </div>
                                                                     @endforeach
                                                                 </div>
                                                             @else
@@ -739,63 +739,58 @@
         let editQuill = null;
         let editTextContentQuill = null;
         let currentMaterialId = null;
+        let courseIdForEdit = null; // New variable to hold the course ID for edit submissions
 
         // Initialize edit modal Quill editor
         function initializeEditQuill() {
-            if (editQuill) {
-                editQuill.destroy();
-            }
-            
-            editQuill = new Quill('#edit-description-editor', {
-                theme: 'snow',
-                modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'indent': '-1'}, { 'indent': '+1' }],
-                        ['link'],
-                        [{ 'align': [] }],
-                        ['clean']
-                    ]
-                },
-                placeholder: 'Enter material description...'
-            });
+            if (!editQuill) {
+                editQuill = new Quill('#edit-description-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'indent': '-1'}, { 'indent': '+1' }],
+                            ['link'],
+                            [{ 'align': [] }],
+                            ['clean']
+                        ]
+                    },
+                    placeholder: 'Enter material description...'
+                });
 
-            // Update hidden input with HTML content
-            editQuill.on('text-change', function() {
-                const html = editQuill.root.innerHTML;
-                document.getElementById('edit_description').value = html;
-            });
+                editQuill.on('text-change', function() {
+                    const html = editQuill.root.innerHTML;
+                    document.getElementById('edit_description').value = html;
+                });
+            }
         }
 
         // Initialize edit modal text content Quill editor
         function initializeEditTextContentQuill() {
-            if (editTextContentQuill) {
-                editTextContentQuill.destroy();
-            }
-            
-            editTextContentQuill = new Quill('#edit-text-content-editor', {
-                theme: 'snow',
-                modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'indent': '-1'}, { 'indent': '+1' }],
-                        ['link'],
-                        [{ 'align': [] }],
-                        ['clean']
-                    ]
-                },
-                placeholder: 'Enter detailed instructions or content...'
-            });
+            if (!editTextContentQuill) {
+                editTextContentQuill = new Quill('#edit-text-content-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'indent': '-1'}, { 'indent': '+1' }],
+                            ['link'],
+                            [{ 'align': [] }],
+                            ['clean']
+                        ]
+                    },
+                    placeholder: 'Enter detailed instructions or content...'
+                });
 
-            // Update hidden input with HTML content
-            editTextContentQuill.on('text-change', function() {
-                const html = editTextContentQuill.root.innerHTML;
-                document.getElementById('edit_text_content').value = html;
-            });
+                editTextContentQuill.on('text-change', function() {
+                    const html = editTextContentQuill.root.innerHTML;
+                    document.getElementById('edit_text_content').value = html;
+                });
+            }
         }
 
         // Toggle content fields based on material type
@@ -811,16 +806,17 @@
             // Show relevant field based on type
             if (type === 'video') {
                 document.getElementById('edit-video-url-field').classList.remove('hidden');
+                document.getElementById('edit-current-file-info').classList.add('hidden');
             } else if (type === 'file') {
                 document.getElementById('edit-file-upload-field').classList.remove('hidden');
+                document.getElementById('edit-current-file-info').classList.remove('hidden');
             } else if (type === 'link') {
                 document.getElementById('edit-external-url-field').classList.remove('hidden');
+                document.getElementById('edit-current-file-info').classList.add('hidden');
             } else if (type === 'text') {
                 document.getElementById('edit-text-content-field').classList.remove('hidden');
-                // Initialize text content editor when showing
-                setTimeout(() => {
-                    initializeEditTextContentQuill();
-                }, 100);
+                initializeEditTextContentQuill();
+                document.getElementById('edit-current-file-info').classList.add('hidden');
             }
         }
 
@@ -828,14 +824,22 @@
         function openEditModal(materialId) {
             console.log('Opening edit modal for material ID:', materialId);
             currentMaterialId = materialId;
+            courseIdForEdit = document.getElementById('course_id') ? document.getElementById('course_id').value : null;
             
             // Show modal
             document.getElementById('editMaterialModal').classList.remove('hidden');
             
-            // Initialize Quill editor
-            setTimeout(() => {
-                initializeEditQuill();
-            }, 100);
+            // Initialize Quill editor immediately (modal elements are in DOM even when hidden)
+            initializeEditQuill();
+            editQuill.clipboard.dangerouslyPasteHTML('', 'silent');
+            document.getElementById('edit_description').value = '';
+            if (editTextContentQuill) {
+                editTextContentQuill.clipboard.dangerouslyPasteHTML('', 'silent');
+                document.getElementById('edit_text_content').value = '';
+            }
+            document.getElementById('edit_youtube_url').value = '';
+            document.getElementById('edit_external_url').value = '';
+            document.getElementById('edit-current-file-info').classList.add('hidden');
             
             // Fetch material data
             const url = `/teacher/materials/${materialId}/edit-data`;
@@ -857,6 +861,7 @@
                     
                     // Populate form fields
                     document.getElementById('edit_course_title').value = data.course_title || '';
+                    courseIdForEdit = data.course_id || courseIdForEdit;
                     document.getElementById('edit_term_id').value = data.term_id || '';
                     document.getElementById('edit_title').value = data.title || '';
                     document.getElementById('edit_type').value = data.type || '';
@@ -864,30 +869,27 @@
                     
                     // Set description in Quill editor
                     if (data.description) {
-                        editQuill.root.innerHTML = data.description;
+                        editQuill.clipboard.dangerouslyPasteHTML(data.description, 'silent');
                         document.getElementById('edit_description').value = data.description;
+                    } else {
+                        editQuill.clipboard.dangerouslyPasteHTML('', 'silent');
+                        document.getElementById('edit_description').value = '';
                     }
                     
                     // Populate content fields based on type
-                    if (data.type === 'video' && data.youtube_url) {
-                        document.getElementById('edit_youtube_url').value = data.youtube_url;
-                    } else if (data.type === 'link' && data.external_url) {
-                        document.getElementById('edit_external_url').value = data.external_url;
-                    } else if (data.type === 'file' && data.file_name) {
-                        document.getElementById('edit-current-file-name').textContent = data.file_name;
-                        document.getElementById('edit-current-file-info').classList.remove('hidden');
-                    } else if (data.type === 'text' && data.content) {
-                        // Set text content in Quill editor
-                        setTimeout(() => {
-                            if (editTextContentQuill) {
-                                editTextContentQuill.root.innerHTML = data.content;
-                                document.getElementById('edit_text_content').value = data.content;
-                            }
-                        }, 200);
-                    }
-                    
-                    // Toggle content fields based on type
+                    document.getElementById('edit_youtube_url').value = data.youtube_url || '';
+                    document.getElementById('edit_external_url').value = data.external_url || '';
+                    document.getElementById('edit_text_content').value = data.type === 'text' ? (data.content || '') : '';
+                    document.getElementById('edit-current-file-name').textContent = data.file_name || '';
+                    document.getElementById('edit-current-file-info').classList.toggle('hidden', !(data.type === 'file' && data.file_name));
+
                     toggleEditContentFields();
+
+                    if (data.type === 'text') {
+                        initializeEditTextContentQuill();
+                        editTextContentQuill.clipboard.dangerouslyPasteHTML(data.content || '', 'silent');
+                        document.getElementById('edit_text_content').value = data.content || '';
+                    }
                     
                     // Update weeks dropdown
                     if (data.term_id) {
@@ -908,10 +910,12 @@
             // Reset form
             document.getElementById('editMaterialForm').reset();
             if (editQuill) {
-                editQuill.setContents([]);
+                editQuill.clipboard.dangerouslyPasteHTML('', 'silent');
+                document.getElementById('edit_description').value = '';
             }
             if (editTextContentQuill) {
-                editTextContentQuill.setContents([]);
+                editTextContentQuill.clipboard.dangerouslyPasteHTML('', 'silent');
+                document.getElementById('edit_text_content').value = '';
             }
             
             // Hide all content fields
@@ -966,48 +970,85 @@
             }
         }
 
-        // Handle edit form submission
-        document.getElementById('editMaterialForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (!currentMaterialId) return;
-            
-            const formData = new FormData(this);
-            formData.append('_method', 'PATCH');
-            
-            fetch(`/teacher/materials/${currentMaterialId}`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast('Material updated successfully!', 'success');
-                    closeEditModal();
-                    // Reload the page to show updated data
-                    window.location.reload();
-                } else {
-                    showToast(data.message || 'Error updating material', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error updating material:', error);
-                showToast('Error updating material', 'error');
-            });
-        });
+        document.addEventListener('DOMContentLoaded', () => {
+            const editMaterialForm = document.getElementById('editMaterialForm');
+            const editTermSelect = document.getElementById('edit_term_id');
+            const editTypeSelect = document.getElementById('edit_type');
+            const editModal = document.getElementById('editMaterialModal');
 
-        // Handle term change in edit modal
-        document.getElementById('edit_term_id').addEventListener('change', function() {
-            updateEditWeeks(this.value);
-        });
+            if (editMaterialForm) {
+                editMaterialForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (!currentMaterialId) return;
+                    
+                    const materialType = document.getElementById('edit_type').value;
+                    const currentWeekValue = document.getElementById('edit_course_week_id').value || '';
+                    const formData = new FormData();
+                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                    formData.append('title', document.getElementById('edit_title').value || '');
+                    formData.append('description', editQuill ? editQuill.root.innerHTML : '');
+                    formData.append('type', materialType);
+                    formData.append('course_week_id', currentWeekValue);
+                    formData.append('is_required', document.getElementById('edit_is_required').checked ? 1 : 0);
+                    
+                    if (materialType === 'video') {
+                        formData.append('youtube_url', document.getElementById('edit_youtube_url').value || '');
+                    } else if (materialType === 'link') {
+                        formData.append('external_url', document.getElementById('edit_external_url').value || '');
+                    } else if (materialType === 'text') {
+                        formData.append('text_content', editTextContentQuill ? editTextContentQuill.root.innerHTML : '');
+                    } else if (materialType === 'file') {
+                        const fileInput = document.getElementById('edit_file');
+                        if (fileInput.files.length > 0) {
+                            formData.append('file', fileInput.files[0]);
+                        }
+                    }
+                    
+                    fetch(`/teacher/materials/${currentMaterialId}`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(async response => {
+                        const data = await response.json().catch(() => ({ success: false, message: 'Unexpected server response.' }));
+                        if (response.ok && data.success) {
+                            showToast('Material updated successfully!', 'success');
+                            closeEditModal();
+                            window.location.reload();
+                        } else {
+                            showToast(data.message || 'Error updating material', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating material:', error);
+                        showToast('Error updating material', 'error');
+                    });
+                });
+            }
 
-        // Handle type change in edit modal
-        document.getElementById('edit_type').addEventListener('change', function() {
-            toggleEditContentFields();
+            if (editTermSelect) {
+                editTermSelect.addEventListener('change', function() {
+                    updateEditWeeks(this.value);
+                });
+            }
+
+            if (editTypeSelect) {
+                editTypeSelect.addEventListener('change', function() {
+                    toggleEditContentFields();
+                });
+            }
+
+            if (editModal) {
+                editModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeEditModal();
+                    }
+                });
+            }
         });
 
         // Show toast notification
@@ -1037,12 +1078,6 @@
             }, 3000);
         }
 
-        // Close modal when clicking outside
-        document.getElementById('editMaterialModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeEditModal();
-            }
-        });
     </script>
 
     <!-- Edit Material Modal -->

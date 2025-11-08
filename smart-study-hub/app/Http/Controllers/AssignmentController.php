@@ -132,6 +132,7 @@ class AssignmentController extends Controller
             $data = [
                 'id' => $assignment->id,
                 'course_title' => $assignment->course->title,
+                'course_id' => $assignment->course_id,
                 'term_id' => $termId,
                 'week_id' => $weekId,
                 'title' => $assignment->title,
@@ -141,6 +142,10 @@ class AssignmentController extends Controller
                 'max_attempts' => $assignment->max_attempts,
                 'due_date' => $assignment->due_date ? $assignment->due_date->format('Y-m-d\TH:i') : null,
                 'is_published' => $assignment->is_published,
+                'submission_type' => $assignment->submission_type,
+                'allowed_file_types' => $assignment->allowed_file_types ?? [],
+                'max_file_size' => $assignment->max_file_size,
+                'max_files' => $assignment->max_files,
             ];
 
             return response()->json($data);

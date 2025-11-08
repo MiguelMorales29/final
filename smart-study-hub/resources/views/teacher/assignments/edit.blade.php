@@ -1,4 +1,5 @@
 <x-teacher-layout>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <div class="flex items-center mb-8">
         <a href="{{ route('teacher.assignments.show', $assignment) }}" 
            class="mr-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
@@ -73,27 +74,28 @@
 
             <!-- Assignment Description -->
             <div>
-                <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label for="description-editor" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Description *
                 </label>
-                <textarea id="description" 
-                          name="description" 
-                          rows="4"
-                          class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Describe the assignment..."
-                          required>{{ old('description', strip_tags($assignment->description)) }}</textarea>
+                <div class="relative">
+                    <div id="description-editor" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition duration-150 ease-in-out" style="min-height: 200px;">
+                    </div>
+                    <input type="hidden" id="description" name="description" value="{{ old('description', $assignment->description) }}">
+                    <div class="absolute bottom-2 right-3 text-xs text-gray-400 dark:text-gray-500" id="description-counter">0/5,000</div>
+                </div>
             </div>
 
             <!-- Instructions -->
             <div>
-                <label for="instructions" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label for="instructions-editor" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Instructions (Optional)
                 </label>
-                <textarea id="instructions" 
-                          name="instructions" 
-                          rows="3"
-                          class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Provide specific instructions for students...">{{ old('instructions', strip_tags($assignment->instructions)) }}</textarea>
+                <div class="relative">
+                    <div id="instructions-editor" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition duration-150 ease-in-out" style="min-height: 180px;">
+                    </div>
+                    <input type="hidden" id="instructions" name="instructions" value="{{ old('instructions', $assignment->instructions) }}">
+                    <div class="absolute bottom-2 right-3 text-xs text-gray-400 dark:text-gray-500" id="instructions-counter">0/5,000</div>
+                </div>
             </div>
 
             <!-- Submission Type -->
@@ -228,8 +230,66 @@
         </form>
     </div>
 
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script>
+        const ASSIGNMENT_QUILL_TOOLBAR = [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ indent: '-1' }, { indent: '+1' }],
+            ['link'],
+            [{ align: [] }],
+            ['clean']
+        ];
+
+        function updateCounter(counterId, quillInstance, maxLength = 5000) {
+            const counter = document.getElementById(counterId);
+            if (!counter || !quillInstance) return;
+            const textLength = quillInstance.getText().trim().length;
+            counter.textContent = `${textLength}/${maxLength}`;
+            if (textLength > maxLength) {
+                counter.classList.add('text-red-500');
+            } else {
+                counter.classList.remove('text-red-500');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            const descriptionQuill = new Quill('#description-editor', {
+                theme: 'snow',
+                modules: { toolbar: ASSIGNMENT_QUILL_TOOLBAR },
+                placeholder: 'Describe the assignment...'
+            });
+            const instructionsQuill = new Quill('#instructions-editor', {
+                theme: 'snow',
+                modules: { toolbar: ASSIGNMENT_QUILL_TOOLBAR },
+                placeholder: 'Provide specific instructions for students...'
+            });
+
+            const initialDescription = {!! json_encode(old('description', $assignment->description)) !!};
+            if (initialDescription) {
+                descriptionQuill.clipboard.dangerouslyPasteHTML(initialDescription, 'silent');
+            }
+            document.getElementById('description').value = initialDescription || '';
+            updateCounter('description-counter', descriptionQuill);
+
+            const initialInstructions = {!! json_encode(old('instructions', $assignment->instructions)) !!};
+            if (initialInstructions) {
+                instructionsQuill.clipboard.dangerouslyPasteHTML(initialInstructions, 'silent');
+            }
+            document.getElementById('instructions').value = initialInstructions || '';
+            updateCounter('instructions-counter', instructionsQuill);
+
+            descriptionQuill.on('text-change', function() {
+                document.getElementById('description').value = descriptionQuill.root.innerHTML;
+                updateCounter('description-counter', descriptionQuill);
+            });
+
+            instructionsQuill.on('text-change', function() {
+                document.getElementById('instructions').value = instructionsQuill.root.innerHTML;
+                updateCounter('instructions-counter', instructionsQuill);
+            });
+
             const courseSelect = document.getElementById('course_id');
             const weekSelect = document.getElementById('course_week_id');
             const submissionTypeSelect = document.getElementById('submission_type');

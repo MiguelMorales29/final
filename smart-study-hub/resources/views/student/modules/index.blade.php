@@ -47,7 +47,7 @@
                         
                         <!-- Course Info -->
                         <div class="px-6 py-5">
-                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 break-words">{{ $course->title }}</h2>
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 break-all">{{ $course->title }}</h2>
                             <p class="text-base font-medium text-blue-600 dark:text-blue-400 mb-2 truncate" title="{{ $course->teacher->name }}">{{ $course->teacher->name }}</p>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                                 Capacity: <span class="font-semibold">{{ $course->student_capacity }}</span> students
@@ -109,9 +109,9 @@
                                                         <svg class="w-5 h-5 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                                     </div>
                                                     <div>
-                                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white break-words line-clamp-1">{{ $term->name }}</h3>
+                                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white break-all line-clamp-1">{{ $term->name }}</h3>
                                                         @if($term->description)
-                                                            <p class="text-sm text-gray-600 dark:text-gray-400 break-words line-clamp-2">{{ $term->description }}</p>
+                                                            <p class="text-sm text-gray-600 dark:text-gray-400 break-all line-clamp-2">{{ $term->description }}</p>
                                                         @endif
                                                         <p class="text-xs text-gray-500 dark:text-gray-300 mt-1">{{ $termWeeks }} weeks • {{ $termMaterials }} materials</p>
                                                     </div>
@@ -144,10 +144,10 @@
                                                                         <svg class="w-4 h-4 text-purple-600 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                                                                     </div>
                                                                     <div>
-                                                                        <h4 class="text-md font-medium text-gray-900 dark:text-white break-words line-clamp-2">{{ $subTerm->title }}</h4>
+                                                                        <h4 class="text-md font-medium text-gray-900 dark:text-white break-all line-clamp-2">{{ $subTerm->title }}</h4>
                                                                         <p class="text-xs text-gray-500 dark:text-gray-300 mt-1 line-clamp-1">{{ $subTermWeeks }} weeks • {{ $subTermMaterials }} materials</p>
                                                                         @if($subTerm->description)
-                                                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 break-words line-clamp-2">{{ $subTerm->description }}</p>
+                                                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 break-all line-clamp-2">{{ $subTerm->description }}</p>
                                                                         @endif
                                                                     </div>
                                                                 </div>
@@ -167,9 +167,9 @@
                                                                             <div class="flex items-center gap-3">
                                                                                 <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                                                                 <div>
-                                                                                    <h5 class="text-sm font-medium text-gray-900 dark:text-white break-words line-clamp-1">{{ $week->title }}</h5>
+                                                                                    <h5 class="text-sm font-medium text-gray-900 dark:text-white break-all line-clamp-1">{{ $week->title }}</h5>
                                                                                     @if($week->notes)
-                                                                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 break-words line-clamp-2">{{ $week->notes }}</p>
+                                                                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 break-all line-clamp-2">{{ $week->notes }}</p>
                                                                                     @endif
                                                                                 </div>
                                                                             </div>
@@ -220,10 +220,15 @@
                                                                                                         </svg>
                                                                                                     @endif
                                                                                                     <div class="min-w-0 space-y-1">
-                                                                                                        <p class="font-medium text-gray-900 dark:text-white break-words line-clamp-2" title="{{ $material->title }}">{{ $material->title }}</p>
-                                                                                                        @if($material->description)
-                                                                                                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 break-words">{{ Str::limit(strip_tags($material->description), 160) }}</p>
-                                                                                                         @endif
+                                                                                                        <p class="font-medium text-gray-900 dark:text-white break-all line-clamp-2" title="{{ $material->title }}">{{ $material->title }}</p>
+                                                                                                        @php
+                                                                                                            $previewSource = $material->type === 'text' && $material->content
+                                                                                                                ? strip_tags($material->content)
+                                                                                                                : strip_tags($material->description);
+                                                                                                        @endphp
+                                                                                                        @if(!empty($previewSource))
+                                                                                                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 break-all">{{ Str::limit($previewSource, 160) }}</p>
+                                                                                                        @endif
                                                                                                      </div>
                                                                                                  </div>
                                                                                                 <div class="flex items-center gap-2 flex-shrink-0">
@@ -261,13 +266,16 @@
                                                                                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                                                                                      </svg>
                                                                                                     <div class="min-w-0 space-y-1">
-                                                                                                        <p class="font-medium text-gray-900 dark:text-white break-words line-clamp-2" title="{{ $assignment->title }}">{{ $assignment->title }}</p>
+                                                                                                        <p class="font-medium text-gray-900 dark:text-white break-all line-clamp-2" title="{{ $assignment->title }}">{{ $assignment->title }}</p>
                                                                                                         <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 flex-wrap">
                                                                                                             <span class="whitespace-nowrap">{{ $assignment->points }} points</span>
                                                                                                             <span class="hidden sm:inline">•</span>
                                                                                                             <span class="whitespace-nowrap">Due {{ $assignment->due_date->format('M j, Y') }}</span>
                                                                                                         </div>
-                                                                                                    </div>
+                                                                                                        @if($assignment->description)
+                                                                                                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 break-all mt-2">{{ Str::limit(strip_tags($assignment->description), 160) }}</p>
+                                                                                                        @endif
+                                                                                                     </div>
                                                                                                 </div>
                                                                                                 <div class="flex items-center gap-2 flex-shrink-0">
                                                                                                      @if($submission)

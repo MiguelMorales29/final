@@ -4,6 +4,59 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <style>
         .ql-editor { word-break: break-word; white-space: pre-wrap; }
+        .rich-text.ql-editor {
+            padding: 0;
+            background: transparent;
+            color: inherit;
+            font-size: 1rem;
+            line-height: 1.7;
+            word-break: break-word;
+            white-space: pre-wrap;
+            font-family: inherit;
+        }
+        .rich-text.ql-editor p { margin-bottom: 0.85rem; }
+        .rich-text.ql-editor h1,
+        .rich-text.ql-editor h2,
+        .rich-text.ql-editor h3,
+        .rich-text.ql-editor h4 {
+            font-weight: 700;
+            line-height: 1.3;
+            margin: 1.25rem 0 0.75rem;
+        }
+        .rich-text.ql-editor h1 { font-size: 2rem; }
+        .rich-text.ql-editor h2 { font-size: 1.75rem; }
+        .rich-text.ql-editor h3 { font-size: 1.5rem; }
+        .rich-text.ql-editor h4 { font-size: 1.25rem; }
+        .rich-text.ql-editor ul,
+        .rich-text.ql-editor ol {
+            padding-left: 1.5rem;
+            margin-bottom: 0.85rem;
+        }
+        .rich-text.ql-editor li { margin-bottom: 0.4rem; }
+        .rich-text.ql-editor a { color: #2563eb; text-decoration: underline; }
+        .dark .rich-text.ql-editor a { color: #60a5fa; }
+        .rich-text.ql-editor strong { font-weight: 700; }
+        .rich-text.ql-editor em { font-style: italic; }
+        .rich-text.ql-editor blockquote {
+            border-left: 4px solid rgba(59,130,246,0.4);
+            padding-left: 1rem;
+            color: #4b5563;
+            font-style: italic;
+            margin: 1rem 0;
+        }
+        .dark .rich-text.ql-editor blockquote {
+            color: #cbd5f5;
+            border-left-color: rgba(96,165,250,0.5);
+        }
+        .rich-text.ql-editor code {
+            background: rgba(148,163,184,0.15);
+            padding: 0.15rem 0.4rem;
+            border-radius: 0.35rem;
+            font-size: 0.95rem;
+        }
+        .dark .rich-text.ql-editor code {
+            background: rgba(148,163,184,0.25);
+        }
     </style>
     <div class="flex items-center mb-8">
         <a href="{{ route('student.assignments.index') }}" 
@@ -45,9 +98,9 @@
                         <div>
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Description</h3>
                             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600 overflow-auto">
-                                <article class="prose prose-gray dark:prose-invert max-w-none break-words">
+                                <div class="ql-editor rich-text">
                                     {!! $assignment->description !!}
-                                </article>
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -56,9 +109,9 @@
                         <div>
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Instructions</h3>
                             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600 overflow-auto">
-                                <article class="prose prose-gray dark:prose-invert max-w-none break-words">
+                                <div class="ql-editor rich-text">
                                     {!! $assignment->instructions !!}
-                                </article>
+                                </div>
                             </div>
                         </div>
                     @endif

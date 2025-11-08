@@ -450,13 +450,14 @@
                                                                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                                                                         </svg>
                                                                                                     </a>
-                                                                                                    <a href="{{ route('teacher.assignments.edit', $assignment) }}"
-                                                                                                       class="p-2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-200 transition-colors"
-                                                                                                       title="Edit Assignment">
+                                                                                                    <button type="button"
+                                                                                                            class="assignment-edit-btn p-2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-200 transition-colors"
+                                                                                                            title="Edit Assignment"
+                                                                                                            data-assignment-id="{{ $assignment->id }}">
                                                                                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                                                                         </svg>
-                                                                                                    </a>
+                                                                                                    </button>
                                                                                                     <form action="{{ route('teacher.assignments.destroy', $assignment) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this assignment?');">
                                                                                                         @csrf
                                                                                                         @method('DELETE')
@@ -586,13 +587,14 @@
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                             </svg>
                                                         </a>
-                                                        <a href="{{ route('teacher.assignments.edit', $assignment) }}"
-                                                           class="p-2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-200 transition-colors"
-                                                           title="Edit Assignment">
+                                                        <button type="button"
+                                                                class="assignment-edit-btn p-2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-200 transition-colors"
+                                                                title="Edit Assignment"
+                                                                data-assignment-id="{{ $assignment->id }}">
                                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                             </svg>
-                                                        </a>
+                                                        </button>
                                                         <form action="{{ route('teacher.assignments.destroy', $assignment) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this assignment?');">
                                                             @csrf
                                                             @method('DELETE')
@@ -681,6 +683,7 @@
                                id="edit_course_title" 
                                class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 bg-gray-100 dark:bg-gray-600 cursor-not-allowed"
                                disabled>
+                        <input type="hidden" id="edit_course_id" name="course_id" value="">
                     </div>
 
                     <!-- Term -->
@@ -771,6 +774,65 @@
                         </div>
                     </div>
 
+                    <!-- Submission Type -->
+                    <div>
+                        <label for="edit_submission_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Submission Type *
+                        </label>
+                        <select id="edit_submission_type"
+                                name="submission_type"
+                                class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                            <option value="both">Text and File Upload</option>
+                            <option value="text">Text Only</option>
+                            <option value="file">File Upload Only</option>
+                        </select>
+                    </div>
+
+                    <!-- File Upload Settings -->
+                    <div id="edit-file-settings" class="space-y-4 hidden">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Allowed File Types
+                            </label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                @foreach(['pdf', 'doc', 'docx', 'txt', 'jpg', 'jpeg', 'png', 'gif'] as $type)
+                                    <label class="flex items-center">
+                                        <input type="checkbox"
+                                               name="allowed_file_types[]"
+                                               value="{{ $type }}"
+                                               class="edit-file-type-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600">
+                                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ strtoupper($type) }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="edit_max_file_size" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Max File Size (MB)
+                                </label>
+                                <input type="number"
+                                       id="edit_max_file_size"
+                                       name="max_file_size"
+                                       min="1"
+                                       max="100"
+                                       class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="edit_max_files" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Max Files
+                                </label>
+                                <input type="number"
+                                       id="edit_max_files"
+                                       name="max_files"
+                                       min="1"
+                                       max="10"
+                                       class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Points -->
                     <div>
                         <label for="edit_points" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -848,108 +910,321 @@
     <x-collapsible-script />
 
     <script>
+        const courseStructure = @json($courseStructure);
+        const QUILL_TOOLBAR_OPTIONS = [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ indent: '-1' }, { indent: '+1' }],
+            ['link'],
+            [{ align: [] }],
+            ['clean']
+        ];
+
+        let editDescriptionQuill = null;
+        let editInstructionsQuill = null;
+        let currentAssignmentId = null;
+        let courseIdForEdit = null;
+
+        function updateCharacterCounter(counterId, content, maxLength) {
+            const counter = document.getElementById(counterId);
+            if (!counter) return;
+            const text = (content || '').toString().replace(/<[^>]*>/g, '');
+            const length = text.length;
+            counter.textContent = `${length}/${maxLength}`;
+            if (length > maxLength) {
+                counter.classList.add('text-red-500');
+            } else {
+                counter.classList.remove('text-red-500');
+            }
+        }
+
+        function initializeEditDescriptionQuill() {
+            if (!editDescriptionQuill) {
+                editDescriptionQuill = new Quill('#edit-description-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: QUILL_TOOLBAR_OPTIONS
+                    },
+                    placeholder: 'Enter assignment description...'
+                });
+                editDescriptionQuill.on('text-change', function() {
+                    const html = editDescriptionQuill.root.innerHTML;
+                    document.getElementById('edit_description').value = html;
+                    updateCharacterCounter('edit-description-counter', html, 5000);
+                });
+            }
+        }
+
+        function initializeEditInstructionsQuill() {
+            if (!editInstructionsQuill) {
+                editInstructionsQuill = new Quill('#edit-instructions-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: QUILL_TOOLBAR_OPTIONS
+                    },
+                    placeholder: 'Enter detailed instructions...'
+                });
+                editInstructionsQuill.on('text-change', function() {
+                    const html = editInstructionsQuill.root.innerHTML;
+                    document.getElementById('edit_instructions').value = html;
+                    updateCharacterCounter('edit-instructions-counter', html, 5000);
+                });
+            }
+        }
+
+        function updateEditWeeks(termId, selectedWeekId = null) {
+            const weekSelect = document.getElementById('edit_course_week_id');
+            if (!weekSelect) return;
+
+            weekSelect.innerHTML = '<option value="">Choose a week...</option>';
+
+            if (!termId) {
+                return;
+            }
+
+            const selectedTerm = courseStructure.find(term => String(term.id) === String(termId));
+            if (!selectedTerm || !Array.isArray(selectedTerm.weeks)) {
+                return;
+            }
+
+            selectedTerm.weeks.forEach(week => {
+                const option = document.createElement('option');
+                option.value = week.id;
+                option.textContent = `${week.sub_term || 'Week'} - ${week.title}`;
+                if (selectedWeekId && String(week.id) === String(selectedWeekId)) {
+                    option.selected = true;
+                }
+                weekSelect.appendChild(option);
+            });
+        }
+
+        function toggleEditFileSettings() {
+            const submissionType = document.getElementById('edit_submission_type');
+            const settings = document.getElementById('edit-file-settings');
+            if (!submissionType || !settings) return;
+
+            if (submissionType.value === 'file' || submissionType.value === 'both') {
+                settings.classList.remove('hidden');
+            } else {
+                settings.classList.add('hidden');
+            }
+        }
+
+        function resetEditModalFields() {
+            const form = document.getElementById('editAssignmentForm');
+            if (form) {
+                form.reset();
+            }
+
+            const editCourseId = document.getElementById('edit_course_id');
+            if (editCourseId) editCourseId.value = '';
+
+            const editTitle = document.getElementById('edit_title');
+            if (editTitle) editTitle.value = '';
+            updateCharacterCounter('edit-title-counter', '', 500);
+
+            if (editDescriptionQuill) {
+                editDescriptionQuill.setContents([]);
+            }
+            const editDescriptionInput = document.getElementById('edit_description');
+            if (editDescriptionInput) editDescriptionInput.value = '';
+            updateCharacterCounter('edit-description-counter', '', 5000);
+
+            if (editInstructionsQuill) {
+                editInstructionsQuill.setContents([]);
+            }
+            const editInstructionsInput = document.getElementById('edit_instructions');
+            if (editInstructionsInput) editInstructionsInput.value = '';
+            updateCharacterCounter('edit-instructions-counter', '', 5000);
+
+            const editMaxFileSize = document.getElementById('edit_max_file_size');
+            if (editMaxFileSize) editMaxFileSize.value = '';
+            const editMaxFiles = document.getElementById('edit_max_files');
+            if (editMaxFiles) editMaxFiles.value = '';
+
+            document.querySelectorAll('.edit-file-type-checkbox').forEach(cb => {
+                cb.checked = false;
+            });
+
+            const editSubmissionType = document.getElementById('edit_submission_type');
+            if (editSubmissionType) {
+                editSubmissionType.value = 'both';
+            }
+            toggleEditFileSettings();
+
+            const editTermSelect = document.getElementById('edit_term_id');
+            if (editTermSelect) {
+                editTermSelect.value = '';
+            }
+            updateEditWeeks('', null);
+            const editWeekSelect = document.getElementById('edit_course_week_id');
+            if (editWeekSelect) editWeekSelect.value = '';
+
+            const editDueDate = document.getElementById('edit_due_date');
+            if (editDueDate) editDueDate.value = '';
+            const editPoints = document.getElementById('edit_points');
+            if (editPoints) editPoints.value = '';
+            const editMaxAttempts = document.getElementById('edit_max_attempts');
+            if (editMaxAttempts) editMaxAttempts.value = '';
+            const editIsPublished = document.getElementById('edit_is_published');
+            if (editIsPublished) editIsPublished.checked = false;
+
+            courseIdForEdit = null;
+            currentAssignmentId = null;
+        }
+
+        async function openAssignmentEditModal(assignmentId) {
+            const modal = document.getElementById('editAssignmentModal');
+            if (!modal) return;
+
+            initializeEditDescriptionQuill();
+            initializeEditInstructionsQuill();
+            resetEditModalFields();
+
+            currentAssignmentId = assignmentId;
+            modal.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`/teacher/assignments/${assignmentId}/edit-data`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                courseIdForEdit = data.course_id || null;
+
+                const editCourseTitle = document.getElementById('edit_course_title');
+                if (editCourseTitle) editCourseTitle.value = data.course_title || '';
+                const editCourseId = document.getElementById('edit_course_id');
+                if (editCourseId) editCourseId.value = courseIdForEdit || '';
+
+                const editTitle = document.getElementById('edit_title');
+                if (editTitle) editTitle.value = data.title || '';
+                updateCharacterCounter('edit-title-counter', data.title || '', 500);
+
+                const editPoints = document.getElementById('edit_points');
+                if (editPoints) editPoints.value = data.points ?? '';
+                const editMaxAttempts = document.getElementById('edit_max_attempts');
+                if (editMaxAttempts) editMaxAttempts.value = data.max_attempts ?? 1;
+                const editDueDate = document.getElementById('edit_due_date');
+                if (editDueDate) editDueDate.value = data.due_date || '';
+                const editIsPublished = document.getElementById('edit_is_published');
+                if (editIsPublished) editIsPublished.checked = !!data.is_published;
+
+                const editSubmissionType = document.getElementById('edit_submission_type');
+                if (editSubmissionType) {
+                    editSubmissionType.value = data.submission_type || 'both';
+                }
+                toggleEditFileSettings();
+
+                const allowedTypes = Array.isArray(data.allowed_file_types) ? data.allowed_file_types : [];
+                document.querySelectorAll('.edit-file-type-checkbox').forEach(cb => {
+                    cb.checked = allowedTypes.includes(cb.value);
+                });
+
+                const editMaxFileSize = document.getElementById('edit_max_file_size');
+                if (editMaxFileSize) editMaxFileSize.value = data.max_file_size ?? '';
+                const editMaxFiles = document.getElementById('edit_max_files');
+                if (editMaxFiles) editMaxFiles.value = data.max_files ?? '';
+
+                const editTermSelect = document.getElementById('edit_term_id');
+                if (editTermSelect) {
+                    editTermSelect.value = data.term_id || '';
+                }
+                updateEditWeeks(data.term_id || '', data.week_id || null);
+
+                if (!data.week_id) {
+                    const editWeekSelect = document.getElementById('edit_course_week_id');
+                    if (editWeekSelect) editWeekSelect.value = '';
+                }
+
+                editDescriptionQuill.clipboard.dangerouslyPasteHTML(data.description || '', 'silent');
+                const editDescriptionInput = document.getElementById('edit_description');
+                if (editDescriptionInput) editDescriptionInput.value = data.description || '';
+                updateCharacterCounter('edit-description-counter', data.description || '', 5000);
+
+                editInstructionsQuill.clipboard.dangerouslyPasteHTML(data.instructions || '', 'silent');
+                const editInstructionsInput = document.getElementById('edit_instructions');
+                if (editInstructionsInput) editInstructionsInput.value = data.instructions || '';
+                updateCharacterCounter('edit-instructions-counter', data.instructions || '', 5000);
+            } catch (error) {
+                console.error('Error loading assignment data:', error);
+                alert('Error loading assignment data. Please try again.');
+                closeEditModal();
+            }
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('editAssignmentModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            resetEditModalFields();
+        }
+
+        window.closeEditModal = closeEditModal;
+
         document.addEventListener('DOMContentLoaded', function() {
             const termSelect = document.getElementById('term_id');
             const weekSelect = document.getElementById('course_week_id');
             const submissionTypeSelect = document.getElementById('submission_type');
             const fileSettings = document.getElementById('file-settings');
             const titleInput = document.getElementById('title');
-            const titleCounter = document.getElementById('title-counter');
-
             const storageTermKey = 'assignment_form_selected_term';
             const storageWeekKey = 'assignment_form_selected_week';
-
-            const courseStructure = @json($courseStructure);
 
             const descriptionQuill = new Quill('#description-editor', {
                 theme: 'snow',
                 modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'indent': '-1'}, { 'indent': '+1' }],
-                        ['link'],
-                        [{ 'align': [] }],
-                        ['clean']
-                    ]
+                    toolbar: QUILL_TOOLBAR_OPTIONS
                 },
                 placeholder: 'Enter assignment description...'
             });
-
-            const instructionsQuill = new Quill('#instructions-editor', {
-                theme: 'snow',
-                modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'indent': '-1'}, { 'indent': '+1' }],
-                        ['link'],
-                        [{ 'align': [] }],
-                        ['clean']
-                    ]
-                },
-                placeholder: 'Enter detailed instructions...'
-            });
-
             descriptionQuill.on('text-change', function() {
                 const html = descriptionQuill.root.innerHTML;
                 document.getElementById('description').value = html;
                 updateCharacterCounter('description-counter', html, 5000);
             });
+            const oldDescription = @json(old('description'));
+            if (oldDescription) {
+                descriptionQuill.clipboard.dangerouslyPasteHTML(oldDescription, 'silent');
+                document.getElementById('description').value = oldDescription;
+                updateCharacterCounter('description-counter', oldDescription, 5000);
+            }
 
+            const instructionsQuill = new Quill('#instructions-editor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: QUILL_TOOLBAR_OPTIONS
+                },
+                placeholder: 'Enter detailed instructions...'
+            });
             instructionsQuill.on('text-change', function() {
                 const html = instructionsQuill.root.innerHTML;
                 document.getElementById('instructions').value = html;
                 updateCharacterCounter('instructions-counter', html, 5000);
             });
+            const oldInstructions = @json(old('instructions'));
+            if (oldInstructions) {
+                instructionsQuill.clipboard.dangerouslyPasteHTML(oldInstructions, 'silent');
+                document.getElementById('instructions').value = oldInstructions;
+                updateCharacterCounter('instructions-counter', oldInstructions, 5000);
+            }
 
             if (titleInput) {
-            titleInput.addEventListener('input', function() {
-                updateCharacterCounter('title-counter', this.value, 500);
-            });
+                titleInput.addEventListener('input', function() {
+                    updateCharacterCounter('title-counter', this.value, 500);
+                });
             }
 
-            function updateCharacterCounter(counterId, content, maxLength) {
-                const counter = document.getElementById(counterId);
-                if (!counter) return;
-                const textLength = content.replace(/<[^>]*>/g, '').length;
-                counter.textContent = `${textLength}/${maxLength}`;
-                
-                if (textLength > maxLength) {
-                    counter.classList.add('text-red-500');
-                } else {
-                    counter.classList.remove('text-red-500');
-                }
-            }
-
-            termSelect.addEventListener('change', function() {
-                updateWeeks();
-                sessionStorage.setItem(storageTermKey, this.value || '');
-                sessionStorage.removeItem(storageWeekKey);
-            });
-
-            weekSelect.addEventListener('change', function() {
-                if (this.value) {
-                    sessionStorage.setItem(storageWeekKey, this.value);
-                } else {
-                    sessionStorage.removeItem(storageWeekKey);
-                }
-            });
-
-            submissionTypeSelect.addEventListener('change', function() {
-                if (this.value === 'file' || this.value === 'both') {
-                    fileSettings.style.display = 'block';
-                } else {
-                    fileSettings.style.display = 'none';
-                }
-            });
-
-            function updateWeeks(preselectWeekId = null) {
+            function updateFormWeeks(preselectWeekId = null) {
                 weekSelect.innerHTML = '<option value="">Choose a week...</option>';
                 const termId = termSelect.value;
-                
+
                 if (termId) {
                     const selectedTerm = courseStructure.find(term => String(term.id) === String(termId));
                     if (selectedTerm && selectedTerm.weeks) {
@@ -984,7 +1259,7 @@
                 if (!termId) return;
 
                 termSelect.value = termId;
-                updateWeeks(weekId);
+                updateFormWeeks(weekId);
 
                 if (weekId) {
                     weekSelect.value = weekId;
@@ -1007,6 +1282,28 @@
                     titleInput.focus();
                 }
             }
+
+            termSelect.addEventListener('change', function() {
+                updateFormWeeks();
+                sessionStorage.setItem(storageTermKey, this.value || '');
+                sessionStorage.removeItem(storageWeekKey);
+            });
+
+            weekSelect.addEventListener('change', function() {
+                if (this.value) {
+                    sessionStorage.setItem(storageWeekKey, this.value);
+                } else {
+                    sessionStorage.removeItem(storageWeekKey);
+                }
+            });
+
+            submissionTypeSelect.addEventListener('change', function() {
+                if (this.value === 'file' || this.value === 'both') {
+                    fileSettings.style.display = 'block';
+                } else {
+                    fileSettings.style.display = 'none';
+                }
+            });
 
             document.querySelectorAll('.add-assignment-btn').forEach(button => {
                 button.addEventListener('click', () => {
@@ -1034,7 +1331,7 @@
             if (initialTermId) {
                 selectTermAndWeek(initialTermId, initialWeekId);
             } else {
-                updateWeeks();
+                updateFormWeeks();
             }
 
             submissionTypeSelect.dispatchEvent(new Event('change'));
@@ -1046,6 +1343,103 @@
                 urlParams.delete('week');
                 const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
                 window.history.replaceState({}, document.title, newUrl);
+            }
+
+            document.querySelectorAll('.assignment-edit-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const assignmentId = button.dataset.assignmentId;
+                    if (assignmentId) {
+                        openAssignmentEditModal(assignmentId);
+                    }
+                });
+            });
+
+            const editTermSelect = document.getElementById('edit_term_id');
+            if (editTermSelect) {
+                editTermSelect.addEventListener('change', function() {
+                    updateEditWeeks(this.value);
+                });
+            }
+
+            const editSubmissionType = document.getElementById('edit_submission_type');
+            if (editSubmissionType) {
+                editSubmissionType.addEventListener('change', toggleEditFileSettings);
+            }
+
+            const editModal = document.getElementById('editAssignmentModal');
+            if (editModal) {
+                editModal.addEventListener('click', function(e) {
+                    if (e.target === editModal) {
+                        closeEditModal();
+                    }
+                });
+            }
+
+            const editAssignmentForm = document.getElementById('editAssignmentForm');
+            if (editAssignmentForm) {
+                editAssignmentForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (!currentAssignmentId || !courseIdForEdit) {
+                        alert('Assignment context missing. Please reopen the editor.');
+                        return;
+                    }
+
+                    const submissionType = document.getElementById('edit_submission_type').value;
+                    const courseIdInput = document.getElementById('edit_course_id');
+                    if (courseIdInput) {
+                        courseIdInput.value = courseIdForEdit || '';
+                    }
+
+                    const formData = new FormData(editAssignmentForm);
+                    formData.set('_method', 'PUT');
+                    formData.set('title', document.getElementById('edit_title').value || '');
+                    formData.set('description', editDescriptionQuill ? editDescriptionQuill.root.innerHTML : '');
+                    formData.set('instructions', editInstructionsQuill ? editInstructionsQuill.root.innerHTML : '');
+                    formData.set('course_id', courseIdForEdit || '');
+
+                    if (!formData.get('course_week_id')) {
+                        formData.set('course_week_id', '');
+                    }
+
+                    formData.delete('allowed_file_types[]');
+                    if (submissionType === 'file' || submissionType === 'both') {
+                        document.querySelectorAll('.edit-file-type-checkbox:checked').forEach(cb => {
+                            formData.append('allowed_file_types[]', cb.value);
+                        });
+                    } else {
+                        formData.set('max_file_size', '');
+                        formData.set('max_files', '');
+                    }
+
+                    fetch(`/teacher/assignments/${currentAssignmentId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(async response => {
+                        let data = {};
+                        try {
+                            data = await response.json();
+                        } catch (error) {
+                            console.error('Error parsing response JSON:', error);
+                        }
+
+                        if (response.ok && data && data.success) {
+                            alert(data.message || 'Assignment updated successfully.');
+                            closeEditModal();
+                            window.location.reload();
+                        } else {
+                            alert((data && data.message) || 'Error updating assignment.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating assignment:', error);
+                        alert('Error updating assignment. Please try again.');
+                    });
+                });
             }
         });
     </script>

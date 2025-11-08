@@ -325,25 +325,40 @@ class CourseController extends Controller
             'order' => $week->materials()->max('order') + 1,
         ];
 
-        // Handle file upload
-        if ($request->hasFile('file')) {
+        // Normalize content by type
+        if ($request->type === 'video') {
+            $request->validate([
+                'youtube_url' => 'required|url',
+            ]);
+            $data['content'] = $request->youtube_url;
+            $data['youtube_url'] = $request->youtube_url;
+            $data['external_url'] = null;
+        } elseif ($request->type === 'link') {
+            $request->validate([
+                'external_url' => 'required|url',
+            ]);
+            $data['content'] = $request->external_url;
+            $data['external_url'] = $request->external_url;
+            $data['youtube_url'] = null;
+        } elseif ($request->type === 'text') {
+            $request->validate([
+                'text_content' => 'required|string|max:10000',
+            ]);
+            $data['content'] = Purify::clean($request->text_content);
+            $data['youtube_url'] = null;
+            $data['external_url'] = null;
+        } elseif ($request->type === 'file') {
+            $request->validate([
+                'file' => 'required|file|max:2097152',
+            ]);
             $file = $request->file('file');
             $filePath = $file->store('course_materials', 'public');
             $data['content'] = $filePath;
             $data['file_path'] = $filePath;
             $data['file_name'] = $file->getClientOriginalName();
             $data['file_size'] = $file->getSize();
-        }
-
-        // Handle URLs and text content
-        if ($request->type === 'video' && $request->youtube_url) {
-            $data['content'] = $request->youtube_url;
-            $data['youtube_url'] = $request->youtube_url;
-        } elseif ($request->type === 'link' && $request->external_url) {
-            $data['content'] = $request->external_url;
-            $data['external_url'] = $request->external_url;
-        } elseif ($request->type === 'text' && $request->text_content) {
-            $data['content'] = Purify::clean($request->text_content);
+            $data['youtube_url'] = null;
+            $data['external_url'] = null;
         }
 
         $material = $course->materials()->create($data);
@@ -419,25 +434,52 @@ class CourseController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
+            'description' => 'nullable|string|max:5000',
             'type' => 'required|in:video,file,link,text',
-            'text_content' => 'nullable|string',
             'course_week_id' => 'required|exists:course_weeks,id',
+            'youtube_url' => 'nullable|url',
+            'external_url' => 'nullable|url',
+            'text_content' => 'nullable|string|max:10000',
+            'file' => 'nullable|file|max:2097152',
+            'is_required' => 'boolean',
         ]);
 
-        $data = $request->only(['title', 'type', 'course_week_id']);
-        $data['description'] = $request->description ? Purify::clean($request->description) : null;
+        $week = CourseWeek::findOrFail($request->course_week_id);
+        if ($week->course_id !== $course->id) {
+            abort(403, 'Unauthorized access.');
+        }
 
-        if ($request->type === 'file' && $request->hasFile('file')) {
-            // Delete old file
-            if ($material->content) {
-                Storage::disk('public')->delete($material->content);
+        $data = $request->only(['title', 'type', 'course_week_id']);
+        $data['description'] = $request->filled('description') ? Purify::clean($request->description) : null;
+        $data['is_required'] = $request->boolean('is_required', false);
+        $data['file_path'] = $material->file_path;
+        $data['file_name'] = $material->file_name;
+        $data['file_size'] = $material->file_size;
+        $data['youtube_url'] = $material->youtube_url;
+        $data['external_url'] = $material->external_url;
+
+        if ($request->type === 'video') {
+            $data['youtube_url'] = $request->youtube_url;
+            $data['external_url'] = null;
+            $data['content'] = $request->youtube_url;
+        } elseif ($request->type === 'link') {
+            $data['external_url'] = $request->external_url;
+            $data['youtube_url'] = null;
+            $data['content'] = $request->external_url;
+        } elseif ($request->type === 'text') {
+            $data['youtube_url'] = null;
+            $data['external_url'] = null;
+            $data['content'] = Purify::clean($request->text_content ?? '');
+        } elseif ($request->type === 'file' && $request->hasFile('file')) {
+            if ($material->file_path) {
+                Storage::disk('public')->delete($material->file_path);
             }
-            
-            // Store new file
-            $data['content'] = $request->file('file')->store('course_materials', 'public');
-        } elseif ($request->type !== 'file') {
-            $data['content'] = $request->text_content ? Purify::clean($request->text_content) : null;
+            $file = $request->file('file');
+            $filePath = $file->store('course_materials', 'public');
+            $data['content'] = $filePath;
+            $data['file_path'] = $filePath;
+            $data['file_name'] = $file->getClientOriginalName();
+            $data['file_size'] = $file->getSize();
         }
 
         $material->update($data);
@@ -471,6 +513,7 @@ class CourseController extends Controller
             $data = [
                 'id' => $material->id,
                 'course_title' => $material->course->title,
+                'course_id' => $material->course_id,
                 'term_id' => $termId,
                 'week_id' => $weekId,
                 'title' => $material->title,
@@ -520,19 +563,42 @@ class CourseController extends Controller
             'file' => 'nullable|file|max:2097152', // 2GB max (in KB)
         ]);
 
+        $week = CourseWeek::findOrFail($request->course_week_id);
+        if ($week->course_id !== $material->course_id) {
+            return response()->json(['error' => 'Unauthorized access.'], 403);
+        }
+
         $data = $request->only(['title', 'type', 'course_week_id']);
         $data['description'] = $request->description ? Purify::clean($request->description) : null;
         $data['is_required'] = $request->boolean('is_required', false);
+        $data['file_path'] = $material->file_path; // preserve existing unless replaced
+        $data['file_name'] = $material->file_name;
+        $data['file_size'] = $material->file_size;
+        $data['youtube_url'] = null;
+        $data['external_url'] = null;
 
         // Handle content based on type
-        if ($request->type === 'video' && $request->youtube_url) {
-            $data['content'] = $request->youtube_url;
+        if ($request->type === 'video') {
             $data['youtube_url'] = $request->youtube_url;
-        } elseif ($request->type === 'link' && $request->external_url) {
-            $data['content'] = $request->external_url;
+            $data['external_url'] = null;
+            $data['content'] = $request->youtube_url;
+            $data['file_path'] = null;
+            $data['file_name'] = null;
+            $data['file_size'] = null;
+        } elseif ($request->type === 'link') {
             $data['external_url'] = $request->external_url;
-        } elseif ($request->type === 'text' && $request->text_content) {
-            $data['content'] = Purify::clean($request->text_content);
+            $data['youtube_url'] = null;
+            $data['content'] = $request->external_url;
+            $data['file_path'] = null;
+            $data['file_name'] = null;
+            $data['file_size'] = null;
+        } elseif ($request->type === 'text') {
+            $data['youtube_url'] = null;
+            $data['external_url'] = null;
+            $data['content'] = Purify::clean($request->text_content ?? '');
+            $data['file_path'] = null;
+            $data['file_name'] = null;
+            $data['file_size'] = null;
         } elseif ($request->type === 'file' && $request->hasFile('file')) {
             // Delete old file
             if ($material->content) {

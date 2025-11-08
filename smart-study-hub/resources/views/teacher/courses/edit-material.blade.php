@@ -103,12 +103,12 @@
                         Video URL *
                     </label>
                     <input type="url" 
-                           name="content" 
+                           name="youtube_url" 
                            id="video_url"
-                           value="{{ old('type', $material->type) == 'video' ? old('content', $material->content) : '' }}"
+                           value="{{ old('type', $material->type) == 'video' ? old('youtube_url', $material->youtube_url) : '' }}"
                            placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..."
                            class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    @error('content')
+                    @error('youtube_url')
                         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
@@ -139,12 +139,12 @@
                         External Link *
                     </label>
                     <input type="url" 
-                           name="content" 
+                           name="external_url" 
                            id="link_url"
-                           value="{{ old('type', $material->type) == 'link' ? old('content', $material->content) : '' }}"
+                           value="{{ old('type', $material->type) == 'link' ? old('external_url', $material->external_url) : '' }}"
                            placeholder="https://example.com"
                            class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    @error('content')
+                    @error('external_url')
                         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
@@ -161,9 +161,12 @@
                              style="height: 300px;">
                         </div>
                         <!-- Hidden input to store HTML content -->
-                        <input type="hidden" name="content" id="text_content" value="{{ old('type', $material->type) == 'text' ? old('content', $material->content) : '' }}">
+                        <input type="hidden" name="text_content" id="text_content" value="{{ old('type', $material->type) == 'text' ? old('text_content', $material->content) : '' }}">
+                        <div class="absolute bottom-2 right-3">
+                            <span id="text-content-counter" class="text-xs text-gray-400 dark:text-gray-500">0/10,000</span>
+                        </div>
                     </div>
-                    @error('content')
+                    @error('text_content')
                         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
