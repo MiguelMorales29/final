@@ -138,13 +138,87 @@
                       ]
                     ];
                     
-                    // Subject chip styling
-                    $subjectChips = [
-                      'English' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-200 dark:ring-emerald-900/50',
-                      'Mathematics' => 'bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-200 dark:ring-indigo-900/50',
-                      'Science' => 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/40 dark:text-sky-200 dark:ring-sky-900/50',
-                      'Programming Fundamentals' => 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-900/40 dark:text-violet-200 dark:ring-violet-900/50',
-                      'History' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:ring-amber-900/50'
+                  // Subject chip styling
+                  $subjectChips = [
+                    'English' => 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-200 dark:ring-emerald-900/50',
+                    'Mathematics' => 'bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-200 dark:ring-indigo-900/50',
+                    'Science' => 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/40 dark:text-sky-200 dark:ring-sky-900/50',
+                    'Programming Fundamentals' => 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-900/40 dark:text-violet-200 dark:ring-violet-900/50',
+                    'History' => 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-900/40 dark:text-amber-200 dark:ring-amber-900/50'
+                  ];
+                  
+                  $subjectVisuals = [
+                    'English' => [
+                      'card' => 'border-emerald-100/70 dark:border-emerald-900/60 bg-gradient-to-br from-emerald-50 via-white to-white dark:from-emerald-950/20 dark:via-gray-900 dark:to-gray-900',
+                      'iconWrap' => 'bg-emerald-100/80 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-200 ring-emerald-200/70 dark:ring-emerald-800/60',
+                      'title' => 'text-emerald-900 dark:text-emerald-100'
+                    ],
+                    'Mathematics' => [
+                      'card' => 'border-indigo-100/70 dark:border-indigo-900/60 bg-gradient-to-br from-indigo-50 via-white to-white dark:from-indigo-950/20 dark:via-gray-900 dark:to-gray-900',
+                      'iconWrap' => 'bg-indigo-100/80 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-200 ring-indigo-200/70 dark:ring-indigo-800/60',
+                      'title' => 'text-indigo-900 dark:text-indigo-100'
+                    ],
+                    'Science' => [
+                      'card' => 'border-sky-100/70 dark:border-sky-900/60 bg-gradient-to-br from-sky-50 via-white to-white dark:from-sky-950/20 dark:via-gray-900 dark:to-gray-900',
+                      'iconWrap' => 'bg-sky-100/80 dark:bg-sky-900/50 text-sky-600 dark:text-sky-200 ring-sky-200/70 dark:ring-sky-800/60',
+                      'title' => 'text-sky-900 dark:text-sky-100'
+                    ],
+                    'Programming Fundamentals' => [
+                      'card' => 'border-violet-100/70 dark:border-violet-900/60 bg-gradient-to-br from-violet-50 via-white to-white dark:from-violet-950/20 dark:via-gray-900 dark:to-gray-900',
+                      'iconWrap' => 'bg-violet-100/80 dark:bg-violet-900/50 text-violet-600 dark:text-violet-200 ring-violet-200/70 dark:ring-violet-800/60',
+                      'title' => 'text-violet-900 dark:text-violet-100'
+                    ],
+                    'History' => [
+                      'card' => 'border-amber-100/70 dark:border-amber-900/60 bg-gradient-to-br from-amber-50 via-white to-white dark:from-amber-950/20 dark:via-gray-900 dark:to-gray-900',
+                      'iconWrap' => 'bg-amber-100/80 dark:bg-amber-900/50 text-amber-600 dark:text-amber-200 ring-amber-200/70 dark:ring-amber-800/60',
+                      'title' => 'text-amber-900 dark:text-amber-100'
+                    ],
+                    'default' => [
+                      'card' => 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900',
+                      'iconWrap' => 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 ring-gray-200/60 dark:ring-gray-700/50',
+                      'title' => 'text-gray-900 dark:text-white'
+                    ]
+                  ];
+                  @endphp
+
+                  @php
+                    $courseColorMap = [
+                      'English' => [
+                        'card' => 'border-emerald-100/70 dark:border-emerald-900/60 bg-gradient-to-br from-emerald-50 via-white to-white dark:from-emerald-950/20 dark:via-gray-900 dark:to-gray-900 shadow-[0_12px_32px_rgba(16,185,129,0.15)] dark:shadow-[0_10px_28px_rgba(16,185,129,0.22)]',
+                        'title' => 'text-emerald-900 dark:text-emerald-100',
+                        'meta' => 'text-emerald-600 dark:text-emerald-300',
+                        'pill' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200'
+                      ],
+                      'Mathematics' => [
+                        'card' => 'border-indigo-100/70 dark:border-indigo-900/60 bg-gradient-to-br from-indigo-50 via-white to-white dark:from-indigo-950/20 dark:via-gray-900 dark:to-gray-900 shadow-[0_12px_32px_rgba(99,102,241,0.15)] dark:shadow-[0_10px_28px_rgba(76,81,191,0.22)]',
+                        'title' => 'text-indigo-900 dark:text-indigo-100',
+                        'meta' => 'text-indigo-600 dark:text-indigo-300',
+                        'pill' => 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-200'
+                      ],
+                      'Science' => [
+                        'card' => 'border-sky-100/70 dark:border-sky-900/60 bg-gradient-to-br from-sky-50 via-white to-white dark:from-sky-950/20 dark:via-gray-900 dark:to-gray-900 shadow-[0_12px_32px_rgba(14,165,233,0.15)] dark:shadow-[0_10px_28px_rgba(56,189,248,0.22)]',
+                        'title' => 'text-sky-900 dark:text-sky-100',
+                        'meta' => 'text-sky-600 dark:text-sky-300',
+                        'pill' => 'bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-200'
+                      ],
+                      'Programming Fundamentals' => [
+                        'card' => 'border-violet-100/70 dark:border-violet-900/60 bg-gradient-to-br from-violet-50 via-white to-white dark:from-violet-950/20 dark:via-gray-900 dark:to-gray-900 shadow-[0_12px_32px_rgba(139,92,246,0.15)] dark:shadow-[0_10px_28px_rgba(139,92,246,0.22)]',
+                        'title' => 'text-violet-900 dark:text-violet-100',
+                        'meta' => 'text-violet-600 dark:text-violet-300',
+                        'pill' => 'bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-200'
+                      ],
+                      'History' => [
+                        'card' => 'border-amber-100/70 dark:border-amber-900/60 bg-gradient-to-br from-amber-50 via-white to-white dark:from-amber-950/20 dark:via-gray-900 dark:to-gray-900 shadow-[0_12px_32px_rgba(245,158,11,0.18)] dark:shadow-[0_10px_28px_rgba(245,158,11,0.24)]',
+                        'title' => 'text-amber-900 dark:text-amber-100',
+                        'meta' => 'text-amber-600 dark:text-amber-300',
+                        'pill' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-200'
+                      ],
+                      'default' => [
+                        'card' => 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm',
+                        'title' => 'text-gray-900 dark:text-white',
+                        'meta' => 'text-gray-500 dark:text-gray-400',
+                        'pill' => 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                      ]
                     ];
                   @endphp
 
@@ -202,18 +276,12 @@
                             ];
                           @endphp
                           @php
-                            $accent = [
-                              'English' => 'border-l-4 border-emerald-500',
-                              'Mathematics' => 'border-l-4 border-indigo-500',
-                              'Science' => 'border-l-4 border-sky-500',
-                              'Programming Fundamentals' => 'border-l-4 border-violet-500',
-                              'History' => 'border-l-4 border-amber-500',
-                            ][$a['subject']] ?? 'border-l-4 border-gray-300 dark:border-gray-700';
+                            $visual = $subjectVisuals[$a['subject']] ?? $subjectVisuals['default'];
                           @endphp
-                          <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition {{ $i===0 ? 'bg-gray-50 dark:bg-gray-800/40' : '' }} {{ $clickUrl ? 'cursor-pointer' : '' }} {{ $accent }}" @if($clickUrl) onclick="window.location.href='{{ $clickUrl }}'" @endif>
-                            <div class="flex items-start gap-3">
+                          <div class="group relative overflow-hidden rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg {{ $visual['card'] }} {{ $clickUrl ? 'cursor-pointer' : '' }} min-h-[152px] flex flex-col gap-4" @if($clickUrl) onclick="window.location.href='{{ $clickUrl }}'" @endif>
+                            <div class="flex items-start gap-4">
                               {{-- Heroicon (16px) --}}
-                              <div class="mt-0.5">
+                              <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl ring-4 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 {{ $visual['iconWrap'] }}">
                                 @if($config['icon'] === 'check-circle')
                                   <svg class="h-4 w-4 {{ $config['iconColor'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -279,26 +347,33 @@
                                 @endif
                               </div>
 
-                              <div class="flex-1">
-                                {{-- First line: bold title + optional "New" badge --}}
-                                <div class="flex items-center gap-2">
-                                  <span class="font-semibold text-gray-900 dark:text-white">{{ $a['title'] }}</span>
-                                  @if(!empty($a['new']))
-                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-blue-600 dark:bg-blue-500 text-white">
-                                      New
-                                    </span>
-                                  @endif
+                              <div class="flex-1 min-w-0 space-y-3">
+                                {{-- header containers --}}
+                                <div class="flex flex-wrap items-start justify-between gap-3">
+                                  <div class="inline-flex items-center gap-2 rounded-xl bg-white/70 px-3 py-1.5 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-white/60 shadow-sm dark:bg-gray-900/60 dark:text-white dark:ring-gray-800/80 min-w-0">
+                                    <span class="truncate {{ $visual['title'] }}">{{ $a['title'] }}</span>
+                                    @if(!empty($a['new']))
+                                      <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold bg-blue-600 dark:bg-blue-500 text-white shadow-sm">
+                                        New
+                                      </span>
+                                    @endif
+                                  </div>
+                                  <div class="flex items-center gap-2 rounded-xl border border-white/70 bg-white/60 px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm backdrop-blur dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                                    <svg class="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l2.5 2.5M12 22a10 10 0 110-20 10 10 0 010 20z"/>
+                                    </svg>
+                                    <span class="truncate">{{ $a['time'] }}</span>
+                                  </div>
                                 </div>
-                                
-                                {{-- Second line: supporting text (14px, muted gray) --}}
-                                <p class="text-sm text-gray-700 dark:text-gray-300 mt-1 leading-5">{{ $a['text'] }}</p>
 
-                                {{-- Meta row: subject chip + timestamp --}}
-                                <div class="mt-2 flex flex-wrap items-center gap-3 text-xs">
-                                  <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs ring-1 ring-inset {{ $subjectChips[$a['subject']] ?? 'bg-gray-50 text-gray-700 ring-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:ring-gray-900/40' }}">
-                                    {{ $a['subject'] }}
-                                  </span>
-                                  <span class="text-gray-500 dark:text-gray-400">{{ $a['time'] }}</span>
+                                {{-- Subject container --}}
+                                <div class="inline-flex items-center gap-2 rounded-xl px-3 py-1 text-xs font-medium shadow-sm ring-1 ring-inset ring-white/60 backdrop-blur max-w-full {{ $subjectChips[$a['subject']] ?? 'bg-gray-50 text-gray-700 ring-gray-200 dark:bg-gray-900/40 dark:text-gray-300 dark:ring-gray-800/70' }}">
+                                  <span class="truncate">{{ $a['subject'] }}</span>
+                                </div>
+
+                                {{-- Second line: supporting text (14px, muted gray) --}}
+                                <div class="rounded-xl bg-white/60 px-3 py-2 ring-1 ring-inset ring-white/60 backdrop-blur dark:bg-gray-900/40 dark:ring-gray-800/70">
+                                  <p class="text-sm text-gray-700 dark:text-gray-300 leading-5 line-clamp-3">{{ $a['text'] }}</p>
                                 </div>
                               </div>
                             </div>
@@ -349,30 +424,58 @@
                               'low' => 'text-gray-500 dark:text-gray-400'
                             ][$t['priority']] ?? 'text-gray-500 dark:text-gray-400';
                           @endphp
-                          @php $assignmentUrl = isset($t['assignment_id']) ? route('student.assignments.show', $t['assignment_id']) : null; @endphp
-                          <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition {{ $assignmentUrl ? 'cursor-pointer' : '' }}" @if($assignmentUrl) onclick="window.location.href='{{ $assignmentUrl }}'" @endif>
-                            <div class="flex items-start justify-between gap-3">
-                              <div class="flex items-start gap-2">
-                                {{-- color-coded clock icon --}}
-                                <svg class="h-4 w-4 mt-0.5 {{ $clockColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3M12 22a10 10 0 110-20 10 10 0 010 20z"/>
+                          @php
+                            $assignmentUrl = isset($t['assignment_id']) ? route('student.assignments.show', $t['assignment_id']) : null;
+                            $courseStyle = $courseColorMap[$t['course']] ?? $courseColorMap['default'];
+                            $badgeType = $t['type'] ?? (isset($t['assignment_id']) ? 'assignment' : null);
+                          @endphp
+                          <div class="relative overflow-hidden rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg {{ $courseStyle['card'] }} {{ $assignmentUrl ? 'cursor-pointer' : '' }} min-h-[156px] flex flex-col gap-4" @if($assignmentUrl) onclick="window.location.href='{{ $assignmentUrl }}'" @endif>
+                            <div class="flex items-start gap-4">
+                              {{-- color-coded clock icon --}}
+                              <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-white/80 dark:bg-gray-900/70 ring-4 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 {{ $clockColor === 'text-red-500 dark:text-red-400' ? 'ring-red-100/80 dark:ring-red-900/60' : ($clockColor === 'text-yellow-500 dark:text-yellow-400' ? 'ring-yellow-100/80 dark:ring-yellow-900/60' : 'ring-gray-200/70 dark:ring-gray-700/60') }}">
+                                <svg class="h-5 w-5 {{ $clockColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3M12 22a10 10 0 110-20 10 10 0 010 20z" />
                                 </svg>
-                                <div>
-                                  <div class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                    {{ $t['title'] }}
-                                    @php $badgeType = $t['type'] ?? (isset($t['assignment_id']) ? 'assignment' : null); @endphp
+                              </div>
+                              <div class="flex-1 min-w-0 space-y-3">
+                                <div class="flex flex-wrap items-start justify-between gap-3">
+                                  <div class="inline-flex items-center gap-2 rounded-xl bg-white/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-600 ring-1 ring-inset ring-white/60 shadow-sm backdrop-blur dark:bg-gray-900/50 dark:text-gray-300 dark:ring-gray-800/70">
+                                    <span class="truncate {{ $courseStyle['meta'] }}">{{ $t['course'] }}</span>
+                                  </div>
+                                  <div class="flex items-center gap-2 rounded-xl border border-white/70 bg-white/60 px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm backdrop-blur dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                                    <svg class="h-3.5 w-3.5 {{ $clockColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l2 2M12 22a10 10 0 110-20 10 10 0 010 20z" />
+                                    </svg>
+                                    <span class="truncate">Due {{ $t['due'] }}</span>
+                                  </div>
+                                </div>
+
+                                <div class="rounded-xl bg-white/70 px-3 py-2 ring-1 ring-inset ring-white/60 shadow-sm backdrop-blur dark:bg-gray-900/40 dark:ring-gray-800/70">
+                                  <div class="flex items-start justify-between gap-2">
+                                    <span class="text-sm font-semibold leading-snug text-gray-900 dark:text-white line-clamp-2 {{ $courseStyle['title'] }}">{{ $t['title'] }}</span>
                                     @if($badgeType)
-                                      <span class="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full
+                                      <span class="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full flex-shrink-0
                                         {{ $badgeType==='assignment' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-200' : ($badgeType==='exam' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200' : ($badgeType==='quiz' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200')) }}">
-                                        @if($badgeType==='assignment') 📘 @elseif($badgeType==='exam') 🎓 @elseif($badgeType==='quiz') ✅ @else 🗓️ @endif
-                                        <span class="capitalize">{{ $badgeType }}</span>
+                                          @if($badgeType==='assignment') 📘 @elseif($badgeType==='exam') 🎓 @elseif($badgeType==='quiz') ✅ @else 🗓️ @endif
+                                          <span class="capitalize">{{ $badgeType }}</span>
                                       </span>
                                     @endif
                                   </div>
-                                  <div class="text-[12px] text-gray-500 dark:text-gray-400">{{ $t['course'] }} • Due: {{ $t['due'] }}</div>
+                                  @if(!empty($t['description']))
+                                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">{{ $t['description'] }}</p>
+                                  @endif
+                                </div>
+
+                                <div class="flex items-center justify-between gap-3 text-xs">
+                                  <span class="px-2 py-0.5 rounded-full uppercase tracking-wide {{ $priorityStyle[$t['priority']] }}">{{ $t['priority'] }}</span>
+                                  <a href="{{ $assignmentUrl ?? '#' }}" class="inline-flex items-center gap-1 rounded-lg border border-transparent bg-white/70 px-3 py-1.5 font-medium text-indigo-600 shadow-sm transition hover:bg-white dark:bg-gray-900/40 dark:text-indigo-400 dark:hover:bg-gray-900/60">
+                                    Open task
+                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H7" />
+                                    </svg>
+                                  </a>
                                 </div>
                               </div>
-                              <span class="text-[11px] px-2 py-0.5 rounded-full {{ $priorityStyle[$t['priority']] }}">{{ $t['priority'] }}</span>
                             </div>
                           </div>
                         @endforeach

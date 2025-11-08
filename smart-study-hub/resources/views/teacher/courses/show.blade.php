@@ -198,9 +198,9 @@
                                                             <div class="space-y-3">
                                                             @foreach($week->materials as $material)
                                                                     <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
-                                                                    <div class="flex items-start justify-between">
-                                                                        <div class="flex-1">
-                                                                                <div class="flex items-center gap-2 mb-2">
+                                                                    <div class="flex items-start justify-between gap-3 min-w-0">
+                                                                        <div class="flex-1 min-w-0">
+                                                                                <div class="flex items-center gap-2 mb-2 min-w-0">
                                                                                 @if($material->type === 'video')
                                                                                         <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                                                                                         <path d="M8 5v14l11-7z"/>
@@ -218,12 +218,12 @@
                                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                                                                     </svg>
                                                                                     @endif
-                                                                                    <span class="font-medium text-gray-900 dark:text-white">{{ $material->title }}</span>
-                                                                                    <span class="text-xs text-gray-500 dark:text-gray-400 capitalize bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                                                                    <span class="font-medium text-gray-900 dark:text-white truncate max-w-[55%]">{{ $material->title }}</span>
+                                                                                    <span class="text-xs text-gray-500 dark:text-gray-400 capitalize bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded flex-shrink-0">
                                                                                         {{ $material->type }}
                                                                                     </span>
                                                                                     @if($material->is_required)
-                                                                                        <span class="text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded font-medium">
+                                                                                        <span class="text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded font-medium flex-shrink-0">
                                                                                             Required
                                                                                         </span>
                                                                                     @endif

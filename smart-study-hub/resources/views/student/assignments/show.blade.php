@@ -2,6 +2,9 @@
     <!-- Include Quill.js -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <style>
+        .ql-editor { word-break: break-word; white-space: pre-wrap; }
+    </style>
     <div class="flex items-center mb-8">
         <a href="{{ route('student.assignments.index') }}" 
            class="mr-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
@@ -9,11 +12,11 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
         </a>
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $assignment->title }}</h1>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">{{ $assignment->course->title }}</p>
+        <div class="min-w-0 space-y-1">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white break-words">{{ $assignment->title }}</h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400 truncate" title="{{ $assignment->course->title }}">{{ $assignment->course->title }}</p>
             @if($assignment->week)
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $assignment->week->subTerm->term->name }} - {{ $assignment->week->subTerm->title }} - {{ $assignment->week->title }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 truncate" title="{{ $assignment->week->subTerm->term->name }} - {{ $assignment->week->subTerm->title }} - {{ $assignment->week->title }}">{{ $assignment->week->subTerm->term->name }} - {{ $assignment->week->subTerm->title }} - {{ $assignment->week->title }}</p>
             @endif
         </div>
     </div>
@@ -41,8 +44,8 @@
                     @if($assignment->description)
                         <div>
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Description</h3>
-                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600">
-                                <article class="prose prose-gray dark:prose-invert max-w-none">
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600 overflow-auto">
+                                <article class="prose prose-gray dark:prose-invert max-w-none break-words">
                                     {!! $assignment->description !!}
                                 </article>
                             </div>
@@ -52,8 +55,8 @@
                     @if($assignment->instructions)
                         <div>
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Instructions</h3>
-                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600">
-                                <article class="prose prose-gray dark:prose-invert max-w-none">
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600 overflow-auto">
+                                <article class="prose prose-gray dark:prose-invert max-w-none break-words">
                                     {!! $assignment->instructions !!}
                                 </article>
                             </div>

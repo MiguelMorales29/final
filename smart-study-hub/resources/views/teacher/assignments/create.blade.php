@@ -428,9 +428,9 @@
                                                                             <div class="space-y-3">
                                                                                 @foreach($weekAssignments as $assignment)
                                                                                     <div class="item-card bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 hover:shadow-md transition-all duration-200">
-                                                                                        <div class="flex items-start justify-between gap-4">
-                                                                                            <div class="flex-1">
-                                                                                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $assignment->title }}</h4>
+                                                                                        <div class="flex items-start justify-between gap-4 min-w-0">
+                                                                                            <div class="flex-1 min-w-0">
+                                                                                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white truncate">{{ $assignment->title }}</h4>
                                                                                                 @if($assignment->description)
                                                                                                     <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
                                                                                                         {{ Str::limit(strip_tags($assignment->description), 120) }}
@@ -564,9 +564,9 @@
                                     <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
                                         @foreach($unassignedAssignments as $assignment)
                                         <div class="item-card bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 hover:shadow-md transition duration-200">
-                                            <div class="flex items-start justify-between gap-4">
-                                                <div class="flex-1">
-                                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $assignment->title }}</h4>
+                                            <div class="flex items-start justify-between gap-4 min-w-0">
+                                                <div class="flex-1 min-w-0">
+                                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white truncate">{{ $assignment->title }}</h4>
                                                     @if($assignment->description)
                                                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
                                                             {{ Str::limit(strip_tags($assignment->description), 120) }}

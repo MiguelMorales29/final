@@ -176,20 +176,20 @@
                                                         <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                                             @foreach($weekAssignments as $assignment)
                                                                 <div class="item-card bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-600 hover:shadow-md hover:scale-[1.01] transition-all duration-200">
-                                                                    <div class="flex items-start justify-between mb-3">
-                                                                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white leading-snug">{{ $assignment->title }}</h4>
-                                        @if($assignment->is_published)
-                                                                            <span class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 text-xs px-2 py-1 rounded-full">Published</span>
-                                        @else
-                                                                            <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200 text-xs px-2 py-1 rounded-full">Draft</span>
-                                        @endif
-                                </div>
+                                                                    <div class="flex items-start justify-between gap-3 mb-3">
+                                                                        <h4 class="flex-1 min-w-0 text-lg font-semibold text-gray-900 dark:text-white leading-snug truncate">{{ $assignment->title }}</h4>
+                                                                        @if($assignment->is_published)
+                                                                            <span class="flex-shrink-0 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 text-xs px-2 py-1 rounded-full">Published</span>
+                                                                        @else
+                                                                            <span class="flex-shrink-0 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200 text-xs px-2 py-1 rounded-full">Draft</span>
+                                                                        @endif
+                                                                    </div>
 
-                                @if($assignment->description)
+                                                                    @if($assignment->description)
                                                                         <div class="text-sm text-gray-600 dark:text-gray-400 mb-3 prose prose-sm max-w-none line-clamp-3">
-                                        {!! $assignment->description !!}
-                                    </div>
-                                @endif
+                                                                            {!! $assignment->description !!}
+                                                                        </div>
+                                                                    @endif
 
                                                                     <dl class="grid grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
                                                                         <div class="flex items-center gap-2">
@@ -297,12 +297,12 @@
                 <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
                     @foreach($unassignedAssignments as $assignment)
                         <div class="item-card bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-600 hover:shadow-md transition duration-200">
-                            <div class="flex items-start justify-between mb-3">
-                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $assignment->title }}</h4>
+                            <div class="flex items-start justify-between gap-3 mb-3">
+                                <h4 class="flex-1 min-w-0 text-lg font-semibold text-gray-900 dark:text-white truncate">{{ $assignment->title }}</h4>
                                 @if($assignment->is_published)
-                                    <span class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 text-xs px-2 py-1 rounded-full">Published</span>
+                                    <span class="flex-shrink-0 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 text-xs px-2 py-1 rounded-full">Published</span>
                                 @else
-                                    <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200 text-xs px-2 py-1 rounded-full">Draft</span>
+                                    <span class="flex-shrink-0 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200 text-xs px-2 py-1 rounded-full">Draft</span>
                                 @endif
                             </div>
                             @if($assignment->description)
