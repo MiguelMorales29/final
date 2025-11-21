@@ -28,26 +28,23 @@ WORKDIR /var/www/html
 # Copy composer files
 COPY composer.json composer.lock ./
 
+# Install PHP dependencies (skip scripts to avoid artisan commands during build)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
+
+# Copy application files (needed for artisan commands)
+COPY . .
+
 # Copy .env.example to .env for build (Laravel needs it for artisan commands)
-COPY .env.example .env
+RUN cp .env.example .env || true
 
 # Set a temporary APP_KEY for build (will be overridden by environment variables at runtime)
 RUN php artisan key:generate --ansi || echo "APP_KEY=base64:temp_key_for_build_only_replace_in_production" >> .env
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+# Run post-install scripts now that we have APP_KEY
+RUN composer run-script post-autoload-dump --no-interaction || true
 
-# Copy package files
-COPY package.json package-lock.json ./
-
-# Install Node dependencies
-RUN npm ci
-
-# Copy application files
-COPY . .
-
-# Build assets
-RUN npm run build
+# Install Node dependencies and build assets
+RUN npm ci && npm run build
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
