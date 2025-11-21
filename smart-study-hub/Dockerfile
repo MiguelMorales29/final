@@ -28,6 +28,12 @@ WORKDIR /var/www/html
 # Copy composer files
 COPY composer.json composer.lock ./
 
+# Copy .env.example to .env for build (Laravel needs it for artisan commands)
+COPY .env.example .env
+
+# Set a temporary APP_KEY for build (will be overridden by environment variables at runtime)
+RUN php artisan key:generate --ansi || echo "APP_KEY=base64:temp_key_for_build_only_replace_in_production" >> .env
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
