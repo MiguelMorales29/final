@@ -23,7 +23,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('home');
-});
+})->name('home');
+
+// Public pages
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
 
 // Role-based dashboard routes
 Route::middleware(['auth', 'verified', 'role:teacher'])->group(function () {

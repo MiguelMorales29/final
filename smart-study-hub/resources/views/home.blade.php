@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
 
   <!-- Custom styles -->
-  <link rel="stylesheet" href="{{ secure_asset('css/styles.css') }}" />
+  <link rel="stylesheet" href="{{ asset('css/styles.css') }}" />
 
 </head>
 
@@ -49,7 +49,10 @@
                 <a class="nav-link" href="#home">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#about">About Us</a>
+                <a class="nav-link" href="{{ route('about') }}">About Us</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ route('contact') }}">Contact</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="#courses">Courses</a>
@@ -786,13 +789,20 @@
         </ul>
       </div>
 
+      <!-- Links -->
+      <div class="col-6 col-md-3">
+        <h6 class="fw-bold mb-2 text-footer-primary">Links</h6>
+        <ul class="list-unstyled text-footer-secondary">
+          <li><a href="{{ route('about') }}" class="footer-link">About</a></li>
+          <li><a href="{{ route('contact') }}" class="footer-link">Contact</a></li>
+        </ul>
+      </div>
       <!-- Contact -->
       <div class="col-6 col-md-3">
         <h6 class="fw-bold mb-2 text-footer-primary">Contact</h6>
         <ul class="list-unstyled text-footer-secondary">
           <li>Email: hello@smartstudyhub.edu</li>
           <li>Support Center</li>
-          <li>About</li>
         </ul>
       </div>
 
