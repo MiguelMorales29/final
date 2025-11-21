@@ -88,8 +88,9 @@ if [ -z "$APP_URL" ]; then\n\
 fi\n\
 # Clear config cache to ensure new env vars are loaded\n\
 php artisan config:clear || true\n\
-# Run migrations\n\
-php artisan migrate --force || true\n\
+# Reset and run migrations (fresh drops all tables and re-runs)\n\
+# This ensures clean database state after fixing migration syntax\n\
+php artisan migrate:fresh --force || php artisan migrate --force || true\n\
 # Create storage link\n\
 php artisan storage:link || true\n\
 # Start PHP server\n\
