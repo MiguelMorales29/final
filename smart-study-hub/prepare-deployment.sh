@@ -102,3 +102,4 @@ echo "5. Run migrations on hosting platform"
 echo ""
 echo "🎉 Good luck with your deployment!"
 
+

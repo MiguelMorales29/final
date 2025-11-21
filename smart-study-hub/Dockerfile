@@ -81,6 +81,11 @@ update_env() {\n\
 [ -n "$APP_KEY" ] && update_env "APP_KEY" "$APP_KEY"\n\
 [ -n "$APP_ENV" ] && update_env "APP_ENV" "$APP_ENV"\n\
 [ -n "$APP_DEBUG" ] && update_env "APP_DEBUG" "$APP_DEBUG"\n\
+[ -n "$APP_URL" ] && update_env "APP_URL" "$APP_URL"\n\
+# Ensure APP_URL uses HTTPS if not explicitly set\n\
+if [ -z "$APP_URL" ]; then\n\
+  update_env "APP_URL" "https://smart-study-hub-a5xr.onrender.com"\n\
+fi\n\
 # Clear config cache to ensure new env vars are loaded\n\
 php artisan config:clear || true\n\
 # Run migrations\n\
