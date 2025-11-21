@@ -54,6 +54,18 @@ RUN chown -R www-data:www-data /var/www/html \
 # Expose port (Render will set PORT env variable)
 EXPOSE 8000
 
-# Start PHP built-in server
-CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+# Create startup script that runs migrations and starts server
+RUN echo '#!/bin/sh\n\
+set -e\n\
+# Wait a moment for database to be ready\n\
+sleep 2\n\
+# Run migrations\n\
+php artisan migrate --force || true\n\
+# Create storage link\n\
+php artisan storage:link || true\n\
+# Start PHP server\n\
+exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}' > /start.sh && chmod +x /start.sh
+
+# Use startup script
+CMD ["/start.sh"]
 
