@@ -19,27 +19,14 @@ return new class extends Migration
 
         // PostgreSQL-compatible: Check database driver
         if (DB::getDriverName() === 'pgsql') {
-            // For PostgreSQL, try to drop common constraint names
-            try {
-                DB::statement("ALTER TABLE course_applications DROP CONSTRAINT IF EXISTS course_applications_status_check");
-            } catch (\Exception $e) {}
+            // For PostgreSQL, drop constraint if exists
+            DB::statement("DO \$\$ 
+                BEGIN
+                    ALTER TABLE course_applications DROP CONSTRAINT IF EXISTS course_applications_status_check;
+                EXCEPTION WHEN OTHERS THEN NULL;
+                END \$\$");
             
-            try {
-                // Try to find and drop any check constraint on status column
-                $constraints = DB::select("
-                    SELECT conname 
-                    FROM pg_constraint 
-                    WHERE conrelid = 'course_applications'::regclass 
-                    AND contype = 'c'
-                ");
-                foreach ($constraints as $constraint) {
-                    try {
-                        DB::statement("ALTER TABLE course_applications DROP CONSTRAINT IF EXISTS {$constraint->conname}");
-                    } catch (\Exception $e) {}
-                }
-            } catch (\Exception $e) {}
-            
-            // Now add new constraint
+            // Add new constraint
             DB::statement("ALTER TABLE course_applications ADD CONSTRAINT course_applications_status_check CHECK (status IN ('pending', 'approved', 'rejected', 'dropped'))");
             DB::statement("ALTER TABLE course_applications ALTER COLUMN status SET DEFAULT 'pending'");
         } else {

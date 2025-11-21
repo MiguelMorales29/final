@@ -26,28 +26,17 @@ return new class extends Migration
 
         // PostgreSQL-compatible: Check database driver
         if (DB::getDriverName() === 'pgsql') {
-            // For PostgreSQL, try to drop common constraint names, then alter column
-            try {
-                DB::statement("ALTER TABLE course_materials DROP CONSTRAINT IF EXISTS course_materials_type_check");
-            } catch (\Exception $e) {}
+            // For PostgreSQL, drop constraint if exists, then alter column
+            DB::statement("DO \$\$ 
+                BEGIN
+                    ALTER TABLE course_materials DROP CONSTRAINT IF EXISTS course_materials_type_check;
+                EXCEPTION WHEN OTHERS THEN NULL;
+                END \$\$");
             
-            try {
-                // Try to find and drop any check constraint on type column
-                $constraints = DB::select("
-                    SELECT conname 
-                    FROM pg_constraint 
-                    WHERE conrelid = 'course_materials'::regclass 
-                    AND contype = 'c'
-                ");
-                foreach ($constraints as $constraint) {
-                    try {
-                        DB::statement("ALTER TABLE course_materials DROP CONSTRAINT IF EXISTS {$constraint->conname}");
-                    } catch (\Exception $e) {}
-                }
-            } catch (\Exception $e) {}
-            
-            // Now alter the column and add new constraint
+            // Alter column type
             DB::statement("ALTER TABLE course_materials ALTER COLUMN type TYPE VARCHAR(255)");
+            
+            // Add new constraint
             DB::statement("ALTER TABLE course_materials ADD CONSTRAINT course_materials_type_check CHECK (type IN ('video', 'file', 'link', 'text'))");
             DB::statement("ALTER TABLE course_materials ALTER COLUMN type SET NOT NULL");
         } else {
