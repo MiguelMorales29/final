@@ -12,8 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Update the enum to include 'dropped' status
-        DB::statement("ALTER TABLE course_applications MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'dropped') DEFAULT 'pending'");
+        // PostgreSQL-compatible: Check database driver
+        if (DB::getDriverName() === 'pgsql') {
+            // For PostgreSQL, update the check constraint
+            DB::statement("ALTER TABLE course_applications DROP CONSTRAINT IF EXISTS course_applications_status_check");
+            DB::statement("ALTER TABLE course_applications ADD CONSTRAINT course_applications_status_check CHECK (status IN ('pending', 'approved', 'rejected', 'dropped'))");
+            DB::statement("ALTER TABLE course_applications ALTER COLUMN status SET DEFAULT 'pending'");
+        } else {
+            // MySQL syntax
+            DB::statement("ALTER TABLE course_applications MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'dropped') DEFAULT 'pending'");
+        }
     }
 
     /**
@@ -21,7 +29,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert back to original enum values
-        DB::statement("ALTER TABLE course_applications MODIFY COLUMN status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending'");
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("ALTER TABLE course_applications DROP CONSTRAINT IF EXISTS course_applications_status_check");
+            DB::statement("ALTER TABLE course_applications ADD CONSTRAINT course_applications_status_check CHECK (status IN ('pending', 'approved', 'rejected'))");
+            DB::statement("ALTER TABLE course_applications ALTER COLUMN status SET DEFAULT 'pending'");
+        } else {
+            DB::statement("ALTER TABLE course_applications MODIFY COLUMN status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending'");
+        }
     }
 };

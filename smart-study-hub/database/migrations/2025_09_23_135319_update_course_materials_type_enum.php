@@ -17,8 +17,17 @@ return new class extends Migration
             ->where('type', 'text')
             ->update(['type' => 'file']);
 
-        // Modify the enum column to include all valid values
-        DB::statement("ALTER TABLE course_materials MODIFY COLUMN type ENUM('video', 'file', 'link', 'text') NOT NULL");
+        // PostgreSQL-compatible: Check database driver
+        if (DB::getDriverName() === 'pgsql') {
+            // For PostgreSQL, alter the column type and add check constraint
+            DB::statement("ALTER TABLE course_materials DROP CONSTRAINT IF EXISTS course_materials_type_check");
+            DB::statement("ALTER TABLE course_materials ALTER COLUMN type TYPE VARCHAR(255)");
+            DB::statement("ALTER TABLE course_materials ADD CONSTRAINT course_materials_type_check CHECK (type IN ('video', 'file', 'link', 'text'))");
+            DB::statement("ALTER TABLE course_materials ALTER COLUMN type SET NOT NULL");
+        } else {
+            // MySQL syntax
+            DB::statement("ALTER TABLE course_materials MODIFY COLUMN type ENUM('video', 'file', 'link', 'text') NOT NULL");
+        }
     }
 
     /**
@@ -26,7 +35,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert back to the original enum values if needed
-        DB::statement("ALTER TABLE course_materials MODIFY COLUMN type ENUM('video', 'file', 'link') NOT NULL");
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("ALTER TABLE course_materials DROP CONSTRAINT IF EXISTS course_materials_type_check");
+            DB::statement("ALTER TABLE course_materials ALTER COLUMN type TYPE VARCHAR(255)");
+            DB::statement("ALTER TABLE course_materials ADD CONSTRAINT course_materials_type_check CHECK (type IN ('video', 'file', 'link'))");
+            DB::statement("ALTER TABLE course_materials ALTER COLUMN type SET NOT NULL");
+        } else {
+            DB::statement("ALTER TABLE course_materials MODIFY COLUMN type ENUM('video', 'file', 'link') NOT NULL");
+        }
     }
 };
