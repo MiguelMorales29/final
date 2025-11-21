@@ -60,6 +60,14 @@ class CourseApplicationController extends Controller
     {
         $teacher = Auth::user();
 
+        // Load course relationship
+        $application->load('course', 'student');
+        
+        // Check if course exists
+        if (!$application->course) {
+            return back()->with('error', 'Course not found.');
+        }
+
         // Check if teacher owns the course
         if ($application->course->teacher_id !== $teacher->id) {
             return back()->with('error', 'Unauthorized action.');
@@ -97,7 +105,7 @@ class CourseApplicationController extends Controller
                 [
                     'course_id' => $application->course_id,
                     'course_title' => $application->course->title,
-                    'student_name' => $application->student->name
+                    'student_name' => $application->student ? $application->student->name : 'Student'
                 ]
             );
         });
@@ -111,6 +119,14 @@ class CourseApplicationController extends Controller
     public function reject(Request $request, CourseApplication $application)
     {
         $teacher = Auth::user();
+
+        // Load course relationship
+        $application->load('course', 'student');
+        
+        // Check if course exists
+        if (!$application->course) {
+            return back()->with('error', 'Course not found.');
+        }
 
         // Check if teacher owns the course
         if ($application->course->teacher_id !== $teacher->id) {
@@ -135,7 +151,7 @@ class CourseApplicationController extends Controller
             [
                 'course_id' => $application->course_id,
                 'course_title' => $application->course->title,
-                'student_name' => $application->student->name
+                'student_name' => $application->student ? $application->student->name : 'Student'
             ]
         );
 
@@ -173,6 +189,14 @@ class CourseApplicationController extends Controller
     public function archive(CourseApplication $application)
     {
         $teacher = Auth::user();
+
+        // Load course relationship
+        $application->load('course');
+        
+        // Check if course exists
+        if (!$application->course) {
+            abort(404, 'Course not found.');
+        }
 
         // Check if the application belongs to the teacher's course
         if ($application->course->teacher_id !== $teacher->id) {

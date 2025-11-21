@@ -102,13 +102,16 @@ class StudentDashboardController extends Controller
         // Add approved courses to enrolled courses (these should show as enrolled)
         $approvedCourses = [];
         foreach ($approvedApplications as $application) {
+            if (!$application->course) {
+                continue; // Skip if course is missing
+            }
             $approvedCourses[] = [
                 'id' => $application->course->id,
                 'title' => $application->course->title,
-                'teacher' => $application->course->teacher->name,
+                'teacher' => $application->course->teacher ? $application->course->teacher->name : 'Unknown Teacher',
                 'weeks' => 12, // Default value
                 'cover' => $application->course->image ? asset('storage/' . $application->course->image) : asset('images/default-course.png'),
-                'desc' => $application->course->description,
+                'desc' => $application->course->description ?? '',
                 'progress' => 0, // New course, no progress yet
                 'next_due' => null,
                 'locked' => false, // This is an enrolled course
@@ -119,13 +122,16 @@ class StudentDashboardController extends Controller
         // Add pending courses to locked courses
         $pendingCourses = [];
         foreach ($pendingApplications as $application) {
+            if (!$application->course) {
+                continue; // Skip if course is missing
+            }
             $pendingCourses[] = [
                 'id' => $application->course->id,
                 'title' => $application->course->title,
-                'teacher' => $application->course->teacher->name,
+                'teacher' => $application->course->teacher ? $application->course->teacher->name : 'Unknown Teacher',
                 'weeks' => 12, // Default value
                 'cover' => $application->course->image ? asset('storage/' . $application->course->image) : asset('images/default-course.png'),
-                'desc' => $application->course->description,
+                'desc' => $application->course->description ?? '',
                 'progress' => 0,
                 'next_due' => null,
                 'locked' => true,
@@ -136,13 +142,16 @@ class StudentDashboardController extends Controller
         // Add rejected courses
         $rejectedCourses = [];
         foreach ($rejectedApplications as $application) {
+            if (!$application->course) {
+                continue; // Skip if course is missing
+            }
             $rejectedCourses[] = [
                 'id' => $application->course->id,
                 'title' => $application->course->title,
-                'teacher' => $application->course->teacher->name,
+                'teacher' => $application->course->teacher ? $application->course->teacher->name : 'Unknown Teacher',
                 'weeks' => 12, // Default value
                 'cover' => $application->course->image ? asset('storage/' . $application->course->image) : asset('images/default-course.png'),
-                'desc' => $application->course->description,
+                'desc' => $application->course->description ?? '',
                 'progress' => 0,
                 'next_due' => null,
                 'locked' => true,
@@ -154,13 +163,16 @@ class StudentDashboardController extends Controller
         // Add dropped courses
         $droppedCourses = [];
         foreach ($droppedApplications as $application) {
+            if (!$application->course) {
+                continue; // Skip if course is missing
+            }
             $droppedCourses[] = [
                 'id' => $application->course->id,
                 'title' => $application->course->title,
-                'teacher' => $application->course->teacher->name,
+                'teacher' => $application->course->teacher ? $application->course->teacher->name : 'Unknown Teacher',
                 'weeks' => 12, // Default value
                 'cover' => $application->course->image ? asset('storage/' . $application->course->image) : asset('images/default-course.png'),
-                'desc' => $application->course->description,
+                'desc' => $application->course->description ?? '',
                 'progress' => 0,
                 'next_due' => null,
                 'locked' => true,
@@ -186,14 +198,17 @@ class StudentDashboardController extends Controller
             ->toArray();
         
         // Get real upcoming assignments from enrolled courses (excluding submitted ones)
-        $upcomingAssignments = Assignment::whereIn('course_id', $enrolledCourseIds)
-            ->where('is_published', true)
-            ->whereNotNull('due_date')
-            ->whereNotIn('id', $submittedAssignmentIds)
-            ->orderBy('due_date', 'asc')
-            ->with('course')
-            ->limit(20)
-            ->get();
+        $upcomingAssignments = collect();
+        if ($enrolledCourseIds->isNotEmpty()) {
+            $upcomingAssignments = Assignment::whereIn('course_id', $enrolledCourseIds)
+                ->where('is_published', true)
+                ->whereNotNull('due_date')
+                ->whereNotIn('id', $submittedAssignmentIds)
+                ->orderBy('due_date', 'asc')
+                ->with('course')
+                ->limit(20)
+                ->get();
+        }
         
         // Convert assignments to dashboard format
         $upcomingTasks = $upcomingAssignments->map(function ($assignment) {
@@ -212,23 +227,29 @@ class StudentDashboardController extends Controller
             
             return [
                 'title' => $assignment->title,
-                'course' => $assignment->course->title,
-                'due' => $assignment->due_date->format('M d, Y'),
+                'course' => $assignment->course ? $assignment->course->title : 'Unknown Course',
+                'due' => $assignment->due_date ? $assignment->due_date->format('M d, Y') : 'No due date',
                 'priority' => $priority,
                 'assignment_id' => $assignment->id,
                 'days_until_due' => $daysUntilDue,
             ];
+        })->filter(function ($task) {
+            // Filter out tasks with missing course
+            return !empty($task['course']) && $task['course'] !== 'Unknown Course';
         })->toArray();
 
         // Include upcoming announcements with event dates (quiz, exam, assignment, custom)
-        $upcomingAnnouncements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
-            ->whereNotNull('event_date')
-            ->where('event_date', '>=', now())
-            ->where('show_on_calendar', true)
-            ->orderBy('event_date', 'asc')
-            ->with('course')
-            ->limit(20)
-            ->get();
+        $upcomingAnnouncements = collect();
+        if ($enrolledCourseIds->isNotEmpty()) {
+            $upcomingAnnouncements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
+                ->whereNotNull('event_date')
+                ->where('event_date', '>=', now())
+                ->where('show_on_calendar', true)
+                ->orderBy('event_date', 'asc')
+                ->with('course')
+                ->limit(20)
+                ->get();
+        }
 
         foreach ($upcomingAnnouncements as $announcement) {
             $daysUntil = now()->diffInDays($announcement->event_date, false);
@@ -321,11 +342,14 @@ class StudentDashboardController extends Controller
         $activityStream = $notificationActivities;
 
         // Get real calendar marks from announcements with event dates
-        $announcements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
-            ->whereNotNull('event_date')
-            ->where('event_date', '>=', now())
-            ->where('show_on_calendar', true)
-            ->get();
+        $announcements = collect();
+        if ($enrolledCourseIds->isNotEmpty()) {
+            $announcements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
+                ->whereNotNull('event_date')
+                ->where('event_date', '>=', now())
+                ->where('show_on_calendar', true)
+                ->get();
+        }
         
         $calendarMarks = [];
         $calendarEventsByDate = [];
@@ -366,6 +390,9 @@ class StudentDashboardController extends Controller
         
         // Also add assignment due dates to calendar
         foreach ($upcomingAssignments as $assignment) {
+            if (!$assignment->due_date) {
+                continue; // Skip assignments without due dates
+            }
             $dateKey = $assignment->due_date->format('Y-m-d');
             
             // Store event details
@@ -436,19 +463,25 @@ class StudentDashboardController extends Controller
             ->toArray();
         
         // Get real upcoming assignments from enrolled courses (excluding submitted ones)
-        $upcomingAssignments = Assignment::whereIn('course_id', $enrolledCourseIds)
-            ->where('is_published', true)
-            ->whereNotNull('due_date')
-            ->whereNotIn('id', $submittedAssignmentIds)
-            ->orderBy('due_date', 'asc')
-            ->with('course')
-            ->get();
+        $upcomingAssignments = collect();
+        if ($enrolledCourseIds->isNotEmpty()) {
+            $upcomingAssignments = Assignment::whereIn('course_id', $enrolledCourseIds)
+                ->where('is_published', true)
+                ->whereNotNull('due_date')
+                ->whereNotIn('id', $submittedAssignmentIds)
+                ->orderBy('due_date', 'asc')
+                ->with('course')
+                ->get();
+        }
         
         // Get real calendar marks from announcements with event dates
-        $announcements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
-            ->whereNotNull('event_date')
-            ->where('show_on_calendar', true)
-            ->get();
+        $announcements = collect();
+        if ($enrolledCourseIds->isNotEmpty()) {
+            $announcements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
+                ->whereNotNull('event_date')
+                ->where('show_on_calendar', true)
+                ->get();
+        }
         
         $calendarMarks = [];
         $calendarEventsByDate = [];
@@ -489,6 +522,9 @@ class StudentDashboardController extends Controller
         
         // Also add assignment due dates to calendar
         foreach ($upcomingAssignments as $assignment) {
+            if (!$assignment->due_date) {
+                continue; // Skip assignments without due dates
+            }
             $dateKey = $assignment->due_date->format('Y-m-d');
             
             // Store event details

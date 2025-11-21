@@ -25,6 +25,9 @@ class ArchivedApplicationsController extends Controller
 
         // Group applications by course and section
         $groupedApplications = $applications->groupBy(function ($application) {
+            if (!$application->course) {
+                return 'Unknown Course - No Section';
+            }
             return $application->course->title . ' - ' . ($application->course->section ?? 'No Section');
         });
 
@@ -45,6 +48,14 @@ class ArchivedApplicationsController extends Controller
     public function unarchive(CourseApplication $application)
     {
         $teacher = Auth::user();
+
+        // Load course relationship
+        $application->load('course');
+        
+        // Check if course exists
+        if (!$application->course) {
+            abort(404, 'Course not found.');
+        }
 
         // Check if the application belongs to the teacher's course
         if ($application->course->teacher_id !== $teacher->id) {

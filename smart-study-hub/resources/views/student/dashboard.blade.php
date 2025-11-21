@@ -405,7 +405,10 @@
                     {{-- Header --}}
                     <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                       <div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Tasks</h3>
+                        <div class="flex items-center gap-2">
+                          <span class="text-lg">📘</span>
+                          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Tasks</h3>
+                        </div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">Your pending assignments</p>
                       </div>
                       <span class="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
@@ -427,7 +430,6 @@
                           @php
                             $assignmentUrl = isset($t['assignment_id']) ? route('student.assignments.show', $t['assignment_id']) : null;
                             $courseStyle = $courseColorMap[$t['course']] ?? $courseColorMap['default'];
-                            $badgeType = $t['type'] ?? (isset($t['assignment_id']) ? 'assignment' : null);
                           @endphp
                           <div class="relative overflow-hidden rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg {{ $courseStyle['card'] }} {{ $assignmentUrl ? 'cursor-pointer' : '' }} min-h-[156px] flex flex-col gap-4" @if($assignmentUrl) onclick="window.location.href='{{ $assignmentUrl }}'" @endif>
                             <div class="flex items-start gap-4">
@@ -451,16 +453,7 @@
                                 </div>
 
                                 <div class="rounded-xl bg-white/70 px-3 py-2 ring-1 ring-inset ring-white/60 shadow-sm backdrop-blur dark:bg-gray-900/40 dark:ring-gray-800/70">
-                                  <div class="flex items-start justify-between gap-2">
-                                    <span class="text-sm font-semibold leading-snug text-gray-900 dark:text-white line-clamp-2 {{ $courseStyle['title'] }}">{{ $t['title'] }}</span>
-                                    @if($badgeType)
-                                      <span class="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full flex-shrink-0
-                                        {{ $badgeType==='assignment' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-200' : ($badgeType==='exam' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200' : ($badgeType==='quiz' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200')) }}">
-                                          @if($badgeType==='assignment') 📘 @elseif($badgeType==='exam') 🎓 @elseif($badgeType==='quiz') ✅ @else 🗓️ @endif
-                                          <span class="capitalize">{{ $badgeType }}</span>
-                                      </span>
-                                    @endif
-                                  </div>
+                                  <span class="text-sm font-semibold leading-snug text-gray-900 dark:text-white line-clamp-2 {{ $courseStyle['title'] }}">{{ $t['title'] }}</span>
                                   @if(!empty($t['description']))
                                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">{{ $t['description'] }}</p>
                                   @endif
@@ -528,7 +521,13 @@
                                x-data="{
                                    openState: false,
                                    style: '',
+                                   closeTimeout: null,
                                    open(el) {
+                                       // Clear any pending close
+                                       if (this.closeTimeout) {
+                                           clearTimeout(this.closeTimeout);
+                                           this.closeTimeout = null;
+                                       }
                                        this.openState = true;
                                        this.$nextTick(() => {
                                            try {
@@ -539,10 +538,10 @@
                                                const width = 224; // ~w-56
                                                const margin = 8;
                                                let tipH = tip ? Math.min(tip.scrollHeight, 320) : 160;
-                                               // Prefer below
-                                               let top = rect.bottom + margin;
+                                               // Prefer below with small gap
+                                               let top = rect.bottom + margin + 4;
                                                // If out of bottom, place above
-                                               if (top + tipH > vh - margin) top = rect.top - tipH - margin;
+                                               if (top + tipH > vh - margin) top = rect.top - tipH - margin - 4;
                                                // Clamp to viewport
                                                if (top < margin) top = margin;
                                                let left = rect.left + (rect.width / 2) - (width / 2);
@@ -552,9 +551,23 @@
                                            } catch (e) {}
                                        });
                                    },
-                                   close() { this.openState = false; }
+                                   scheduleClose() {
+                                       // Schedule close with delay to allow mouse movement
+                                       if (this.closeTimeout) clearTimeout(this.closeTimeout);
+                                       this.closeTimeout = setTimeout(() => {
+                                           this.openState = false;
+                                           this.closeTimeout = null;
+                                       }, 200);
+                                   },
+                                   cancelClose() {
+                                       if (this.closeTimeout) {
+                                           clearTimeout(this.closeTimeout);
+                                           this.closeTimeout = null;
+                                       }
+                                   }
                                }"
-                               @mouseenter="open($el)" @mouseleave="close()">
+                               @mouseenter="open($el); cancelClose()" 
+                               @mouseleave="scheduleClose()">
                             <span class="text-gray-900 dark:text-gray-100 {{ $isToday ? 'inline-flex items-center justify-center h-7 w-7 rounded-full bg-indigo-600 text-white' : '' }}">
                               {{ $d }}
                             </span>
@@ -562,7 +575,11 @@
                               <span class="absolute -bottom-1 h-1.5 w-1.5 rounded-full {{ $markDot[$mark] }}"></span>
                               @php $events = $calendarEventsByDate[$dateKey] ?? []; @endphp
                               @if(!empty($events))
-                                <div x-show="openState" x-ref="tip" x-cloak class="fixed z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 w-56 text-left" :style="style">
+                                <div x-show="openState" x-ref="tip" x-cloak 
+                                     @mouseenter="cancelClose()" 
+                                     @mouseleave="scheduleClose()"
+                                     class="fixed z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 w-56 text-left pointer-events-auto" 
+                                     :style="style">
                                   <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Events ({{ count($events) }})</div>
                                   <div class="space-y-2 max-h-48 overflow-y-auto">
                                     @foreach($events as $ev)

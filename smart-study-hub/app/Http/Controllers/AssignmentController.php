@@ -113,13 +113,18 @@ class AssignmentController extends Controller
     public function getAssignmentEditData(Assignment $assignment)
     {
         try {
+            // Load necessary relationships
+            $assignment->load(['course', 'week.term']);
+            
+            // Check if course exists
+            if (!$assignment->course) {
+                return response()->json(['error' => 'Assignment course not found.'], 404);
+            }
+            
             // Ensure the assignment belongs to the authenticated teacher
             if ($assignment->course->teacher_id !== auth()->id()) {
                 return response()->json(['error' => 'Unauthorized access.'], 403);
             }
-
-            // Load necessary relationships
-            $assignment->load(['course', 'week.term']);
 
             // Get term and week IDs safely
             $termId = null;

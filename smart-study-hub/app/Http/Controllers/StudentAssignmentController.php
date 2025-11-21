@@ -57,6 +57,14 @@ class StudentAssignmentController extends Controller
     {
         $student = auth()->user();
         
+        // Load course relationship first
+        $assignment->load(['course', 'week.subTerm.term']);
+        
+        // Check if course exists
+        if (!$assignment->course) {
+            abort(404, 'Assignment course not found.');
+        }
+        
         // Verify the student is enrolled in the course
         if (!$assignment->course->students()->where('student_id', $student->id)->exists()) {
             abort(403, 'You are not enrolled in this course.');
@@ -66,8 +74,6 @@ class StudentAssignmentController extends Controller
         if (!$assignment->is_published) {
             abort(404, 'Assignment not found.');
         }
-
-        $assignment->load(['course', 'week.subTerm.term']);
         
         // Get or create student submission
         $submission = $assignment->studentSubmission($student->id);
@@ -97,6 +103,14 @@ class StudentAssignmentController extends Controller
     public function submit(Request $request, Assignment $assignment): RedirectResponse
     {
         $student = auth()->user();
+        
+        // Load course relationship
+        $assignment->load('course');
+        
+        // Check if course exists
+        if (!$assignment->course) {
+            abort(404, 'Assignment course not found.');
+        }
         
         // Verify the student is enrolled in the course
         if (!$assignment->course->students()->where('student_id', $student->id)->exists()) {
@@ -212,6 +226,14 @@ class StudentAssignmentController extends Controller
     public function destroy(Assignment $assignment): RedirectResponse
     {
         $student = auth()->user();
+        
+        // Load course relationship
+        $assignment->load('course');
+        
+        // Check if course exists
+        if (!$assignment->course) {
+            abort(404, 'Assignment course not found.');
+        }
         
         // Verify the student is enrolled in the course
         if (!$assignment->course->students()->where('student_id', $student->id)->exists()) {

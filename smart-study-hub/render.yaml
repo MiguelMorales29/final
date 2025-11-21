@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: smart-study-hub
+    env: php
+    region: oregon
+    plan: free
+    buildCommand: composer install --no-dev --optimize-autoloader && php artisan config:cache && php artisan route:cache && php artisan view:cache && npm ci && npm run build
+    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    healthCheckPath: /
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: LOG_LEVEL
+        value: error
+      - key: PHP_VERSION
+        value: 8.2
+
+databases:
+  - name: smart-study-hub-db
+    plan: free
+    databaseName: smart_study_hub
+    user: smart_study_hub_user
+

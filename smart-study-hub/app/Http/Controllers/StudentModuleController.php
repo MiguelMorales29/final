@@ -108,6 +108,14 @@ class StudentModuleController extends Controller
     {
         $studentId = auth()->id();
         
+        // Load course relationship
+        $material->load('course');
+        
+        // Check if course exists
+        if (!$material->course) {
+            abort(404, 'Material course not found.');
+        }
+        
         // Check if student is enrolled in this course
         if (!$material->course->students()->where('student_id', $studentId)->exists()) {
             abort(403, 'Unauthorized access to this material.');
@@ -217,6 +225,14 @@ class StudentModuleController extends Controller
     {
         $studentId = auth()->id();
         
+        // Load course relationship
+        $material->load('course');
+        
+        // Check if course exists
+        if (!$material->course) {
+            return response()->json(['error' => 'Material course not found.'], 404);
+        }
+        
         // Check if student is enrolled in this course
         if (!$material->course->students()->where('student_id', $studentId)->exists()) {
             return response()->json(['error' => 'Unauthorized access'], 403);
@@ -256,6 +272,14 @@ class StudentModuleController extends Controller
     public function unmarkAsDone(CourseMaterial $material): JsonResponse
     {
         $studentId = auth()->id();
+        
+        // Load course relationship
+        $material->load('course');
+        
+        // Check if course exists
+        if (!$material->course) {
+            return response()->json(['error' => 'Material course not found.'], 404);
+        }
         
         // Check if student is enrolled in this course
         if (!$material->course->students()->where('student_id', $studentId)->exists()) {
