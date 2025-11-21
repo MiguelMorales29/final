@@ -50,7 +50,7 @@ return [
 
     // Groq for Smart Buddy (fast, affordable AI)
     'groq' => [
-        'api_key' => env('GROQ_API_KEY', ''),
+        'api_key' => env('GROQ_API_KEY'),
         'api_url' => env('GROQ_API_URL', 'https://api.groq.com/openai/v1'),
         'model' => env('GROQ_MODEL', 'llama-3.1-8b-instant'),
     ],

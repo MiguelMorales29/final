@@ -9,7 +9,7 @@ A fully personalized, AI-powered study assistant using **Groq API** that helps s
 ## ✅ **COMPLETED FEATURES**
 
 ### 1. **Groq API Integration**
-- ✅ API Key: `YOUR_GROQ_API_KEY`
+- ✅ API Key: *(configure via `.env` as `GROQ_API_KEY`)* 
 - ✅ Endpoint: `https://api.groq.com/openai/v1`
 - ✅ Model: `llama-3.1-8b-instant` (ultra-fast, free tier available)
 - ✅ Pre-configured in `config/services.php`
@@ -336,7 +336,7 @@ The key is already configured in `config/services.php` with a default value, so 
 
 ### **Option 2: Add to .env (Optional)**
 ```env
-GROQ_API_KEY=YOUR_GROQ_API_KEY
+GROQ_API_KEY=your-groq-api-key
 GROQ_API_URL=https://api.groq.com/openai/v1
 GROQ_MODEL=llama-3.1-8b-instant
 ```

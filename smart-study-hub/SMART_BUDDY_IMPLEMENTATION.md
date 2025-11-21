@@ -9,7 +9,7 @@ Smart Buddy has been successfully upgraded to use **Groq API** with **llama-3.1-
 ## ✅ What Was Implemented
 
 ### 1. **Groq API Integration** 
-- API Key: Pre-configured in `config/services.php`
+- API Key: Configure via `.env` (`GROQ_API_KEY`)
 - Endpoint: `https://api.groq.com/openai/v1`
 - Model: `llama-3.1-8b-instant` (fast & efficient)
 - Fallback: Heuristic system if API unavailable
@@ -69,7 +69,7 @@ Smart Buddy has been successfully upgraded to use **Groq API** with **llama-3.1-
 ### 1. **config/services.php**
 ```php
 'groq' => [
-    'api_key' => env('GROQ_API_KEY', 'YOUR_GROQ_API_KEY'),
+    'api_key' => env('GROQ_API_KEY'),
     'api_url' => env('GROQ_API_URL', 'https://api.groq.com/openai/v1'),
     'model' => env('GROQ_MODEL', 'llama-3.1-8b-instant'),
 ],
@@ -95,7 +95,13 @@ Smart Buddy has been successfully upgraded to use **Groq API** with **llama-3.1-
 ## 🚀 How to Use
 
 ### **For You (Already Configured):**
-The API key is **hardcoded** in config, so it works immediately! Just:
+Add your Groq API key to `.env` before testing:
+
+```env
+GROQ_API_KEY=your-groq-api-key
+```
+
+Then:
 
 1. **Refresh your browser**
 2. **Navigate to any material page** (student view)
