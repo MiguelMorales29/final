@@ -1,3 +1,6 @@
+My final Laravel project. It's hard to say goodbye to the code that shaped me. So proud of how far I've come. - Morales, signing off....
+
+
 [README.md](https://github.com/user-attachments/files/23673246/README.md)
 # 🎓 Smart Study Hub - Learning Management System
 
