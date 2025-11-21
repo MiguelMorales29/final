@@ -17,7 +17,24 @@ class GoogleAuthController extends Controller
      */
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        try {
+            // Ensure we have the required config
+            $clientId = config('services.google.client_id');
+            $clientSecret = config('services.google.client_secret');
+            $redirectUri = config('services.google.redirect');
+            
+            if (!$clientId || !$clientSecret) {
+                return redirect()->route('login')
+                    ->with('error', 'Google OAuth is not properly configured. Please contact the administrator.');
+            }
+            
+            return Socialite::driver('google')
+                ->redirectUrl($redirectUri)
+                ->redirect();
+        } catch (\Exception $e) {
+            return redirect()->route('login')
+                ->with('error', 'Failed to initiate Google authentication: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -26,7 +43,10 @@ class GoogleAuthController extends Controller
     public function handleGoogleCallback()
     {
         try {
-            $googleUser = Socialite::driver('google')->user();
+            $redirectUri = config('services.google.redirect');
+            $googleUser = Socialite::driver('google')
+                ->redirectUrl($redirectUri)
+                ->user();
             
             // Check if user already exists
             $existingUser = User::where('email', $googleUser->getEmail())->first();
