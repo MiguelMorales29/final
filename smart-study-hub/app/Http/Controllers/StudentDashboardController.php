@@ -105,13 +105,24 @@ class StudentDashboardController extends Controller
             if (!$application->course) {
                 continue; // Skip if course is missing
             }
+            
+            // Load course with relationships to calculate actual weeks
+            $course = $application->course->load(['terms.subTerms.weeks']);
+            
+            // Calculate actual weeks count
+            $weeksCount = $course->terms->sum(function($term) {
+                return $term->subTerms->sum(function($subTerm) {
+                    return $subTerm->weeks->count();
+                });
+            });
+            
             $approvedCourses[] = [
-                'id' => $application->course->id,
-                'title' => $application->course->title,
-                'teacher' => $application->course->teacher ? $application->course->teacher->name : 'Unknown Teacher',
-                'weeks' => 12, // Default value
-                'cover' => $application->course->image ? asset('storage/' . $application->course->image) : asset('images/default-course.png'),
-                'desc' => $application->course->description ?? '',
+                'id' => $course->id,
+                'title' => $course->title,
+                'teacher' => $course->teacher ? $course->teacher->name : 'Unknown Teacher',
+                'weeks' => $weeksCount, // Use calculated value instead of hardcoded 12
+                'cover' => $course->image ? asset('storage/' . $course->image) : asset('images/default-course.png'),
+                'desc' => $course->description ?? '',
                 'progress' => 0, // New course, no progress yet
                 'next_due' => null,
                 'locked' => false, // This is an enrolled course
@@ -125,13 +136,24 @@ class StudentDashboardController extends Controller
             if (!$application->course) {
                 continue; // Skip if course is missing
             }
+            
+            // Load course with relationships to calculate actual weeks
+            $course = $application->course->load(['terms.subTerms.weeks']);
+            
+            // Calculate actual weeks count
+            $weeksCount = $course->terms->sum(function($term) {
+                return $term->subTerms->sum(function($subTerm) {
+                    return $subTerm->weeks->count();
+                });
+            });
+            
             $pendingCourses[] = [
-                'id' => $application->course->id,
-                'title' => $application->course->title,
-                'teacher' => $application->course->teacher ? $application->course->teacher->name : 'Unknown Teacher',
-                'weeks' => 12, // Default value
-                'cover' => $application->course->image ? asset('storage/' . $application->course->image) : asset('images/default-course.png'),
-                'desc' => $application->course->description ?? '',
+                'id' => $course->id,
+                'title' => $course->title,
+                'teacher' => $course->teacher ? $course->teacher->name : 'Unknown Teacher',
+                'weeks' => $weeksCount, // Use calculated value instead of hardcoded 12
+                'cover' => $course->image ? asset('storage/' . $course->image) : asset('images/default-course.png'),
+                'desc' => $course->description ?? '',
                 'progress' => 0,
                 'next_due' => null,
                 'locked' => true,
@@ -145,13 +167,24 @@ class StudentDashboardController extends Controller
             if (!$application->course) {
                 continue; // Skip if course is missing
             }
+            
+            // Load course with relationships to calculate actual weeks
+            $course = $application->course->load(['terms.subTerms.weeks']);
+            
+            // Calculate actual weeks count
+            $weeksCount = $course->terms->sum(function($term) {
+                return $term->subTerms->sum(function($subTerm) {
+                    return $subTerm->weeks->count();
+                });
+            });
+            
             $rejectedCourses[] = [
-                'id' => $application->course->id,
-                'title' => $application->course->title,
-                'teacher' => $application->course->teacher ? $application->course->teacher->name : 'Unknown Teacher',
-                'weeks' => 12, // Default value
-                'cover' => $application->course->image ? asset('storage/' . $application->course->image) : asset('images/default-course.png'),
-                'desc' => $application->course->description ?? '',
+                'id' => $course->id,
+                'title' => $course->title,
+                'teacher' => $course->teacher ? $course->teacher->name : 'Unknown Teacher',
+                'weeks' => $weeksCount, // Use calculated value instead of hardcoded 12
+                'cover' => $course->image ? asset('storage/' . $course->image) : asset('images/default-course.png'),
+                'desc' => $course->description ?? '',
                 'progress' => 0,
                 'next_due' => null,
                 'locked' => true,
@@ -166,13 +199,24 @@ class StudentDashboardController extends Controller
             if (!$application->course) {
                 continue; // Skip if course is missing
             }
+            
+            // Load course with relationships to calculate actual weeks
+            $course = $application->course->load(['terms.subTerms.weeks']);
+            
+            // Calculate actual weeks count
+            $weeksCount = $course->terms->sum(function($term) {
+                return $term->subTerms->sum(function($subTerm) {
+                    return $subTerm->weeks->count();
+                });
+            });
+            
             $droppedCourses[] = [
-                'id' => $application->course->id,
-                'title' => $application->course->title,
-                'teacher' => $application->course->teacher ? $application->course->teacher->name : 'Unknown Teacher',
-                'weeks' => 12, // Default value
-                'cover' => $application->course->image ? asset('storage/' . $application->course->image) : asset('images/default-course.png'),
-                'desc' => $application->course->description ?? '',
+                'id' => $course->id,
+                'title' => $course->title,
+                'teacher' => $course->teacher ? $course->teacher->name : 'Unknown Teacher',
+                'weeks' => $weeksCount, // Use calculated value instead of hardcoded 12
+                'cover' => $course->image ? asset('storage/' . $course->image) : asset('images/default-course.png'),
+                'desc' => $course->description ?? '',
                 'progress' => 0,
                 'next_due' => null,
                 'locked' => true,
@@ -200,14 +244,14 @@ class StudentDashboardController extends Controller
         // Get real upcoming assignments from enrolled courses (excluding submitted ones)
         $upcomingAssignments = collect();
         if ($enrolledCourseIds->isNotEmpty()) {
-            $upcomingAssignments = Assignment::whereIn('course_id', $enrolledCourseIds)
-                ->where('is_published', true)
-                ->whereNotNull('due_date')
-                ->whereNotIn('id', $submittedAssignmentIds)
-                ->orderBy('due_date', 'asc')
-                ->with('course')
-                ->limit(20)
-                ->get();
+        $upcomingAssignments = Assignment::whereIn('course_id', $enrolledCourseIds)
+            ->where('is_published', true)
+            ->whereNotNull('due_date')
+            ->whereNotIn('id', $submittedAssignmentIds)
+            ->orderBy('due_date', 'asc')
+            ->with('course')
+            ->limit(20)
+            ->get();
         }
         
         // Convert assignments to dashboard format
@@ -241,14 +285,14 @@ class StudentDashboardController extends Controller
         // Include upcoming announcements with event dates (quiz, exam, assignment, custom)
         $upcomingAnnouncements = collect();
         if ($enrolledCourseIds->isNotEmpty()) {
-            $upcomingAnnouncements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
-                ->whereNotNull('event_date')
-                ->where('event_date', '>=', now())
-                ->where('show_on_calendar', true)
-                ->orderBy('event_date', 'asc')
-                ->with('course')
-                ->limit(20)
-                ->get();
+        $upcomingAnnouncements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
+            ->whereNotNull('event_date')
+            ->where('event_date', '>=', now())
+            ->where('show_on_calendar', true)
+            ->orderBy('event_date', 'asc')
+            ->with('course')
+            ->limit(20)
+            ->get();
         }
 
         foreach ($upcomingAnnouncements as $announcement) {
@@ -344,11 +388,11 @@ class StudentDashboardController extends Controller
         // Get real calendar marks from announcements with event dates
         $announcements = collect();
         if ($enrolledCourseIds->isNotEmpty()) {
-            $announcements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
-                ->whereNotNull('event_date')
-                ->where('event_date', '>=', now())
-                ->where('show_on_calendar', true)
-                ->get();
+        $announcements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
+            ->whereNotNull('event_date')
+            ->where('event_date', '>=', now())
+            ->where('show_on_calendar', true)
+            ->get();
         }
         
         $calendarMarks = [];
@@ -465,22 +509,22 @@ class StudentDashboardController extends Controller
         // Get real upcoming assignments from enrolled courses (excluding submitted ones)
         $upcomingAssignments = collect();
         if ($enrolledCourseIds->isNotEmpty()) {
-            $upcomingAssignments = Assignment::whereIn('course_id', $enrolledCourseIds)
-                ->where('is_published', true)
-                ->whereNotNull('due_date')
-                ->whereNotIn('id', $submittedAssignmentIds)
-                ->orderBy('due_date', 'asc')
-                ->with('course')
-                ->get();
+        $upcomingAssignments = Assignment::whereIn('course_id', $enrolledCourseIds)
+            ->where('is_published', true)
+            ->whereNotNull('due_date')
+            ->whereNotIn('id', $submittedAssignmentIds)
+            ->orderBy('due_date', 'asc')
+            ->with('course')
+            ->get();
         }
         
         // Get real calendar marks from announcements with event dates
         $announcements = collect();
         if ($enrolledCourseIds->isNotEmpty()) {
-            $announcements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
-                ->whereNotNull('event_date')
-                ->where('show_on_calendar', true)
-                ->get();
+        $announcements = \App\Models\Announcement::whereIn('course_id', $enrolledCourseIds)
+            ->whereNotNull('event_date')
+            ->where('show_on_calendar', true)
+            ->get();
         }
         
         $calendarMarks = [];
