@@ -59,6 +59,30 @@ RUN echo '#!/bin/sh\n\
 set -e\n\
 # Wait a moment for database to be ready\n\
 sleep 2\n\
+# Function to update or add env variable in .env file\n\
+update_env() {\n\
+  local key=$1\n\
+  local value=$2\n\
+  if grep -q "^${key}=" .env 2>/dev/null; then\n\
+    # Update existing value (handle special characters in value)\n\
+    sed -i "s|^${key}=.*|${key}=${value}|" .env\n\
+  else\n\
+    # Add new value\n\
+    echo "${key}=${value}" >> .env\n\
+  fi\n\
+}\n\
+# Update .env with runtime environment variables (Render sets these)\n\
+[ -n "$DB_CONNECTION" ] && update_env "DB_CONNECTION" "$DB_CONNECTION"\n\
+[ -n "$DB_HOST" ] && update_env "DB_HOST" "$DB_HOST"\n\
+[ -n "$DB_PORT" ] && update_env "DB_PORT" "$DB_PORT"\n\
+[ -n "$DB_DATABASE" ] && update_env "DB_DATABASE" "$DB_DATABASE"\n\
+[ -n "$DB_USERNAME" ] && update_env "DB_USERNAME" "$DB_USERNAME"\n\
+[ -n "$DB_PASSWORD" ] && update_env "DB_PASSWORD" "$DB_PASSWORD"\n\
+[ -n "$APP_KEY" ] && update_env "APP_KEY" "$APP_KEY"\n\
+[ -n "$APP_ENV" ] && update_env "APP_ENV" "$APP_ENV"\n\
+[ -n "$APP_DEBUG" ] && update_env "APP_DEBUG" "$APP_DEBUG"\n\
+# Clear config cache to ensure new env vars are loaded\n\
+php artisan config:clear || true\n\
 # Run migrations\n\
 php artisan migrate --force || true\n\
 # Create storage link\n\
