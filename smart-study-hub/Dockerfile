@@ -94,8 +94,21 @@ fi\n\
 [ -n "$GROQ_API_KEY" ] && update_env "GROQ_API_KEY" "$GROQ_API_KEY"\n\
 # Clear config cache to ensure new env vars are loaded\n\
 php artisan config:clear || true\n\
-# Run migrations (only runs new migrations, preserves existing data)\n\
-php artisan migrate --force || true\n\
+# Run migrations only if needed (prevents running on every container restart)\n\
+# Check if migrations table exists - if not, run initial migrations\n\
+if ! php artisan migrate:status > /dev/null 2>&1; then\n\
+  echo "Running initial migrations..."\n\
+  php artisan migrate --force || true\n\
+else\n\
+  # Check if there are pending migrations\n\
+  PENDING=$(php artisan migrate:status 2>/dev/null | grep -c "Pending" || echo "0")\n\
+  if [ "$PENDING" != "0" ]; then\n\
+    echo "Running pending migrations..."\n\
+    php artisan migrate --force || true\n\
+  else\n\
+    echo "All migrations are up to date, skipping..."\n\
+  fi\n\
+fi\n\
 # Create storage link\n\
 php artisan storage:link || true\n\
 # Start PHP server\n\
