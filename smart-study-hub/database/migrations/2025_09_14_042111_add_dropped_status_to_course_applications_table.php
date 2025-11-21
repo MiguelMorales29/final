@@ -20,11 +20,7 @@ return new class extends Migration
         // PostgreSQL-compatible: Check database driver
         if (DB::getDriverName() === 'pgsql') {
             // For PostgreSQL, drop constraint if exists
-            DB::statement("DO \$\$ 
-                BEGIN
-                    ALTER TABLE course_applications DROP CONSTRAINT IF EXISTS course_applications_status_check;
-                EXCEPTION WHEN OTHERS THEN NULL;
-                END \$\$");
+            DB::statement("ALTER TABLE course_applications DROP CONSTRAINT IF EXISTS course_applications_status_check");
             
             // Add new constraint
             DB::statement("ALTER TABLE course_applications ADD CONSTRAINT course_applications_status_check CHECK (status IN ('pending', 'approved', 'rejected', 'dropped'))");

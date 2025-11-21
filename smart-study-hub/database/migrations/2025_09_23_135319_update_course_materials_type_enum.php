@@ -26,12 +26,8 @@ return new class extends Migration
 
         // PostgreSQL-compatible: Check database driver
         if (DB::getDriverName() === 'pgsql') {
-            // For PostgreSQL, drop constraint if exists, then alter column
-            DB::statement("DO \$\$ 
-                BEGIN
-                    ALTER TABLE course_materials DROP CONSTRAINT IF EXISTS course_materials_type_check;
-                EXCEPTION WHEN OTHERS THEN NULL;
-                END \$\$");
+            // For PostgreSQL, drop constraint if exists
+            DB::statement("ALTER TABLE course_materials DROP CONSTRAINT IF EXISTS course_materials_type_check");
             
             // Alter column type
             DB::statement("ALTER TABLE course_materials ALTER COLUMN type TYPE VARCHAR(255)");
