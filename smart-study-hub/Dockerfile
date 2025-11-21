@@ -94,9 +94,8 @@ fi\n\
 [ -n "$GROQ_API_KEY" ] && update_env "GROQ_API_KEY" "$GROQ_API_KEY"\n\
 # Clear config cache to ensure new env vars are loaded\n\
 php artisan config:clear || true\n\
-# Reset and run migrations (fresh drops all tables and re-runs)\n\
-# This ensures clean database state after fixing migration syntax\n\
-php artisan migrate:fresh --force || php artisan migrate --force || true\n\
+# Run migrations (only runs new migrations, preserves existing data)\n\
+php artisan migrate --force || true\n\
 # Create storage link\n\
 php artisan storage:link || true\n\
 # Start PHP server\n\
