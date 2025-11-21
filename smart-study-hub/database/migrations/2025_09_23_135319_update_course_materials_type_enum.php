@@ -12,15 +12,34 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if table doesn't exist
+        if (!Schema::hasTable('course_materials')) {
+            return;
+        }
+
         // First, update any existing 'text' values to a valid enum value
-        DB::table('course_materials')
-            ->where('type', 'text')
-            ->update(['type' => 'file']);
+        if (Schema::hasColumn('course_materials', 'type')) {
+            DB::table('course_materials')
+                ->where('type', 'text')
+                ->update(['type' => 'file']);
+        }
 
         // PostgreSQL-compatible: Check database driver
         if (DB::getDriverName() === 'pgsql') {
-            // For PostgreSQL, alter the column type and add check constraint
-            DB::statement("ALTER TABLE course_materials DROP CONSTRAINT IF EXISTS course_materials_type_check");
+            // For PostgreSQL, drop all existing check constraints on this column
+            $constraints = DB::select("
+                SELECT constraint_name 
+                FROM information_schema.table_constraints 
+                WHERE table_name = 'course_materials' 
+                AND constraint_type = 'CHECK'
+                AND constraint_name LIKE '%type%'
+            ");
+            
+            foreach ($constraints as $constraint) {
+                DB::statement("ALTER TABLE course_materials DROP CONSTRAINT IF EXISTS {$constraint->constraint_name}");
+            }
+            
+            // Now alter the column and add new constraint
             DB::statement("ALTER TABLE course_materials ALTER COLUMN type TYPE VARCHAR(255)");
             DB::statement("ALTER TABLE course_materials ADD CONSTRAINT course_materials_type_check CHECK (type IN ('video', 'file', 'link', 'text'))");
             DB::statement("ALTER TABLE course_materials ALTER COLUMN type SET NOT NULL");

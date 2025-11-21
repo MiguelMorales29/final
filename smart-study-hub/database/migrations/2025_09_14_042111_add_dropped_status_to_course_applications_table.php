@@ -12,10 +12,27 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if table doesn't exist
+        if (!Schema::hasTable('course_applications')) {
+            return;
+        }
+
         // PostgreSQL-compatible: Check database driver
         if (DB::getDriverName() === 'pgsql') {
-            // For PostgreSQL, update the check constraint
-            DB::statement("ALTER TABLE course_applications DROP CONSTRAINT IF EXISTS course_applications_status_check");
+            // For PostgreSQL, drop all existing check constraints on status column
+            $constraints = DB::select("
+                SELECT constraint_name 
+                FROM information_schema.table_constraints 
+                WHERE table_name = 'course_applications' 
+                AND constraint_type = 'CHECK'
+                AND constraint_name LIKE '%status%'
+            ");
+            
+            foreach ($constraints as $constraint) {
+                DB::statement("ALTER TABLE course_applications DROP CONSTRAINT IF EXISTS {$constraint->constraint_name}");
+            }
+            
+            // Now add new constraint
             DB::statement("ALTER TABLE course_applications ADD CONSTRAINT course_applications_status_check CHECK (status IN ('pending', 'approved', 'rejected', 'dropped'))");
             DB::statement("ALTER TABLE course_applications ALTER COLUMN status SET DEFAULT 'pending'");
         } else {

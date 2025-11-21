@@ -86,6 +86,12 @@ update_env() {\n\
 if [ -z "$APP_URL" ]; then\n\
   update_env "APP_URL" "https://smart-study-hub-a5xr.onrender.com"\n\
 fi\n\
+# Update Google OAuth variables\n\
+[ -n "$GOOGLE_CLIENT_ID" ] && update_env "GOOGLE_CLIENT_ID" "$GOOGLE_CLIENT_ID"\n\
+[ -n "$GOOGLE_CLIENT_SECRET" ] && update_env "GOOGLE_CLIENT_SECRET" "$GOOGLE_CLIENT_SECRET"\n\
+[ -n "$GOOGLE_REDIRECT_URI" ] && update_env "GOOGLE_REDIRECT_URI" "$GOOGLE_REDIRECT_URI"\n\
+# Update Groq API key\n\
+[ -n "$GROQ_API_KEY" ] && update_env "GROQ_API_KEY" "$GROQ_API_KEY"\n\
 # Clear config cache to ensure new env vars are loaded\n\
 php artisan config:clear || true\n\
 # Reset and run migrations (fresh drops all tables and re-runs)\n\
